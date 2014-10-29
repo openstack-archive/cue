@@ -127,3 +127,6 @@ class NodeAlreadyExists(Conflict):
     message = _("A node with UUID %(uuid)s already exists.")
 
 
+class ConfigurationError(CueException):
+    message = _("Configuration Error")
+

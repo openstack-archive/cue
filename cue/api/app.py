@@ -44,10 +44,11 @@ def setup_app(pecan_config=None, extra_hooks=None):
     policy.init()
 
     app_hooks = [hooks.ConfigHook(),
-                 hooks.DBHook(),
+                 #hooks.DBHook(),
                  hooks.ContextHook(pecan_config.app.acl_public_routes),
-                 hooks.RPCHook(),
-                 hooks.NoExceptionTracebackHook()]
+                 #hooks.RPCHook(),
+                 #hooks.NoExceptionTracebackHook()
+                 ]
     if extra_hooks:
         app_hooks.extend(extra_hooks)
 
@@ -58,7 +59,7 @@ def setup_app(pecan_config=None, extra_hooks=None):
         app_hooks.append(hooks.AdminAuthHook())
 
     pecan.configuration.set_config(dict(pecan_config), overwrite=True)
-
+    print pecan_config.app.root
     app = pecan.make_app(
         pecan_config.app.root,
         static_root=pecan_config.app.static_root,

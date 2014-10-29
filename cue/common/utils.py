@@ -59,7 +59,6 @@ LOG = logging.getLogger(__name__)
 def _get_root_helper():
     return 'sudo cue-rootwrap %s' % CONF.rootwrap_config
 
-
 def execute(*cmd, **kwargs):
     """Convenience wrapper around oslo's execute() method.
 

@@ -15,53 +15,90 @@
 
 """Policy Engine For Cue."""
 
-import os.path
-
 from oslo.config import cfg
 
-from cue.common import exception
 from cue.common.i18n import _
+from cue.common.i18n import _LI
+from cue.common import exception
 from cue.common import utils
+from cue.openstack.common import log as logging
 from cue.openstack.common import policy
 
 
-policy_opts = [
-    cfg.StrOpt('policy_file',
-               default='policy.json',
-               help=_('JSON file representing policy.')),
-    cfg.StrOpt('policy_default_rule',
-               default='default',
-               help=_('Rule checked when requested rule is not found.')),
-    ]
+LOG = logging.getLogger(__name__)
 
-CONF = cfg.CONF
-CONF.register_opts(policy_opts)
 
-_POLICY_PATH = None
-_POLICY_CACHE = {}
+_ENFORCER = None
 
 
 def reset():
-    global _POLICY_PATH
-    global _POLICY_CACHE
-    _POLICY_PATH = None
-    _POLICY_CACHE = {}
-    policy.reset()
+    global _ENFORCER
+    if _ENFORCER:
+        _ENFORCER.clear()
+    _ENFORCER = None
 
 
-def init():
-    global _POLICY_PATH
-    global _POLICY_CACHE
-    if not _POLICY_PATH:
-        _POLICY_PATH = CONF.policy_file
-        if not os.path.exists(_POLICY_PATH):
-            _POLICY_PATH = CONF.find_file(_POLICY_PATH)
-        if not _POLICY_PATH:
-            raise exception.ConfigNotFound(path=CONF.policy_file)
-    utils.read_cached_file(_POLICY_PATH, _POLICY_CACHE,
-                           reload_func=_set_rules)
+def set_rules(data, default_rule=None, overwrite=True):
+    default_rule = default_rule or cfg.CONF.policy_default_rule
+    if not _ENFORCER:
+        LOG.debug("Enforcer not present, recreating at rules stage.")
+        init()
+
+    if default_rule:
+        _ENFORCER.default_rule = default_rule
+
+    msg = "Loading rules %s, default: %s, overwrite: %s"
+    LOG.debug(msg, data, default_rule, overwrite)
+
+    if isinstance(data, dict):
+        rules = dict((k, policy.parse_rule(v)) for k, v in data.items())
+        rules = policy.Rules(rules, default_rule)
+    else:
+        rules = policy.Rules.load_json(data, default_rule)
+
+    _ENFORCER.set_rules(rules, overwrite=overwrite)
 
 
-def _set_rules(data):
-    default_rule = CONF.policy_default_rule
-    policy.set_rules(policy.Rules.load_json(data, default_rule))
+def init(default_rule=None):
+    policy_file = cfg.CONF.find_file(cfg.CONF.policy_file)
+
+    if len(policy_file) == 0:
+        msg = 'Unable to determine appropriate policy json file'
+        raise exception.ConfigurationError(msg)
+
+    LOG.info(_LI('Using policy_file found at: %s') % policy_file)
+
+    with open(policy_file) as fh:
+        policy_string = fh.read()
+    rules = policy.Rules.load_json(policy_string, default_rule=default_rule)
+
+    global _ENFORCER
+    if not _ENFORCER:
+        LOG.debug("Enforcer is not present, recreating.")
+        _ENFORCER = policy.Enforcer()
+
+    _ENFORCER.set_rules(rules)
+
+
+def check(rule, ctxt, target=None, do_raise=True, exc=exception.NotAuthorized):
+    #creds = ctxt.to_dict()
+    target = target or {}
+
+    try:
+        result = _ENFORCER.enforce(rule, target, ctxt, do_raise, exc)
+    except Exception:
+        result = False
+        raise
+    else:
+        return result
+    finally:
+        extra = {'policy': {'rule': rule, 'target': target}}
+
+        if result:
+            LOG.info(_("Policy check succeeded for rule '%(rule)s' "
+                       "on target %(target)s") %
+                     {'rule': rule, 'target': repr(target)}, extra=extra)
+        else:
+            LOG.info(_("Policy check failed for rule '%(rule)s' "
+                       "on target %(target)s") %
+                     {'rule': rule, 'target': repr(target)}, extra=extra)

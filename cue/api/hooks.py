@@ -21,9 +21,10 @@ from pecan import hooks
 from webob import exc
 
 from cue.common import context
-from cue.conductor import rpcapi
-from cue.db import api as dbapi
-from cue.openstack.common import policy
+from cue.common import policy
+#from cue.conductor import rpcapi
+#from cue.db import api as dbapi
+
 
 
 class ConfigHook(hooks.PecanHook):
@@ -33,11 +34,11 @@ class ConfigHook(hooks.PecanHook):
         state.request.cfg = cfg.CONF
 
 
-class DBHook(hooks.PecanHook):
-    """Attach the dbapi object to the request so controllers can get to it."""
-
-    def before(self, state):
-        state.request.dbapi = dbapi.get_instance()
+# class DBHook(hooks.PecanHook):
+#     """Attach the dbapi object to the request so controllers can get to it."""
+#
+#     def before(self, state):
+#         state.request.dbapi = dbapi.get_instance()
 
 
 class ContextHook(hooks.PecanHook):
@@ -75,6 +76,7 @@ class ContextHook(hooks.PecanHook):
         creds = {'roles': state.request.headers.get('X-Roles', '').split(',')}
 
         is_public_api = state.request.environ.get('is_public_api', False)
+
         is_admin = policy.check('admin', state.request.headers, creds)
 
         state.request.context = context.RequestContext(
@@ -87,11 +89,11 @@ class ContextHook(hooks.PecanHook):
             is_public_api=is_public_api)
 
 
-class RPCHook(hooks.PecanHook):
-    """Attach the rpcapi object to the request so controllers can get to it."""
-
-    def before(self, state):
-        state.request.rpcapi = rpcapi.ConductorAPI()
+# class RPCHook(hooks.PecanHook):
+#     """Attach the rpcapi object to the request so controllers can get to it."""
+#
+#     def before(self, state):
+#         state.request.rpcapi = rpcapi.ConductorAPI()
 
 
 class AdminAuthHook(hooks.PecanHook):

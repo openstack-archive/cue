@@ -17,7 +17,7 @@ from oslo.config import cfg
 # Server Specific Configurations
 # See https://pecan.readthedocs.org/en/latest/configuration.html#server-configuration # noqa
 server = {
-    'port': '6385',
+    'port': '8795',
     'host': '0.0.0.0'
 }
 

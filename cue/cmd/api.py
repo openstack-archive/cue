@@ -21,8 +21,9 @@ import logging
 import sys
 from wsgiref import simple_server
 
-from oslo.config import cfg
 from six.moves import socketserver
+from oslo.config import cfg
+
 
 from cue.api import app
 from cue.common.i18n import _LI
@@ -60,3 +61,7 @@ def main():
         wsgi.serve_forever()
     except KeyboardInterrupt:
         pass
+
+
+if __name__ == "__main__":
+    main()
