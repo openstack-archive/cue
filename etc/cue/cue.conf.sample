@@ -192,7 +192,7 @@
 
 # Method to use for authentication: noauth or keystone.
 # (string value)
-#auth_strategy=keystone
+auth_strategy=noauth
 
 
 
