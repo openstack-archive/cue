@@ -387,6 +387,7 @@ max_limit=1000
 # Deprecated group/name - [DATABASE]/sql_connection
 # Deprecated group/name - [sql]/connection
 #connection=<None>
+connection=mysql://cue:cue@localhost/cue
 
 # The SQLAlchemy connection string to use to connect to the
 # slave database. (string value)
