@@ -20,14 +20,11 @@ import socket
 import sys
 
 from oslo.config import cfg
-from oslo import messaging
 from oslo.utils import importutils
 
 # from cue.common import config
 from cue.common.i18n import _LE
 from cue.common.i18n import _LI
-# from cue.common import rpc
-# from cue.objects import base as objects_base
 from cue.openstack.common import context
 from cue.openstack.common import log
 from cue.openstack.common import service
@@ -50,53 +47,6 @@ cfg.CONF.register_opts(service_opts)
 LOG = log.getLogger(__name__)
 
 
-# class RPCService(service.Service):
-#
-#     def __init__(self, host, manager_module, manager_class):
-#         super(RPCService, self).__init__()
-#         self.host = host
-#         manager_module = importutils.try_import(manager_module)
-#         manager_class = getattr(manager_module, manager_class)
-#         self.manager = manager_class(host, manager_module.MANAGER_TOPIC)
-#         self.topic = self.manager.topic
-#         self.rpcserver = None
-#
-#     def start(self):
-#         super(RPCService, self).start()
-#         admin_context = context.RequestContext('admin', 'admin', is_admin=True)
-#         self.tg.add_dynamic_timer(
-#                 self.manager.periodic_tasks,
-#                 periodic_interval_max=cfg.CONF.periodic_interval,
-#                 context=admin_context)
-#
-#         self.manager.init_host()
-#         target = messaging.Target(topic=self.topic, server=self.host)
-#         endpoints = [self.manager]
-#         serializer = objects_base.cueObjectSerializer()
-#         self.rpcserver = rpc.get_server(target, endpoints, serializer)
-#         self.rpcserver.start()
-#         LOG.info(_LI('Created RPC server for service %(service)s on host '
-#                      '%(host)s.'),
-#                  {'service': self.topic, 'host': self.host})
-#
-#     def stop(self):
-#         super(RPCService, self).stop()
-#         try:
-#             self.rpcserver.stop()
-#             self.rpcserver.wait()
-#         except Exception as e:
-#             LOG.exception(_LE('Service error occurred when stopping the '
-#                               'RPC server. Error: %s'), e)
-#         try:
-#             self.manager.del_host()
-#         except Exception as e:
-#             LOG.exception(_LE('Service error occurred when cleaning up '
-#                               'the RPC manager. Error: %s'), e)
-#         LOG.info(_LI('Stopped RPC server for service %(service)s on host '
-#                      '%(host)s.'),
-#                  {'service': self.topic, 'host': self.host})
-
-
 def prepare_service(argv=[]):
 
     log_levels = (cfg.CONF.default_log_levels +
@@ -107,6 +57,4 @@ def prepare_service(argv=[]):
         argv = sys.argv
     cfg.CONF(argv[1:], project='cue')
     log.setup('cue')
-    #messaging.setup()
-
 
