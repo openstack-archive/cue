@@ -17,10 +17,9 @@
 
 from oslo.config import cfg
 
-from cue.common.i18n import _
-from cue.common.i18n import _LI
 from cue.common import exception
-from cue.common import utils
+from cue.common.i18n import _  # noqa
+from cue.common.i18n import _LI  # noqa
 from cue.openstack.common import log as logging
 from cue.openstack.common import policy
 
