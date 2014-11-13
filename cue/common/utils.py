@@ -35,9 +35,9 @@ import paramiko
 import six
 
 from cue.common import exception
-from cue.common.i18n import _
-from cue.common.i18n import _LE
-from cue.common.i18n import _LW
+from cue.common.i18n import _  # noqa
+from cue.common.i18n import _LE  # noqa
+from cue.common.i18n import _LW  # noqa
 from cue.openstack.common import log as logging
 from cue.openstack.common import processutils
 
@@ -58,6 +58,7 @@ LOG = logging.getLogger(__name__)
 
 def _get_root_helper():
     return 'sudo cue-rootwrap %s' % CONF.rootwrap_config
+
 
 def execute(*cmd, **kwargs):
     """Convenience wrapper around oslo's execute() method.

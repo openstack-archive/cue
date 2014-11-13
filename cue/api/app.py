@@ -59,7 +59,6 @@ def setup_app(pecan_config=None, extra_hooks=None):
         app_hooks.append(hooks.AdminAuthHook())
 
     pecan.configuration.set_config(dict(pecan_config), overwrite=True)
-    print pecan_config.app.root
     app = pecan.make_app(
         pecan_config.app.root,
         static_root=pecan_config.app.static_root,

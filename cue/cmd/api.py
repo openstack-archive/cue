@@ -21,14 +21,13 @@ import logging
 import sys
 from wsgiref import simple_server
 
-from six.moves import socketserver
 from oslo.config import cfg
-
+from oslo.log import log
+from six.moves import socketserver
 
 from cue.api import app
-from cue.common.i18n import _LI
+from cue.common.i18n import _LI  # noqa
 from cue.common import service as cue_service
-from oslo.log import log
 
 CONF = cfg.CONF
 
