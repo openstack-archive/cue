@@ -26,7 +26,6 @@ from cue.common import policy
 #from cue.db import api as dbapi
 
 
-
 class ConfigHook(hooks.PecanHook):
     """Attach the config object to the request so controllers can get to it."""
 
@@ -35,7 +34,7 @@ class ConfigHook(hooks.PecanHook):
 
 
 # class DBHook(hooks.PecanHook):
-#     """Attach the dbapi object to the request so controllers can get to it."""
+#    """Attach the dbapi object to the request so controllers can get to it."""
 #
 #     def before(self, state):
 #         state.request.dbapi = dbapi.get_instance()
@@ -73,12 +72,12 @@ class ContextHook(hooks.PecanHook):
         domain_id = state.request.headers.get('X-User-Domain-Id')
         domain_name = state.request.headers.get('X-User-Domain-Name')
         auth_token = state.request.headers.get('X-Auth-Token')
-        creds = {'roles': state.request.headers.get('X-Roles', '').split(',')}
+        #creds = {'roles': state.request.headers.get('X-Roles', '').split(',')}
 
         is_public_api = state.request.environ.get('is_public_api', False)
 
         #is_admin = policy.check('admin', state.request.headers, creds)
-        #TODO (dagnello): temp workaround to disably policy check for now
+        #TODO(dagnello): temp workaround to disably policy check for now
         is_admin = True
 
         state.request.context = context.RequestContext(
@@ -92,7 +91,7 @@ class ContextHook(hooks.PecanHook):
 
 
 # class RPCHook(hooks.PecanHook):
-#     """Attach the rpcapi object to the request so controllers can get to it."""
+#   """Attach the rpcapi object to the request so controllers can get to it."""
 #
 #     def before(self, state):
 #         state.request.rpcapi = rpcapi.ConductorAPI()
