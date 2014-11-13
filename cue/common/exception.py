@@ -23,11 +23,11 @@ SHOULD include dedicated exception logging.
 """
 
 from oslo.config import cfg
+from oslo.log import log as logging
 import six
 
-from cue.common.i18n import _
-from cue.common.i18n import _LE
-from oslo.log import log as logging
+from cue.common.i18n import _  # noqa
+from cue.common.i18n import _LE  # noqa
 
 
 LOG = logging.getLogger(__name__)
@@ -129,4 +129,3 @@ class NodeAlreadyExists(Conflict):
 
 class ConfigurationError(CueException):
     message = _("Configuration Error")
-
