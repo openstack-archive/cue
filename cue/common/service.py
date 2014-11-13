@@ -20,14 +20,8 @@ import socket
 import sys
 
 from oslo.config import cfg
-from oslo.utils import importutils
 
-# from cue.common import config
-from cue.common.i18n import _LE
-from cue.common.i18n import _LI
-from cue.openstack.common import context
 from cue.openstack.common import log
-from cue.openstack.common import service
 
 service_opts = [
     cfg.IntOpt('periodic_interval',
@@ -57,4 +51,3 @@ def prepare_service(argv=[]):
         argv = sys.argv
     cfg.CONF(argv[1:], project='cue')
     log.setup('cue')
-
