@@ -23,7 +23,8 @@ CONF = cfg.CONF
 
 CONF.register_opt(cfg.StrOpt('sqlite_db', default='cue.sqlite'))
 
-db_options.set_defaults(cfg.CONF, connection='sqlite://')
+db_options.set_defaults(
+    cfg.CONF, connection='sqlite:///$state_path/$sqlite_db')
 
 _FACADE = None
 

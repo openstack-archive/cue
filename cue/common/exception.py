@@ -95,6 +95,11 @@ class CueException(Exception):
             return six.text_type(self)
 
 
+class NotFound(CueException):
+    message = _("Not Found")
+    code = 404
+
+
 class NotAuthorized(CueException):
     message = _("Not authorized.")
     code = 403
