@@ -13,8 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+
 import sqlalchemy as sa
 
+from cue.common import objects
 from cue.db import base
 from cue.db import types
 
@@ -30,6 +33,7 @@ NODE_STATUSES = CLUSTER_STATUSES
 
 class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
     __tablename__ = 'clusters'
+    __data_model__ = objects.Cluster
 
     project_id = sa.Column(sa.String(36), nullable=False)
     nic = sa.Column(sa.String(36), nullable=False)
@@ -40,10 +44,11 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
 
 class Node(base.BASE, base.IdMixin, base.TimeMixin):
     __tablename__ = 'nodes'
+    __data_model__ = objects.Node
 
     cluster_id = sa.Column(
         'cluster_id', types.UUID(),
-        sa.ForeignKey('clusters.id'))
+        sa.ForeignKey('clusters.id'), nullable=False)
     flavor = sa.Column(sa.String(36), nullable=False)
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), sa.Enum(*NODE_STATUSES))
