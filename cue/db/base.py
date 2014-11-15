@@ -13,46 +13,53 @@
 #    under the License.
 #
 # Copied from Octavia
-
 import uuid
 
 from oslo.db.sqlalchemy import models
 from oslo.utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
-from sqlalchemy.orm import collections
 
+from cue.common import exception
 from cue.db import types
 
 
 class CueBase(models.ModelBase):
+    @classmethod
+    def create(cls, session, **kwargs):
+        with session.begin():
+            instance = cls(**kwargs)
+            session.add(instance)
+        return instance
 
-    __data_model__ = None
+    @classmethod
+    def delete(cls, session, **filters):
+        model = session.query(cls).filter_by(**filters).first()
+        with session.begin():
+            session.delete(model)
+            session.flush()
 
-    def to_data_model(self, calling_cls=None):
-        if not self.__data_model__:
-            raise NotImplementedError
-        dm_kwargs = {}
-        for column in self.__table__.columns:
-            dm_kwargs[column.name] = getattr(self, column.name)
-        attr_names = [attr_name for attr_name in dir(self)
-                      if not attr_name.startswith('_')]
-        for attr_name in attr_names:
-            attr = getattr(self, attr_name)
-            if isinstance(attr, CueBase):
-                if attr.__class__ != calling_cls:
-                    dm_kwargs[attr_name] = attr.to_data_model(
-                        calling_cls=self.__class__)
-            elif isinstance(attr, collections.InstrumentedList):
-                dm_kwargs[attr_name] = []
-                for item in attr:
-                    if isinstance(item, CueBase):
-                        if attr.__class__ != calling_cls:
-                            dm_kwargs[attr_name].append(
-                                item.to_data_model(calling_cls=self.__class__))
-                    else:
-                        dm_kwargs[attr_name].append(item)
-        return self.__data_model__(**dm_kwargs)
+    @classmethod
+    def delete_batch(self, session, ids=None):
+        [self.delete(session, id) for id in ids]
+
+    @classmethod
+    def update(cls, session, id, **kwargs):
+        with session.begin():
+            session.query(cls).filter_by(
+                id=id).update(kwargs)
+
+    @classmethod
+    def get(cls, session, **filters):
+        instance = session.query(cls).filter_by(**filters).first()
+        if not instance:
+            raise exception.NotFound
+        return instance
+
+    @classmethod
+    def get_all(cls, session, **filters):
+        data = session.query(cls).filter_by(**filters).all()
+        return data
 
 
 class LookupTableMixin(object):

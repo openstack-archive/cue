@@ -27,6 +27,10 @@ from cue.manage import base
 CONF = cfg.CONF
 
 
+cfg.CONF.import_opt('connection', 'cue.db.api',
+                    group='database')
+
+
 def get_manager():
     alembic_path = os.path.join(os.path.dirname(__file__),
                                 '..', 'db', 'migration', 'alembic.ini')
