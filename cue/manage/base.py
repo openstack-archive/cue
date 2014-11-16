@@ -13,16 +13,28 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import os.path
+#
+# Copied: Designate
+from cue.openstack.common import context
 
-from oslo.config import cfg
+
+# Decorators for actions
+def args(*args, **kwargs):
+    def _decorator(func):
+        func.__dict__.setdefault('args', []).insert(0, (args, kwargs))
+        return func
+    return _decorator
 
 
-cfg.CONF.register_opts([
-    cfg.StrOpt('pybasedir',
-               default=os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                    '../')),
-               help='Directory where the nova python module is installed'),
-    cfg.StrOpt('state-path', default='/var/lib/cue',
-               help='Top-level directory for maintaining cue\'s state')
-])
+def name(name):
+    """Give a command a alternate name."""
+    def _decorator(func):
+        func.__dict__['_cmd_name'] = name
+        return func
+    return _decorator
+
+
+class Commands(object):
+    def __init__(self):
+        self.context = context.get_admin_context()
+        self.context.request_id = 'cachima-manage'
