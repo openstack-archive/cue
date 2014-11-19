@@ -17,17 +17,19 @@
 # limitations under the License.
 
 """Version 1 of the Cue API
-Initial submission sets up the REST routes using Pecan framework.  Some temporary sample code
-has been added to functions.  This sample code will be removed and replaced with the intended
-implementation in future submissions.
+Initial submission sets up the REST routes using Pecan framework.  Some
+temporary sample code has been added to functions.  This sample code will be
+removed and replaced with the intended implementation in future submissions.
 """
 
 import datetime
+
 import pecan
 from pecan import rest
 import wsme
-import wsmeext.pecan as wsme_pecan
 from wsme import types as wtypes
+import wsmeext.pecan as wsme_pecan
+
 
 class EndPoint():
     type = wtypes.text
@@ -38,7 +40,7 @@ class EndPoint():
 
 
 class Node():
-    """Representation of a Node"""
+    """Representation of a Node."""
 
     node_id = wtypes.text
     "UUID of node"
@@ -60,7 +62,7 @@ class Node():
 
 
 class Cluster():
-    """Representation of a cluster"""
+    """Representation of a cluster."""
 
     cluster_id = wtypes.text
     "UUID of cluster"
@@ -82,7 +84,7 @@ class Cluster():
 
 
 class NodeController(rest.RestController):
-    """Manages operations on specific node within a Cluster"""
+    """Manages operations on specific node within a Cluster."""
 
     def __init__(self, cluster_id, node_id):
         self.cluster_id = cluster_id
@@ -90,7 +92,7 @@ class NodeController(rest.RestController):
 
     @wsme_pecan.wsexpose(Node, status_code=200)
     def get(self):
-        """Return this node"""
+        """Return this node."""
         node = Node()
         node.node_id = self.node_id
         node.status = 'ACTIVE'
@@ -109,19 +111,20 @@ class NodeController(rest.RestController):
 
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
-        """Delete this Node"""
+        """Delete this Node."""
         node = Node()
+        node.node_id = self.node_id
 
 
 class NodesController(rest.RestController):
-    """Manages operations on nodes within a Cluster"""
+    """Manages operations on nodes within a Cluster."""
 
     def __init__(self, cluster_id):
         self.cluster_id = cluster_id
 
     @wsme_pecan.wsexpose(Cluster, status_code=200)
     def get(self):
-        """Return set of Nodes in Cluster"""
+        """Return set of Nodes in Cluster."""
         cluster = Cluster()
         cluster.cluster_id = self.cluster_id
         cluster.name = 'cluster 1'
@@ -183,7 +186,7 @@ class NodesController(rest.RestController):
 
     @wsme_pecan.wsexpose(Node, status_code=202)
     def post(self):
-        """Create new Node"""
+        """Create new Node."""
         node = Node()
         node.node_id = self.node_id
         node.status = 'BUILDING'
@@ -206,14 +209,14 @@ class NodesController(rest.RestController):
 
 
 class ClusterController(rest.RestController):
-    """Manages operations on specific Cluster of nodes"""
+    """Manages operations on specific Cluster of nodes."""
 
     def __init__(self, cluster_id):
         self.cluster_id = cluster_id
 
     @wsme_pecan.wsexpose(Cluster, status_code=200)
     def get(self):
-        """Return this cluster"""
+        """Return this cluster."""
         cluster = Cluster()
         cluster.cluster_id = self.cluster_id
         cluster.name = 'cluster 1'
@@ -276,8 +279,9 @@ class ClusterController(rest.RestController):
 
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
-        """Delete this Cluster"""
+        """Delete this Cluster."""
         cluster = Cluster()
+        cluster.cluster_id = self.cluster_id
 
     @pecan.expose()
     def _lookup(self, resource, *remainder):
@@ -288,12 +292,12 @@ class ClusterController(rest.RestController):
 
 
 class ClustersController(rest.RestController):
-    """Manages operations on Clusters of nodes"""
+    """Manages operations on Clusters of nodes."""
 
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
-        """Return list of Clusters"""
-        clusterList = []
+        """Return list of Clusters."""
+        cluster_list = []
         cluster = Cluster()
         cluster.cluster_id = 'dd745f4a-9333-417e-bb89-9c989c84c068'
         cluster.name = 'cluster 1'
@@ -301,19 +305,19 @@ class ClustersController(rest.RestController):
         cluster.updated = datetime.datetime.utcnow()
         cluster.status = 'ACTIVE'
 
-        clusterList.append(cluster)
+        cluster_list.append(cluster)
         cluster = Cluster()
         cluster.cluster_id = '3caa8fe3-a760-4f83-8bb6-6d70c786f339'
         cluster.name = 'cluster 2'
         cluster.created = datetime.datetime.utcnow()
         cluster.updated = datetime.datetime.utcnow()
         cluster.status = 'ACTIVE'
-        clusterList.append(cluster)
-        return clusterList
+        cluster_list.append(cluster)
+        return cluster_list
 
     @wsme_pecan.wsexpose(Cluster, status_code=202)
     def post(self):
-        """Create a new Cluster"""
+        """Create a new Cluster."""
         cluster = Cluster()
         cluster.cluster_id = 'dd745f4a-9333-417e-bb89-9c989c84c068'
         cluster.name = 'cluster 1'
@@ -376,6 +380,7 @@ class ClustersController(rest.RestController):
     @pecan.expose()
     def _lookup(self, cluster_id, *remainder):
         return ClusterController(cluster_id), remainder
+
 
 class V1Controller(object):
     """Version 1 MSGaaS API controller root."""
