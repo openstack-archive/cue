@@ -23,7 +23,7 @@ import wsmeext.pecan as wsme_pecan
 
 from cue.api.controllers import base
 from cue.api.controllers import link
-# from cue.api.controllers import v1
+from cue.api.controllers import v1
 
 
 class Version(base.APIBase):
@@ -77,7 +77,7 @@ class RootController(rest.RestController):
     _default_version = 'v1'
     "The default API version"
 
-    #v1 = v1.Controller()
+    v1 = v1.V1Controller()
 
     @wsme_pecan.wsexpose(Root)
     def get(self):
