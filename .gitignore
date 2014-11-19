@@ -57,3 +57,6 @@ doc/source/api
 
 # PyBuilder
 target/
+
+# Vagrant
+.vagrant
