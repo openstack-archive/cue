@@ -35,19 +35,21 @@ class CueBase(models.ModelBase):
     @classmethod
     def delete(cls, session, **filters):
         model = session.query(cls).filter_by(**filters).first()
+        if not model:
+            raise exception.NotFound
         with session.begin():
             session.delete(model)
             session.flush()
 
     @classmethod
     def delete_batch(self, session, ids=None):
-        [self.delete(session, id) for id in ids]
+        [self.delete(session, id=id) for id in ids]
 
     @classmethod
     def update(cls, session, id, **kwargs):
         with session.begin():
-            session.query(cls).filter_by(
-                id=id).update(kwargs)
+            kwargs.update(updated_at=timeutils.utcnow())
+            session.query(cls).filter_by(id=id).update(kwargs)
 
     @classmethod
     def get(cls, session, **filters):
@@ -75,9 +77,9 @@ class IdMixin(object):
                    primary_key=True)
 
 
-class TenantMixin(object):
-    """Tenant mixin, add to subclasses that have a tenant."""
-    tenant_id = sa.Column(sa.String(36))
+class ProjectMixin(object):
+    """Project mixin, add to subclasses that have a project."""
+    project_id = sa.Column(sa.String(36))
 
 
 class TimeMixin(object):
