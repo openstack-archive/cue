@@ -16,7 +16,7 @@
 import uuid
 
 from cue.db import models
-from cue.tests.db import base
+from cue.tests import base
 
 UUID1 = str(uuid.uuid4())
 UUID2 = str(uuid.uuid4())

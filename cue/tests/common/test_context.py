@@ -12,8 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import testtools
+from cue.common import context
+import cue.tests.base as base
 
 
-class TestCase(testtools.TestCase):
-    pass
+class TestConfig(base.TestCase):
+
+    def test_sanity(self):
+        req_context = context.RequestContext()
+        req_context.to_dict()
