@@ -30,10 +30,9 @@ CLUSTER_STATUSES = (
 NODE_STATUSES = CLUSTER_STATUSES
 
 
-class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
+class Cluster(base.BASE, base.IdMixin, base.ProjectMixin, base.TimeMixin):
     __tablename__ = 'clusters'
 
-    project_id = sa.Column(sa.String(36), nullable=False)
     nic = sa.Column(sa.String(36), nullable=False)
     name = sa.Column(sa.String(255), nullable=False)
     status = sa.Column(sa.String(50), sa.Enum(*CLUSTER_STATUSES))
