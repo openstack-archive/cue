@@ -18,7 +18,6 @@
 
 """Version 1 of the Cue API
 """
-
 import datetime
 
 import pecan
@@ -64,6 +63,9 @@ class Cluster():
     cluster_id = wtypes.text
     "UUID of cluster"
 
+    nic = wtypes.wsattr(wtypes.text, mandatory=True)
+    "NIC of Neutron network"
+
     nodes = wtypes.wsattr([Node], default=[])
     "List of nodes of cluster"
 
@@ -72,6 +74,9 @@ class Cluster():
 
     status = wtypes.text
     "Current status of cluster"
+
+    volume_size = wtypes.IntegerType()
+    "Volume size for nodes in cluster"
 
     created = datetime.datetime
     "Creation of cluster date-time"
@@ -90,62 +95,6 @@ class ClusterController(rest.RestController):
     def get(self):
         """Return this cluster."""
         cluster = Cluster()
-        cluster.cluster_id = self.cluster_id
-        cluster.name = 'cluster 1'
-        cluster.created = datetime.datetime.utcnow()
-        cluster.updated = datetime.datetime.utcnow()
-        cluster.status = 'ACTIVE'
-
-        node = Node()
-        node.node_id = '616fb98f-46ca-475e-917e-2563e5a8cd19'
-        node.status = 'ACTIVE'
-        node.flavor = 'medium'
-        node.created = datetime.datetime.utcnow()
-        node.updated = datetime.datetime.utcnow()
-        end_point = EndPoint()
-        end_point.type = 'AMQP'
-        end_point.value = 'amqp://10.20.30.40:5672'
-        node.end_points.append(end_point)
-        end_point = EndPoint()
-        end_point.type = 'console'
-        end_point.value = 'http://10.20.30.40:10000'
-        node.end_points.append(end_point)
-
-        cluster.nodes.append(node)
-
-        node = Node()
-        node.node_id = 'e90c9d13-c4b8-4a08-992a-dad6109b8ac2'
-        node.status = 'ACTIVE'
-        node.flavor = 'medium'
-        node.created = datetime.datetime.utcnow()
-        node.updated = datetime.datetime.utcnow()
-        end_point = EndPoint()
-        end_point.type = 'AMQP'
-        end_point.value = 'amqp://10.20.30.41:5672'
-        node.end_points.append(end_point)
-        end_point = EndPoint()
-        end_point.type = 'console'
-        end_point.value = 'http://10.20.30.41:10000'
-        node.end_points.append(end_point)
-
-        cluster.nodes.append(node)
-
-        node = Node()
-        node.node_id = '372f8f47-6818-4d83-aa42-8744c0e689b8'
-        node.status = 'ACTIVE'
-        node.flavor = 'medium'
-        node.created = datetime.datetime.utcnow()
-        node.updated = datetime.datetime.utcnow()
-        end_point = EndPoint()
-        end_point.type = 'AMQP'
-        end_point.value = 'amqp://10.20.30.42:5672'
-        node.end_points.append(end_point)
-        end_point = EndPoint()
-        end_point.type = 'console'
-        end_point.value = 'http://10.20.30.42:10000'
-        node.end_points.append(end_point)
-
-        cluster.nodes.append(node)
 
         return cluster
 
@@ -163,84 +112,23 @@ class ClustersController(rest.RestController):
     def get(self):
         """Return list of Clusters."""
         cluster_list = []
-        cluster = Cluster()
-        cluster.cluster_id = 'dd745f4a-9333-417e-bb89-9c989c84c068'
-        cluster.name = 'cluster 1'
-        cluster.created = datetime.datetime.utcnow()
-        cluster.updated = datetime.datetime.utcnow()
-        cluster.status = 'ACTIVE'
 
-        cluster_list.append(cluster)
-        cluster = Cluster()
-        cluster.cluster_id = '3caa8fe3-a760-4f83-8bb6-6d70c786f339'
-        cluster.name = 'cluster 2'
-        cluster.created = datetime.datetime.utcnow()
-        cluster.updated = datetime.datetime.utcnow()
-        cluster.status = 'ACTIVE'
-        cluster_list.append(cluster)
         return cluster_list
 
-    @wsme_pecan.wsexpose(Cluster, status_code=202)
-    def post(self):
-        """Create a new Cluster."""
-        cluster = Cluster()
-        cluster.cluster_id = 'dd745f4a-9333-417e-bb89-9c989c84c068'
-        cluster.name = 'cluster 1'
-        cluster.created = datetime.datetime.utcnow()
-        cluster.updated = datetime.datetime.utcnow()
-        cluster.status = 'ACTIVE'
+    @wsme_pecan.wsexpose(Cluster, body=Cluster, status_code=202)
+    def post(self, data):
+        """Create a new Cluster.
 
-        node = Node()
-        node.node_id = '616fb98f-46ca-475e-917e-2563e5a8cd19'
-        node.status = 'ACTIVE'
-        node.flavor = 'medium'
-        node.created = datetime.datetime.utcnow()
-        node.updated = datetime.datetime.utcnow()
-        end_point = EndPoint()
-        end_point.type = 'AMQP'
-        end_point.value = 'amqp://10.20.30.40:5672'
-        node.end_points.append(end_point)
-        end_point = EndPoint()
-        end_point.type = 'console'
-        end_point.value = 'http://10.20.30.40:10000'
-        node.end_points.append(end_point)
+        :param data: cluster parameters within the request body.
+        """
 
-        cluster.nodes.append(node)
+        cluster_flavor = data.nodes[0].flavor
+        for node in data.nodes:
+            # nodes of different flavors in same cluster are not supported
+            if cluster_flavor != node.flavor:
+                pecan.abort(400)
 
-        node = Node()
-        node.node_id = 'e90c9d13-c4b8-4a08-992a-dad6109b8ac2'
-        node.status = 'ACTIVE'
-        node.flavor = 'medium'
-        node.created = datetime.datetime.utcnow()
-        node.updated = datetime.datetime.utcnow()
-        end_point = EndPoint()
-        end_point.type = 'AMQP'
-        end_point.value = 'amqp://10.20.30.41:5672'
-        node.end_points.append(end_point)
-        end_point = EndPoint()
-        end_point.type = 'console'
-        end_point.value = 'http://10.20.30.41:10000'
-        node.end_points.append(end_point)
-
-        cluster.nodes.append(node)
-
-        node = Node()
-        node.node_id = '372f8f47-6818-4d83-aa42-8744c0e689b8'
-        node.status = 'ACTIVE'
-        node.flavor = 'medium'
-        node.created = datetime.datetime.utcnow()
-        node.updated = datetime.datetime.utcnow()
-        end_point = EndPoint()
-        end_point.type = 'AMQP'
-        end_point.value = 'amqp://10.20.30.42:5672'
-        node.end_points.append(end_point)
-        end_point = EndPoint()
-        end_point.type = 'console'
-        end_point.value = 'http://10.20.30.42:10000'
-        node.end_points.append(end_point)
-
-        cluster.nodes.append(node)
-        return cluster
+        return data
 
     @pecan.expose()
     def _lookup(self, cluster_id, *remainder):
