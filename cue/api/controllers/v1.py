@@ -18,7 +18,10 @@
 
 """Version 1 of the Cue API
 """
+from cue.db import api as dbapi
+
 import datetime
+import uuid
 
 import pecan
 from pecan import rest
@@ -127,6 +130,24 @@ class ClustersController(rest.RestController):
             # nodes of different flavors in same cluster are not supported
             if cluster_flavor != node.flavor:
                 pecan.abort(400)
+
+        # TODO(dagnello): project_id will have to be extracted from HTTP header
+        db_cluster = dbapi.create_cluster(str(uuid.uuid1()), data.name,
+                                          data.nic, data.volume_size,
+                                          cluster_flavor, len(data.nodes))
+        db_cluster_nodes = dbapi.get_cluster_nodes(db_cluster.id)
+
+        data.cluster_id = db_cluster.id
+        data.status = db_cluster.status
+        data.created = db_cluster.created_at
+        data.updated = db_cluster.updated_at
+
+        for node in data.nodes:
+            db_node = db_cluster_nodes.pop()
+            node.node_id = db_node.id
+            node.status = db_node.status
+            node.created = db_node.created_at
+            node.updated = db_node.updated_at
 
         return data
 

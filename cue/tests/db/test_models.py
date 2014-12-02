@@ -31,7 +31,9 @@ class ClusterTests(base.TestCase):
         data = {
             "project_id": UUID1,
             "name": "test",
-            "nic": UUID2
+            "nic": UUID2,
+            "volume_size": 0,
+            "deleted": False
         }
         ref = models.Cluster.create(self.session, **data)
         self.assertIsInstance(ref, models.Cluster)
@@ -48,7 +50,9 @@ class ClusterTests(base.TestCase):
             "project_id": UUID1,
             "name": "test",
             "status": "BUILDING",
-            "nic": UUID2
+            "nic": UUID2,
+            "volume_size": 0,
+            "deleted": False
         }
         ref = models.Cluster.create(self.session, **data)
         self.assertIsInstance(ref, models.Cluster)
@@ -89,7 +93,9 @@ class ClusterTests(base.TestCase):
         data = {
             "project_id": UUID1,
             "name": "test",
-            "nic": UUID2
+            "nic": UUID2,
+            "volume_size": 0,
+            "deleted": False
         }
         ref = models.Cluster.create(self.session, **data)
         self.assertIsInstance(ref, models.Cluster)
@@ -112,7 +118,9 @@ class ClusterTests(base.TestCase):
             "project_id": UUID1,
             "name": "test1",
             "status": "BUILDING",
-            "nic": UUID2
+            "nic": UUID2,
+            "volume_size": 0,
+            "deleted": False
         }
         ref1 = models.Cluster.create(self.session, **data)
         self.assertIsInstance(ref1, models.Cluster)
@@ -153,7 +161,9 @@ class NodeRepositoryTests(base.TestCase):
         cluster = {
             "project_id": UUID1,
             "name": "test",
-            "nic": UUID2
+            "nic": UUID2,
+            "volume_size": 0,
+            "deleted": False
         }
 
         cluster_ref = models.Cluster.create(self.session, **cluster)
@@ -161,7 +171,9 @@ class NodeRepositoryTests(base.TestCase):
         node = {
             "flavor": 'foo',
             "instance_id": 'bar',
-            "cluster_id": cluster_ref.id
+            "cluster_id": cluster_ref.id,
+            "volume_size": 0,
+            "deleted": False
         }
 
         node_ref = models.Node.create(self.session, **node)

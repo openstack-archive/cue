@@ -6,7 +6,7 @@
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -20,7 +20,6 @@ import sqlalchemy as sa
 from cue.db import base
 from cue.db import types
 
-
 CLUSTER_STATUSES = (
     'BUILDING',
     'ACTIVE',
@@ -30,13 +29,27 @@ CLUSTER_STATUSES = (
 NODE_STATUSES = CLUSTER_STATUSES
 
 
-class Cluster(base.BASE, base.IdMixin, base.ProjectMixin, base.TimeMixin):
-    __tablename__ = 'clusters'
+class Endpoint(base.BASE):
+    __tablename__ = 'endpoints'
 
-    nic = sa.Column(sa.String(36), nullable=False)
-    name = sa.Column(sa.String(255), nullable=False)
-    status = sa.Column(sa.String(50), sa.Enum(*CLUSTER_STATUSES))
-    sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
+    node_id = sa.Column(types.UUID(), sa.ForeignKey('nodes.id'),
+                        primary_key=True)
+    uri = sa.Column(sa.String(255), nullable=False)
+    type = sa.Column(sa.String(length=255), nullable=False)
+    deleted = sa.Column(sa.Boolean(), nullable=False)
+    sa.Index("endpoints_id_idx", "id", unique=True)
+    sa.Index("endpoints_nodes_id_idx", "node_id", unique=False)
+
+    @classmethod
+    def add(cls, session, node_id, endpoint_type, uri):
+        endpoint = {
+            "node_id": node_id,
+            "uri": uri,
+            "type": endpoint_type,
+            "deleted": False
+        }
+
+        return super(Endpoint, cls).create(session, **endpoint)
 
 
 class Node(base.BASE, base.IdMixin, base.TimeMixin):
@@ -48,22 +61,44 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
     flavor = sa.Column(sa.String(36), nullable=False)
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), sa.Enum(*NODE_STATUSES))
+    volume_size = sa.Column(sa.Integer(), nullable=False)
+    deleted = sa.Column(sa.Boolean(), nullable=False)
     sa.Index("nodes_id_idx", "id", unique=True)
     sa.Index("nodes_cluster_id_idx", "cluster_id", unique=False)
 
+    @classmethod
+    def add(cls, session, cluster_id, flavor, vol_size):
+        node = {
+            "cluster_id": cluster_id,
+            "flavor": flavor,
+            "volume_size": vol_size,
+            "deleted": False,
+            "status": CLUSTER_STATUSES[CLUSTER_STATUSES.index('BUILDING')]
+        }
 
-class EndpointTypes(base.BASE):
-    __tablename__ = 'endpoint_types'
-
-    type = sa.Column(sa.SmallInteger(), primary_key=True, autoincrement=False)
-    description = sa.Column(sa.String(255), nullable=False)
+        return super(Node, cls).create(session, **node)
 
 
-class Endpoint(base.BASE):
-    __tablename__ = 'endpoints'
+class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
+    __tablename__ = 'clusters'
 
-    id = sa.Column(types.UUID(), sa.ForeignKey('nodes.id'), primary_key=True)
-    uri = sa.Column(sa.String(255), nullable=False)
-    type = sa.Column(sa.SmallInteger(),
-                     sa.ForeignKey('endpoint_types.endpoint_type')),
-    sa.Index("endpoints_id_idx", "id", unique=True)
+    project_id = sa.Column(sa.String(36), nullable=False)
+    nic = sa.Column(sa.String(36), nullable=False)
+    name = sa.Column(sa.String(255), nullable=False)
+    status = sa.Column(sa.String(50), sa.Enum(*CLUSTER_STATUSES))
+    volume_size = sa.Column(sa.Integer(), nullable=False)
+    deleted = sa.Column(sa.Boolean(), nullable=False)
+    sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
+
+    @classmethod
+    def add(cls, session, project_id, name, nic, vol_size):
+        cluster = {
+            "project_id": project_id,
+            "name": name,
+            "nic": nic,
+            "volume_size": vol_size,
+            "deleted": False,
+            "status": CLUSTER_STATUSES[CLUSTER_STATUSES.index('BUILDING')]
+        }
+
+        return super(Cluster, cls).create(session, **cluster)
