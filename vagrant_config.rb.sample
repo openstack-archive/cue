@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+# Uncomment $hostname and set it to specify an explicit hostname for the VM
+# $hostname = "dev"
+
+# Setup a host to guest port mapping for the following port
+$forwarded_port = 8795
+
+# Install devstack in the VM
+$install_devstack = false
+
+# Install build dependencies
+$install_build_deps = true
+
+# Set $install_tmate to true to
+$install_tmate = false
+
+# Set the amount of RAM configured for the VM
+$vm_memory = 2048
+
+# Set the number of CPU cores configured for the VM
+$vm_cpus = 2
