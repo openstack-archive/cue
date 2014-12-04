@@ -33,8 +33,8 @@ class CueBase(models.ModelBase):
         return instance
 
     @classmethod
-    def delete(cls, session, **filters):
-        model = session.query(cls).filter_by(**filters).first()
+    def delete(cls, session, id):
+        model = session.query(cls).filter_by(id=id).first()
         if not model:
             raise exception.NotFound
         with session.begin():
@@ -43,7 +43,7 @@ class CueBase(models.ModelBase):
 
     @classmethod
     def delete_batch(self, session, ids=None):
-        [self.delete(session, id=id) for id in ids]
+        [self.delete(session, id) for id in ids]
 
     @classmethod
     def update(cls, session, id, **kwargs):
