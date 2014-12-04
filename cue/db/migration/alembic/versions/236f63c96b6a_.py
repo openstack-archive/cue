@@ -42,7 +42,7 @@ def upgrade():
     sa.Column('project_id', sa.String(length=36), nullable=False),
     sa.Column('nic', sa.String(length=36), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
-    sa.Column('status', sa.String(length=50), nullable=True),
+    sa.Column('status', sa.String(length=50), nullable=False),
     sa.Column('volume_size', sa.Integer(), nullable=False),
     sa.Column('deleted', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id')
@@ -55,7 +55,7 @@ def upgrade():
     sa.Column('cluster_id', types.UUID(), nullable=True),
     sa.Column('flavor', sa.String(length=36), nullable=False),
     sa.Column('instance_id', sa.String(length=36), nullable=True),
-    sa.Column('status', sa.String(length=50), nullable=True),
+    sa.Column('status', sa.String(length=50), nullable=False),
     sa.Column('volume_size', sa.Integer(), nullable=False),
     sa.Column('deleted', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['cluster_id'], ['clusters.id'], ),

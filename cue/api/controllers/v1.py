@@ -88,6 +88,29 @@ class Cluster():
     "Last update of cluster date-time"
 
 
+def extract_cluster_data(db_cluster):
+    cluster = Cluster()
+    cluster.nodes[:] = []
+    cluster.cluster_id = db_cluster.id
+    cluster.name = db_cluster.name
+    cluster.nic = db_cluster.nic
+    cluster.status = db_cluster.status
+    cluster.volume_size = db_cluster.volume_size
+    cluster.created = db_cluster.created_at
+    cluster.updated = db_cluster.updated_at
+    return cluster
+
+
+def extract_node_data(db_node):
+    node = Node()
+    node.node_id = db_node.id
+    node.flavor = db_node.flavor
+    node.status = db_node.status
+    node.created = db_node.created_at
+    node.updated = db_node.updated_at
+    return node
+
+
 class ClusterController(rest.RestController):
     """Manages operations on specific Cluster of nodes."""
 
@@ -97,15 +120,21 @@ class ClusterController(rest.RestController):
     @wsme_pecan.wsexpose(Cluster, status_code=200)
     def get(self):
         """Return this cluster."""
-        cluster = Cluster()
+        db_cluster = dbapi.get_cluster(self.cluster_id)
+        db_cluster_nodes = dbapi.get_cluster_nodes(self.cluster_id)
+
+        cluster = extract_cluster_data(db_cluster)
+
+        for db_node in db_cluster_nodes:
+            node = extract_node_data(db_node)
+            cluster.nodes.append(node)
 
         return cluster
 
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
         """Delete this Cluster."""
-        cluster = Cluster()
-        cluster.cluster_id = self.cluster_id
+        dbapi.delete_cluster(self.cluster_id)
 
 
 class ClustersController(rest.RestController):
@@ -114,7 +143,12 @@ class ClustersController(rest.RestController):
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
         """Return list of Clusters."""
+        db_clusters = dbapi.get_clusters()
         cluster_list = []
+
+        for db_cluster in db_clusters:
+            cluster = extract_cluster_data(db_cluster)
+            cluster_list.append(cluster)
 
         return cluster_list
 

@@ -20,13 +20,13 @@ import sqlalchemy as sa
 from cue.db import base
 from cue.db import types
 
-CLUSTER_STATUSES = (
-    'BUILDING',
-    'ACTIVE',
-    'DELETED',
-    'ERROR',)
 
-NODE_STATUSES = CLUSTER_STATUSES
+class Status():
+    BUILDING = 'BUILDING'
+    ACTIVE = 'ACTIVE'
+    DELETING = 'DELETING'
+    DELETED = 'DELETED'
+    ERROR = 'ERROR'
 
 
 class Endpoint(base.BASE):
@@ -60,7 +60,7 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
         sa.ForeignKey('clusters.id'), nullable=False)
     flavor = sa.Column(sa.String(36), nullable=False)
     instance_id = sa.Column(sa.String(36), nullable=True)
-    status = sa.Column(sa.String(50), sa.Enum(*NODE_STATUSES))
+    status = sa.Column(sa.String(50), nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=False)
     deleted = sa.Column(sa.Boolean(), nullable=False)
     sa.Index("nodes_id_idx", "id", unique=True)
@@ -73,10 +73,15 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
             "flavor": flavor,
             "volume_size": vol_size,
             "deleted": False,
-            "status": CLUSTER_STATUSES[CLUSTER_STATUSES.index('BUILDING')]
+            "status": Status.BUILDING
         }
 
         return super(Node, cls).create(session, **node)
+
+    @classmethod
+    def delete(cls, session, node_id):
+        super(Node, cls).get(session, id=node_id)
+        super(Node, cls).update(session, id=node_id, status=Status.DELETING)
 
 
 class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
@@ -85,7 +90,7 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
     project_id = sa.Column(sa.String(36), nullable=False)
     nic = sa.Column(sa.String(36), nullable=False)
     name = sa.Column(sa.String(255), nullable=False)
-    status = sa.Column(sa.String(50), sa.Enum(*CLUSTER_STATUSES))
+    status = sa.Column(sa.String(50), nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=False)
     deleted = sa.Column(sa.Boolean(), nullable=False)
     sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
@@ -98,7 +103,12 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
             "nic": nic,
             "volume_size": vol_size,
             "deleted": False,
-            "status": CLUSTER_STATUSES[CLUSTER_STATUSES.index('BUILDING')]
+            "status": Status.BUILDING
         }
 
         return super(Cluster, cls).create(session, **cluster)
+
+    @classmethod
+    def delete(cls, session, cluster_id):
+        super(Cluster, cls).get(session, id=cluster_id)
+        super(Cluster, cls).update(session, id=cluster_id, status=Status.DELETING)

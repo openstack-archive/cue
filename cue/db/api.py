@@ -52,6 +52,11 @@ def get_session(autocommit=True, expire_on_commit=False):
                               expire_on_commit=expire_on_commit)
 
 
+def get_clusters():
+    session = get_session()
+    return models.Cluster.get_all(session, deleted=0)
+
+
 def create_cluster(project_id, name, nic, vol_size, flavor, num_of_nodes):
     session = get_session()
 
@@ -63,7 +68,22 @@ def create_cluster(project_id, name, nic, vol_size, flavor, num_of_nodes):
     return cluster_ref
 
 
+def get_cluster(cluster_id):
+    session = get_session()
+    return models.Cluster.get(session, id=cluster_id)
+
+
 def get_cluster_nodes(cluster_id):
     session = get_session()
 
     return models.Node.get_all(session, cluster_id=cluster_id)
+
+
+def delete_cluster(cluster_id):
+    session = get_session()
+
+    cluster_node_ref = models.Node.get_all(session, cluster_id=cluster_id)
+    models.Cluster.delete(session, cluster_id)
+
+    for node in cluster_node_ref:
+        models.Node.delete(session, node.id)
