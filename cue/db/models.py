@@ -80,8 +80,11 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
 
     @classmethod
     def delete(cls, session, node_id):
-        super(Node, cls).get(session, id=node_id)
         super(Node, cls).update(session, id=node_id, status=Status.DELETING)
+
+    @classmethod
+    def delete_batch(self, session, node_ids=None):
+        [self.delete(session, node_id) for node_id in node_ids]
 
 
 class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
@@ -110,5 +113,9 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
 
     @classmethod
     def delete(cls, session, cluster_id):
-        super(Cluster, cls).get(session, id=cluster_id)
-        super(Cluster, cls).update(session, id=cluster_id, status=Status.DELETING)
+        super(Cluster, cls).update(session, id=cluster_id,
+                                   status=Status.DELETING)
+
+    @classmethod
+    def delete_batch(self, session, cluster_ids=None):
+        [self.delete(session, cluster_id) for cluster_id in cluster_ids]
