@@ -36,6 +36,8 @@ import six
 from cue.db import api as db_api
 from cue.db import base as db_base
 from cue.manage import database
+from cue.openstack.common import context as cue_context
+
 
 test_opts = [
     cfg.StrOpt('sqlite_clean_db',
@@ -112,9 +114,9 @@ class TestCase(base.BaseTestCase):
     def setUp(self):
         """Run before each test method to initialize test environment."""
         super(TestCase, self).setUp()
+        self.context = cue_context.get_admin_context()
 
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
-
         self.flags(state_path='/tmp')
         # NOTE(vish): We need a better method for creating fixtures for tests
         #             now that we have some required db setup for the system
@@ -142,6 +144,9 @@ class TestCase(base.BaseTestCase):
         self.injected = []
         # This will be cleaned up by the NestedTempfile fixture
         # CONF.set_override('lock_path', tempfile.mkdtemp())
+        #self.policy = self.useFixture(policy_fixture.PolicyFixture())
+
+        # self.CONF.register_opt('config_dir')
 
         self.session = db_api.get_session()
 
@@ -168,3 +173,19 @@ class TestCase(base.BaseTestCase):
         """Override flag variables for a test."""
         for k, v in six.iteritems(kw):
             CONF.set_override(k, v, group)
+
+    def path_get(self, project_file=None):
+        """Get the absolute path to a file. Used for testing the API.
+
+        :param project_file: File whose path to return. Default: None.
+        :returns: path to the specified file, or path to project root.
+        """
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                            '..',
+                                            '..',
+                                            )
+                               )
+        if project_file:
+            return os.path.join(root, project_file)
+        else:
+            return root
