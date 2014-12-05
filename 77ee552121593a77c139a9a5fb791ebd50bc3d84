@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Workflow+1: Vipul Sabhaya <vipuls@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 05 Dec 2014 01:17:32 +0000
+Reviewed-on: https://review.openstack.org/138955
+Project: stackforge/cue
+Branch: refs/heads/master
