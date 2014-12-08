@@ -22,7 +22,6 @@ from cue.api import acl
 from cue.api import config
 from cue.api import hooks
 from cue.api import middleware
-from cue.common import policy
 
 auth_opts = [
     cfg.StrOpt('auth_strategy',
@@ -41,8 +40,6 @@ def get_pecan_config():
 
 
 def setup_app(pecan_config=None, extra_hooks=None):
-    policy.init()
-
     app_hooks = [hooks.ConfigHook(),
                  #hooks.DBHook(),
                  hooks.ContextHook(pecan_config.app.acl_public_routes),
