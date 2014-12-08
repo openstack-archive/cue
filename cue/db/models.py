@@ -80,7 +80,6 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
 
     @classmethod
     def delete(cls, session, node_id):
-        super(Node, cls).get(session, id=node_id)
         super(Node, cls).update(session, id=node_id, status=Status.DELETING)
 
 
@@ -110,5 +109,5 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
 
     @classmethod
     def delete(cls, session, cluster_id):
-        super(Cluster, cls).get(session, id=cluster_id)
-        super(Cluster, cls).update(session, id=cluster_id, status=Status.DELETING)
+        super(Cluster, cls).update(session, id=cluster_id,
+                                   status=Status.DELETING)

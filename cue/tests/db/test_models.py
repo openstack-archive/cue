@@ -31,7 +31,7 @@ class ClusterTests(base.TestCase):
         data = {
             "project_id": UUID1,
             "name": "test",
-            "status": "BUILDING",
+            "status": models.Status.BUILDING,
             "nic": UUID2,
             "volume_size": 0,
             "deleted": False
@@ -50,7 +50,7 @@ class ClusterTests(base.TestCase):
         data = {
             "project_id": UUID1,
             "name": "test",
-            "status": "BUILDING",
+            "status": models.Status.BUILDING,
             "nic": UUID2,
             "volume_size": 0,
             "deleted": False
@@ -77,19 +77,6 @@ class ClusterTests(base.TestCase):
                                                                "datetime was "
                                                                "not updated.")
 
-    def test_delete_invalid_id(self):
-        """Verifies deleting a non-existing record returns Not Found
-
-        Exception.
-        """
-
-        try:
-            models.Cluster.delete(self.session, str(uuid.uuid4()))
-        except exception.NotFound as e:
-            print("Not Found exception expected: ", e)
-        else:
-            self.fail('Deleting an non-existing cluster did no work')
-
     def test_delete(self):
         """Verifies deleting existing record is removed from DB."""
 
@@ -98,7 +85,7 @@ class ClusterTests(base.TestCase):
             "name": "test",
             "nic": UUID2,
             "volume_size": 0,
-            "status": "BUILDING",
+            "status": models.Status.BUILDING,
             "deleted": False
         }
         ref = models.Cluster.create(self.session, **data)
@@ -116,13 +103,13 @@ class ClusterTests(base.TestCase):
             if get_ref.status != models.Status.DELETING:
                 self.fail('Record status was not update to DELETING')
 
-    def test_get_batch(self):
+    def test_get_delete_batch(self):
         """Verifies delete batch records from DB."""
 
         data = {
             "project_id": UUID1,
             "name": "test1",
-            "status": "BUILDING",
+            "status": models.Status.BUILDING,
             "nic": UUID2,
             "volume_size": 0,
             "deleted": False
@@ -142,11 +129,21 @@ class ClusterTests(base.TestCase):
         self.session = api.get_session()
 
         clusters_before = models.Cluster.get_all(self.session,
-                                                 status="BUILDING")
+                                                 status=models.Status.BUILDING)
+
         ids = [ref1.id, ref2.id, ref3.id, ref4.id]
         self.assertEqual(len(ids), len(clusters_before), "Not able to get "
-                                                            "all created "
-                                                            "clusters")
+                                                         "all created "
+                                                         "clusters")
+
+        models.Cluster.delete_batch(self.session, ids)
+        clusters_after = models.Cluster.get_all(self.session,
+                                                status=models.Status.DELETING)
+
+        self.assertEqual(len(ids), len(clusters_after), "Not all cluster "
+                                                        "record's statuses "
+                                                        "were marked as "
+                                                        "deleted")
 
 
 class NodeRepositoryTests(base.TestCase):
