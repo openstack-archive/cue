@@ -35,10 +35,14 @@ class Version(base.APIBase):
     links = [link.Link]
     "A Link that point to a specific version of the API"
 
+    status = wtypes.text
+    "The status of this version"
+
     @classmethod
-    def convert(self, id):
+    def convert(self, id, status):
         version = Version()
         version.id = id
+        version.status = status
         version.links = [link.Link.make_link('self', pecan.request.host_url,
                                              id, '', bookmark=True)]
         return version
@@ -64,8 +68,8 @@ class Root(base.APIBase):
         root.name = "OpenStack Cue API"
         root.description = ("Cue is an OpenStack project which aims to "
                             "provision Messaging Brokers.")
-        root.versions = [Version.convert('v1')]
-        root.default_version = Version.convert('v1')
+        root.versions = [Version.convert('v1', 'STABLE')]
+        root.default_version = Version.convert('v1', 'STABLE')
         return root
 
 
