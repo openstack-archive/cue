@@ -26,6 +26,10 @@ class APIBase(wtypes.Base):
     updated_at = wsme.wsattr(datetime.datetime, readonly=True)
     "The time in UTC at which the object is updated"
 
+    @classmethod
+    def from_db_model(cls, m):
+        return cls(**(m.as_dict()))
+
     def as_dict(self):
         """Render this object as a dict of its fields."""
         return dict((k, getattr(self, k))
