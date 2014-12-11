@@ -23,7 +23,7 @@ from webob import exc
 from cue.common import context
 from cue.common import policy
 #from cue.conductor import rpcapi
-#from cue.db import api as dbapi
+from cue.db import api as dbapi
 
 
 class ConfigHook(hooks.PecanHook):
@@ -33,11 +33,11 @@ class ConfigHook(hooks.PecanHook):
         state.request.cfg = cfg.CONF
 
 
-# class DBHook(hooks.PecanHook):
-#    """Attach the dbapi object to the request so controllers can get to it."""
-#
-#     def before(self, state):
-#         state.request.dbapi = dbapi.get_instance()
+class DBHook(hooks.PecanHook):
+    """Attach the dbapi object to the request so controllers can get to it."""
+
+    def before(self, state):
+        state.request.dbapi = dbapi.get_instance()
 
 
 class ContextHook(hooks.PecanHook):

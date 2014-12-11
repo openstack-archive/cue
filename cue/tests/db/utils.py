@@ -14,10 +14,9 @@
 #    under the License.
 """Cue test utilities."""
 
-
 from oslo.utils import timeutils
 
-from cue.db import api as db_api
+from cue import objects
 
 
 def get_test_cluster(**kw):
@@ -44,6 +43,31 @@ def create_test_cluster(**kw):
     """
     cluster = get_test_cluster(**kw)
 
-    return db_api.create_cluster(cluster['project_id'], cluster['name'],
-                                 cluster['nic'], cluster['volume_size'],
-                                 "flavor1", 1)
+    """def create_cluster(self, cluster_values, flavor, number_of_nodes):
+        Creates a new cluster.
+
+        :param cluster_values: Dictionary of several required items.
+
+               ::
+
+               {
+                'project_id': obj_utils.str_or_none,
+                'name': obj_utils.str_or_none,
+                'nic': obj_utils.str_or_none,
+                'volume_size': obj_utils.int_or_none,
+               }"""
+
+    cluster_parameters = {
+        'name': cluster['name'],
+        'nic': cluster['nic'],
+        'volume_size': cluster['volume_size'],
+    }
+
+    new_cluster = objects.Cluster(**cluster_parameters)
+
+    project_id = cluster['project_id']
+    number_of_nodes = 1
+
+    new_cluster.create_cluster(project_id, "flavor1", number_of_nodes)
+
+    return new_cluster

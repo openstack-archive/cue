@@ -13,15 +13,16 @@
 #    under the License.
 #
 # Copied from Octavia
+
+from cue.common import exception
+from cue.db.sqlalchemy import types
+
 import uuid
 
 from oslo.db.sqlalchemy import models
 from oslo.utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
-
-from cue.common import exception
-from cue.db import types
 
 
 class CueBase(models.ModelBase):
@@ -62,6 +63,12 @@ class CueBase(models.ModelBase):
     def get_all(cls, session, **filters):
         data = session.query(cls).filter_by(**filters).all()
         return data
+
+    def as_dict(self):
+        d = {}
+        for c in self.__table__.columns:
+            d[c.name] = self[c.name]
+        return d
 
 
 class LookupTableMixin(object):

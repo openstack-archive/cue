@@ -1,89 +1,107 @@
-#    Copyright 2011 VMware, Inc.
-#    All Rights Reserved.
+# Copyright 2014 Hewlett-Packard Development Company, L.P.
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# Authors: Davide Agnello <davide.agnello@hp.com>
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+# http://www.apache.org/licenses/LICENSE-2.0
 #
-# Copied from Neutron
-from cue.db import models
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# Copyright [2014] Hewlett-Packard Development Company, L.P.
+# limitations under the License.
+"""
+Base classes for storage engines
+"""
+
+import abc
 
 from oslo.config import cfg
-from oslo.db import options as db_options
-from oslo.db.sqlalchemy import session
+from oslo.db import api as db_api
+import six
 
-CONF = cfg.CONF
-
-CONF.register_opt(cfg.StrOpt('sqlite_db', default='cue.sqlite'))
-
-db_options.set_defaults(
-    cfg.CONF, connection='sqlite:///$state_path/$sqlite_db')
-
-_FACADE = None
+_BACKEND_MAPPING = {'sqlalchemy': 'cue.db.sqlalchemy.api'}
+IMPL = db_api.DBAPI.from_config(cfg.CONF, backend_mapping=_BACKEND_MAPPING,
+                                lazy=True)
 
 
-def _create_facade_lazily():
-    global _FACADE
-
-    if _FACADE is None:
-        _FACADE = session.EngineFacade.from_config(cfg.CONF, sqlite_fk=True)
-
-    return _FACADE
+def get_instance():
+    """Return a DB API instance."""
+    return IMPL
 
 
-def get_engine():
-    """Helper method to grab engine."""
-    facade = _create_facade_lazily()
-    return facade.get_engine()
+@six.add_metaclass(abc.ABCMeta)
+class Connection(object):
+    """Base class for storage system connections."""
 
+    @abc.abstractmethod
+    def __init__(self):
+        """Constructor."""
 
-def get_session(autocommit=True, expire_on_commit=False):
-    """Helper method to grab session."""
-    facade = _create_facade_lazily()
-    return facade.get_session(autocommit=autocommit,
-                              expire_on_commit=expire_on_commit)
+    @abc.abstractmethod
+    def get_clusters(self, project_id):
+        """Returns a list of Cluster objects for specified project_id.
 
+        :param project_id: UUID of a project/tenant.
+        :returns: a list of :class:'Cluster' object.
 
-def get_clusters():
-    session = get_session()
-    return models.Cluster.get_all(session, deleted=0)
+        """
 
+    @abc.abstractmethod
+    def create_cluster(self, cluster_values, flavor, number_of_nodes):
+        """Creates a new cluster.
 
-def create_cluster(project_id, name, nic, vol_size, flavor, num_of_nodes):
-    session = get_session()
+        :param cluster_values: Dictionary of several required items.
 
-    cluster_ref = models.Cluster.add(session, project_id, name, nic, vol_size)
+               ::
 
-    for i in range(num_of_nodes):
-        models.Node.add(session, cluster_ref.id, flavor, vol_size)
+               {
+                'project_id': obj_utils.str_or_none,
+                'name': obj_utils.str_or_none,
+                'nic': obj_utils.str_or_none,
+                'volume_size': obj_utils.int_or_none,
+               }
+        :param flavor: The required flavor for nodes in this cluster.
+        :param number_of_nodes: The number of nodes in this cluster.
 
-    return cluster_ref
+        """
 
+    @abc.abstractmethod
+    def get_cluster(self, cluster_id):
+        """Returns a Cluster objects for specified cluster_id.
 
-def get_cluster(cluster_id):
-    session = get_session()
-    return models.Cluster.get(session, id=cluster_id)
+        :param cluster_id: UUID of a cluster.
+        :returns: a :class:'Cluster' object.
 
+        """
 
-def get_cluster_nodes(cluster_id):
-    session = get_session()
+    @abc.abstractmethod
+    def get_nodes(self, cluster_id):
+        """Returns a list of Node objects for specified cluster.
 
-    return models.Node.get_all(session, cluster_id=cluster_id)
+        :param cluster_id: UUID of the cluster.
+        :returns: a list of :class:'Node' object.
 
+        """
 
-def delete_cluster(cluster_id):
-    session = get_session()
+    @abc.abstractmethod
+    def get_endpoints(self, node_id):
+        """Returns a list of Endpoint objects for specified node.
 
-    cluster_node_ref = models.Node.get_all(session, cluster_id=cluster_id)
-    models.Cluster.delete(session, cluster_id)
+        :param node_id: UUID of the node.
+        :returns: a list of :class:'Endpoint' object.
 
-    for node in cluster_node_ref:
-        models.Node.delete(session, node.id)
+        """
+
+    @abc.abstractmethod
+    def mark_as_delete_cluster(self, cluster_id):
+        """Marks specified cluster to indicate deletion.
+
+        :param cluster_id: UUID of a cluster.
+
+        """

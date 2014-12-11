@@ -18,9 +18,9 @@
 
 """Version 1 of the Cue API
 """
-from cue.db import api as dbapi
+from cue.api.controllers import base
+from cue import objects
 
-import datetime
 import uuid
 
 import pecan
@@ -30,18 +30,40 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 
-class EndPoint():
+class EndPoint(base.APIBase):
+    """Representation of an End point."""
+
+    def __init__(self, **kwargs):
+        self.fields = []
+        endpoint_object_fields = list(objects.Endpoint.fields)
+        for k in endpoint_object_fields:
+            # only add fields we expose in the api
+            if hasattr(self, k):
+                self.fields.append(k)
+                setattr(self, k, kwargs.get(k, wtypes.Unset))
+
     type = wtypes.text
     "type of endpoint"
 
-    value = wtypes.text
+    uri = wtypes.text
     "URL to endpoint"
 
 
-class Node():
+class Node(base.APIBase):
     """Representation of a Node."""
 
-    node_id = wtypes.text
+    def __init__(self, **kwargs):
+        self.fields = []
+        node_object_fields = list(objects.Node.fields)
+        # Adding endpoints since it is an api-only attribute.
+        self.fields.append('end_points')
+        for k in node_object_fields:
+            # only add fields we expose in the api
+            if hasattr(self, k):
+                self.fields.append(k)
+                setattr(self, k, kwargs.get(k, wtypes.Unset))
+
+    id = wtypes.text
     "UUID of node"
 
     flavor = wsme.wsattr(wtypes.text, mandatory=True)
@@ -53,17 +75,22 @@ class Node():
     end_points = wtypes.wsattr([EndPoint], default=[])
     "List of endpoints on accessing node"
 
-    created = datetime.datetime
-    "Creation of node date-time"
 
-    updated = datetime.datetime
-    "Last update of node date-time"
-
-
-class Cluster():
+class Cluster(base.APIBase):
     """Representation of a cluster."""
 
-    cluster_id = wtypes.text
+    def __init__(self, **kwargs):
+        self.fields = []
+        cluster_object_fields = list(objects.Cluster.fields)
+        # Adding nodes since it is an api-only attribute.
+        self.fields.append('nodes')
+        for k in cluster_object_fields:
+            # only add fields we expose in the api
+            if hasattr(self, k):
+                self.fields.append(k)
+                setattr(self, k, kwargs.get(k, wtypes.Unset))
+
+    id = wtypes.text
     "UUID of cluster"
 
     nic = wtypes.wsattr(wtypes.text, mandatory=True)
@@ -81,60 +108,50 @@ class Cluster():
     volume_size = wtypes.IntegerType()
     "Volume size for nodes in cluster"
 
-    created = datetime.datetime
-    "Creation of cluster date-time"
 
-    updated = datetime.datetime
-    "Last update of cluster date-time"
+def get_complete_cluster(cluster_id):
+    """Helper to retrieve the api-compatible full structure of a cluster."""
 
+    cluster_obj = objects.Cluster.get_cluster(cluster_id)
 
-def extract_cluster_data(db_cluster):
-    cluster = Cluster()
-    cluster.nodes[:] = []
-    cluster.cluster_id = db_cluster.id
-    cluster.name = db_cluster.name
-    cluster.nic = db_cluster.nic
-    cluster.status = db_cluster.status
-    cluster.volume_size = db_cluster.volume_size
-    cluster.created = db_cluster.created_at
-    cluster.updated = db_cluster.updated_at
+    # construct api cluster object
+    cluster = Cluster(**cluster_obj.as_dict())
+
+    cluster_nodes = objects.Node.get_nodes(cluster_id)
+
+    # construct api node objects
+    cluster.nodes = [Node(**obj_node.as_dict()) for obj_node in
+                     cluster_nodes]
+
+    for node in cluster.nodes:
+        # extract endpoints from node
+        node_endpoints = objects.Endpoint.get_endpoints(node.id)
+
+        # construct api endpoint objects
+        node.end_points = [EndPoint(**obj_endpoint.as_dict()) for
+                           obj_endpoint in node_endpoints]
+
     return cluster
-
-
-def extract_node_data(db_node):
-    node = Node()
-    node.node_id = db_node.id
-    node.flavor = db_node.flavor
-    node.status = db_node.status
-    node.created = db_node.created_at
-    node.updated = db_node.updated_at
-    return node
 
 
 class ClusterController(rest.RestController):
     """Manages operations on specific Cluster of nodes."""
 
     def __init__(self, cluster_id):
-        self.cluster_id = cluster_id
+        self.id = cluster_id
 
     @wsme_pecan.wsexpose(Cluster, status_code=200)
     def get(self):
         """Return this cluster."""
-        db_cluster = dbapi.get_cluster(self.cluster_id)
-        db_cluster_nodes = dbapi.get_cluster_nodes(self.cluster_id)
 
-        cluster = extract_cluster_data(db_cluster)
-
-        for db_node in db_cluster_nodes:
-            node = extract_node_data(db_node)
-            cluster.nodes.append(node)
+        cluster = get_complete_cluster(self.id)
 
         return cluster
 
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
         """Delete this Cluster."""
-        dbapi.delete_cluster(self.cluster_id)
+        objects.Cluster.mark_as_delete_cluster(self.id)
 
 
 class ClustersController(rest.RestController):
@@ -143,12 +160,10 @@ class ClustersController(rest.RestController):
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
         """Return list of Clusters."""
-        db_clusters = dbapi.get_clusters()
-        cluster_list = []
-
-        for db_cluster in db_clusters:
-            cluster = extract_cluster_data(db_cluster)
-            cluster_list.append(cluster)
+        # TODO(dagnello): update project_id accordingly when enabled
+        clusters = objects.Cluster.get_clusters(project_id=0)
+        cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
+                        clusters]
 
         return cluster_list
 
@@ -159,31 +174,25 @@ class ClustersController(rest.RestController):
         :param data: cluster parameters within the request body.
         """
 
+        # validate user parameters
         cluster_flavor = data.nodes[0].flavor
         for node in data.nodes:
-            # nodes of different flavors in same cluster are not supported
             if cluster_flavor != node.flavor:
                 pecan.abort(400)
 
+        # create new cluster object with required data from user
+        new_cluster = objects.Cluster(**data.as_dict())
+
         # TODO(dagnello): project_id will have to be extracted from HTTP header
-        db_cluster = dbapi.create_cluster(str(uuid.uuid1()), data.name,
-                                          data.nic, data.volume_size,
-                                          cluster_flavor, len(data.nodes))
-        db_cluster_nodes = dbapi.get_cluster_nodes(db_cluster.id)
+        project_id = unicode(uuid.uuid1())
+        number_of_nodes = len(data.nodes)
 
-        data.cluster_id = db_cluster.id
-        data.status = db_cluster.status
-        data.created = db_cluster.created_at
-        data.updated = db_cluster.updated_at
+        # create new cluster with node related data from user
+        new_cluster.create_cluster(project_id, cluster_flavor, number_of_nodes)
 
-        for node in data.nodes:
-            db_node = db_cluster_nodes.pop()
-            node.node_id = db_node.id
-            node.status = db_node.status
-            node.created = db_node.created_at
-            node.updated = db_node.updated_at
+        cluster = get_complete_cluster(new_cluster.id)
 
-        return data
+        return cluster
 
     @pecan.expose()
     def _lookup(self, cluster_id, *remainder):

@@ -45,5 +45,5 @@ class TestListClusters(api_base.FunctionalTest):
         cluster = dbutils.create_test_cluster(name=self.cluster_name)
         data = self.get_json('/clusters')
 
-        self.assertEqual(cluster.id, data[0]["cluster_id"])
+        self.assertEqual(cluster.id, data[0]["id"])
         self.assertEqual(self.cluster_name, data[0]["name"])

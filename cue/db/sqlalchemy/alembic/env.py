@@ -13,13 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from logging import config as log_config
+
+from cue.db.sqlalchemy import api
+from cue.db.sqlalchemy import base
 
 from alembic import context
 
-from cue.db import api
-from cue.db import base
-from cue.db import models  # noqa
+from logging import config as log_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
