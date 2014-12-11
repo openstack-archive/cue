@@ -14,11 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from cue.db.sqlalchemy import base
+from cue.db.sqlalchemy import types
 
 import sqlalchemy as sa
-
-from cue.db import base
-from cue.db import types
 
 
 class Status():
@@ -29,7 +28,7 @@ class Status():
     ERROR = 'ERROR'
 
 
-class Endpoint(base.BASE):
+class Endpoint(base.BASE, base.IdMixin):
     __tablename__ = 'endpoints'
 
     node_id = sa.Column(types.UUID(), sa.ForeignKey('nodes.id'),

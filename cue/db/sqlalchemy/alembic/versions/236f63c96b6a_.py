@@ -23,13 +23,13 @@ Create Date: 2014-11-16 12:24:50.885039
 """
 
 # revision identifiers, used by Alembic.
+from cue.db.sqlalchemy import types
+
 revision = '236f63c96b6a'
 down_revision = None
 
 from alembic import op
 import sqlalchemy as sa
-
-from cue.db import types
 
 
 def upgrade():

@@ -21,9 +21,13 @@ inline callbacks.
 
 """
 
+from cue.db.sqlalchemy import api as db_api
+from cue.db.sqlalchemy import base as db_base
+from cue.manage import database
+from cue.openstack.common import context as cue_context
+
 import os
 import shutil
-#import tempfile
 
 import fixtures
 import mock
@@ -32,11 +36,6 @@ from oslo.config import fixture as cfg_fixture
 from oslo.utils import timeutils
 from oslotest import base
 import six
-
-from cue.db import api as db_api
-from cue.db import base as db_base
-from cue.manage import database
-from cue.openstack.common import context as cue_context
 
 
 test_opts = [
