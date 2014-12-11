@@ -33,9 +33,9 @@ cfg.CONF.import_opt('connection', 'cue.db.api',
 
 def get_manager():
     alembic_path = os.path.join(os.path.dirname(__file__),
-                                '..', 'db', 'migration', 'alembic.ini')
+                                '..', 'db', 'sqlalchemy', 'alembic.ini')
     migrate_path = os.path.join(os.path.dirname(__file__),
-                                '..', 'db', 'migration', 'alembic')
+                                '..', 'db', 'sqlalchemy', 'alembic')
     migration_config = {'alembic_ini_path': alembic_path,
                         'alembic_repo_path': migrate_path,
                         'db_url': CONF.database.connection}

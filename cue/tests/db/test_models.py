@@ -16,9 +16,10 @@
 import uuid
 
 from cue.common import exception
-from cue.db import api
-from cue.db import models
+from cue.db.sqlalchemy import api
+from cue.db.sqlalchemy import models
 from cue.tests import base
+
 
 UUID1 = str(uuid.uuid4())
 UUID2 = str(uuid.uuid4())
