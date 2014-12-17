@@ -112,7 +112,7 @@ class Cluster(base.APIBase):
 def get_complete_cluster(cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
 
-    cluster_obj = objects.Cluster.get_cluster(cluster_id)
+    cluster_obj = objects.Cluster.get_cluster_by_id(cluster_id)
 
     # construct api cluster object
     cluster = Cluster(**cluster_obj.as_dict())
@@ -151,7 +151,7 @@ class ClusterController(rest.RestController):
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
         """Delete this Cluster."""
-        objects.Cluster.mark_as_delete_cluster(self.id)
+        objects.Cluster.mark_cluster_as_delete(self.id)
 
 
 class ClustersController(rest.RestController):

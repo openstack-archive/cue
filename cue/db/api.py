@@ -72,7 +72,7 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_cluster(self, cluster_id):
+    def get_cluster_by_id(self, cluster_id):
         """Returns a Cluster objects for specified cluster_id.
 
         :param cluster_id: UUID of a cluster.
@@ -81,7 +81,7 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_nodes(self, cluster_id):
+    def get_nodes_in_cluster(self, cluster_id):
         """Returns a list of Node objects for specified cluster.
 
         :param cluster_id: UUID of the cluster.
@@ -90,7 +90,7 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_endpoints(self, node_id):
+    def get_endpoints_in_node(self, node_id):
         """Returns a list of Endpoint objects for specified node.
 
         :param node_id: UUID of the node.
@@ -99,7 +99,7 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def mark_as_delete_cluster(self, cluster_id):
+    def mark_cluster_as_delete(self, cluster_id):
         """Marks specified cluster to indicate deletion.
 
         :param cluster_id: UUID of a cluster.
