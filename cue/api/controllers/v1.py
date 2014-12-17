@@ -49,33 +49,6 @@ class EndPoint(base.APIBase):
     "URL to endpoint"
 
 
-class Node(base.APIBase):
-    """Representation of a Node."""
-
-    def __init__(self, **kwargs):
-        self.fields = []
-        node_object_fields = list(objects.Node.fields)
-        # Adding endpoints since it is an api-only attribute.
-        self.fields.append('end_points')
-        for k in node_object_fields:
-            # only add fields we expose in the api
-            if hasattr(self, k):
-                self.fields.append(k)
-                setattr(self, k, kwargs.get(k, wtypes.Unset))
-
-    id = wtypes.text
-    "UUID of node"
-
-    flavor = wsme.wsattr(wtypes.text, mandatory=True)
-    "Flavor of cluster"
-
-    status = wtypes.text
-    "Current status of node"
-
-    end_points = wtypes.wsattr([EndPoint], default=[])
-    "List of endpoints on accessing node"
-
-
 class Cluster(base.APIBase):
     """Representation of a cluster."""
 
@@ -93,11 +66,8 @@ class Cluster(base.APIBase):
     id = wtypes.text
     "UUID of cluster"
 
-    nic = wtypes.wsattr(wtypes.text, mandatory=True)
+    network_id = wtypes.wsattr(wtypes.text, mandatory=True)
     "NIC of Neutron network"
-
-    nodes = wtypes.wsattr([Node], default=[])
-    "List of nodes of cluster"
 
     name = wsme.wsattr(wtypes.text, mandatory=True)
     "Name of cluster"
@@ -105,31 +75,36 @@ class Cluster(base.APIBase):
     status = wtypes.text
     "Current status of cluster"
 
+    flavor = wsme.wsattr(wtypes.text, mandatory=True)
+    "Flavor of cluster"
+
+    size = wtypes.IntegerType()
+    "Number of nodes in cluster"
+
     volume_size = wtypes.IntegerType()
     "Volume size for nodes in cluster"
+
+    end_points = wtypes.wsattr([EndPoint], default=[])
+    "List of endpoints on accessing node"
 
 
 def get_complete_cluster(cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
 
-    cluster_obj = objects.Cluster.get_cluster(cluster_id)
+    cluster_obj = objects.Cluster.get_cluster_by_id(cluster_id)
 
     # construct api cluster object
     cluster = Cluster(**cluster_obj.as_dict())
 
     cluster_nodes = objects.Node.get_nodes(cluster_id)
 
-    # construct api node objects
-    cluster.nodes = [Node(**obj_node.as_dict()) for obj_node in
-                     cluster_nodes]
-
-    for node in cluster.nodes:
+    for node in cluster_nodes:
         # extract endpoints from node
         node_endpoints = objects.Endpoint.get_endpoints(node.id)
 
         # construct api endpoint objects
-        node.end_points = [EndPoint(**obj_endpoint.as_dict()) for
-                           obj_endpoint in node_endpoints]
+        cluster.end_points = [EndPoint(**obj_endpoint.as_dict()) for
+                              obj_endpoint in node_endpoints]
 
     return cluster
 
@@ -151,7 +126,7 @@ class ClusterController(rest.RestController):
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
         """Delete this Cluster."""
-        objects.Cluster.mark_as_delete_cluster(self.id)
+        objects.Cluster.mark_cluster_as_delete(self.id)
 
 
 class ClustersController(rest.RestController):
@@ -174,21 +149,14 @@ class ClustersController(rest.RestController):
         :param data: cluster parameters within the request body.
         """
 
-        # validate user parameters
-        cluster_flavor = data.nodes[0].flavor
-        for node in data.nodes:
-            if cluster_flavor != node.flavor:
-                pecan.abort(400)
-
         # create new cluster object with required data from user
         new_cluster = objects.Cluster(**data.as_dict())
 
         # TODO(dagnello): project_id will have to be extracted from HTTP header
         project_id = unicode(uuid.uuid1())
-        number_of_nodes = len(data.nodes)
 
         # create new cluster with node related data from user
-        new_cluster.create_cluster(project_id, cluster_flavor, number_of_nodes)
+        new_cluster.create_cluster(project_id)
 
         cluster = get_complete_cluster(new_cluster.id)
 
