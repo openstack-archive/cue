@@ -61,7 +61,7 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=False)
-    deleted = sa.Column(sa.Boolean(), nullable=False)
+    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
     sa.Index("nodes_id_idx", "id", unique=True)
     sa.Index("nodes_cluster_id_idx", "cluster_id", unique=False)
 
@@ -90,12 +90,13 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
     name = sa.Column(sa.String(255), nullable=False)
     status = sa.Column(sa.String(50), nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=False)
-    deleted = sa.Column(sa.Boolean(), nullable=False)
+    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
     sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
 
     @classmethod
-    def add(cls, session, project_id, name, nic, vol_size):
+    def add(cls, session, cluster_id, project_id, name, nic, vol_size):
         cluster = {
+            "id": cluster_id,
             "project_id": project_id,
             "name": name,
             "nic": nic,

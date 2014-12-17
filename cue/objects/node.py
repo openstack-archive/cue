@@ -51,6 +51,6 @@ class Node(base.CueObject):
         :returns: a list of :class:'Node' object.
 
         """
-        db_nodes = cls.dbapi.get_nodes(cluster_id)
+        db_nodes = cls.dbapi.get_nodes_in_cluster(cluster_id)
 
         return [Node._from_db_object(Node(), obj) for obj in db_nodes]

@@ -15,164 +15,120 @@
 # Copied from Octavia
 import uuid
 
-from cue.common import exception
-from cue.db.sqlalchemy import api
 from cue.db.sqlalchemy import models
 from cue.tests import base
+
+from oslo.utils import timeutils
 
 
 UUID1 = str(uuid.uuid4())
 UUID2 = str(uuid.uuid4())
+UUID3 = str(uuid.uuid4())
 
 
-class ClusterTests(base.TestCase):
-    def test_create(self):
+class ModelsTests(base.TestCase):
+
+    def test_create_cluster_model(self):
         """Verifies a new cluster record is created in DB."""
 
-        data = {
-            "project_id": UUID1,
-            "name": "test",
+        cluster_values = {
+            "id": UUID1,
+            "project_id": UUID2,
+            "name": "Cluster test",
             "status": models.Status.BUILDING,
-            "nic": UUID2,
-            "volume_size": 0,
-            "deleted": False
+            "nic": UUID3,
+            "volume_size": 250,
+            "deleted": False,
+            "created_at": timeutils.utcnow(),
+            "updated_at": timeutils.utcnow(),
+            "deleted_at": timeutils.utcnow(),
         }
-        ref = models.Cluster.create(self.session, **data)
-        self.assertIsInstance(ref, models.Cluster)
 
-        self.session = api.get_session()
-        get_ref = models.Cluster.get(self.session, id=ref.id)
-        self.assertEqual(ref.id, get_ref.id, "Database object does not match "
-                                             "submitted object")
+        cluster = models.Cluster()
+        cluster.update(cluster_values)
 
-    def test_update(self):
-        """Verifies update record function."""
+        self.assertEqual(cluster_values["id"], cluster.id, "Invalid ID value")
+        self.assertEqual(cluster_values["project_id"], cluster.project_id,
+                         "Invalid cluster_id value")
+        self.assertEqual(cluster_values["name"], cluster.name, "Invalid name"
+                                                               "value")
+        self.assertEqual(cluster_values["status"], cluster.status, "Invalid "
+                                                                   "status"
+                                                                   "value")
+        self.assertEqual(cluster_values["nic"], cluster.nic, "Invalid nic "
+                                                             "value")
+        self.assertEqual(cluster_values["volume_size"], cluster.volume_size,
+                         "Invalid volume_size value")
+        self.assertEqual(cluster_values["deleted"], cluster.deleted,
+                         "Invalid deleted value")
+        self.assertEqual(cluster_values["created_at"], cluster.created_at,
+                         "Invalid created_at value")
+        self.assertEqual(cluster_values["updated_at"], cluster.updated_at,
+                         "Invalid updated_at value")
+        self.assertEqual(cluster_values["deleted_at"], cluster.deleted_at,
+                         "Invalid deleted_at value")
 
-        data = {
-            "project_id": UUID1,
-            "name": "test",
+    def test_create_node_model(self):
+        """Verifies a new cluster record is created in DB."""
+
+        node_values = {
+            "id": UUID1,
+            "cluster_id": UUID2,
+            "instance_id": "NovaInstanceId",
+            "flavor": "Large",
             "status": models.Status.BUILDING,
-            "nic": UUID2,
-            "volume_size": 0,
-            "deleted": False
-        }
-        ref = models.Cluster.create(self.session, **data)
-        self.assertIsInstance(ref, models.Cluster)
-
-        self.session = api.get_session()
-        data2 = {
-            "name": "NewName",
-            "status": "ACTIVE"
-        }
-        models.Cluster.update(self.session, ref.id, **data2)
-
-        self.session = api.get_session()
-        get_ref = models.Cluster.get(self.session, id=ref.id)
-        self.assertEqual(str(ref.name), 'test', "Original cluster name was"
-                                                "unexpectedly changed")
-        self.assertEqual(str(get_ref.name), 'NewName', "Cluster name was not "
-                                                       "updated")
-        self.assertEqual(str(get_ref.status), 'ACTIVE', "Cluster status was "
-                                                        "not updated")
-        self.assertGreater(get_ref.updated_at, ref.updated_at, "Updated "
-                                                               "datetime was "
-                                                               "not updated.")
-
-    def test_delete(self):
-        """Verifies deleting existing record is removed from DB."""
-
-        data = {
-            "project_id": UUID1,
-            "name": "test",
-            "nic": UUID2,
-            "volume_size": 0,
-            "status": models.Status.BUILDING,
-            "deleted": False
-        }
-        ref = models.Cluster.create(self.session, **data)
-        self.assertIsInstance(ref, models.Cluster)
-
-        models.Cluster.delete(self.session, ref.id)
-
-        self.session = api.get_session()
-
-        try:
-            get_ref = models.Cluster.get(self.session, id=ref.id)
-        except exception.NotFound:
-            self.fail('Record was deleted entirely')
-        else:
-            if get_ref.status != models.Status.DELETING:
-                self.fail('Record status was not update to DELETING')
-
-    def test_get_delete_batch(self):
-        """Verifies delete batch records from DB."""
-
-        data = {
-            "project_id": UUID1,
-            "name": "test1",
-            "status": models.Status.BUILDING,
-            "nic": UUID2,
-            "volume_size": 0,
-            "deleted": False
-        }
-        ref1 = models.Cluster.create(self.session, **data)
-        self.assertIsInstance(ref1, models.Cluster)
-        data.update(name="test2")
-        ref2 = models.Cluster.create(self.session, **data)
-        self.assertIsInstance(ref2, models.Cluster)
-        data.update(name="test3")
-        ref3 = models.Cluster.create(self.session, **data)
-        self.assertIsInstance(ref3, models.Cluster)
-        data.update(name="test4")
-        ref4 = models.Cluster.create(self.session, **data)
-        self.assertIsInstance(ref4, models.Cluster)
-
-        self.session = api.get_session()
-
-        clusters_before = models.Cluster.get_all(self.session,
-                                                 status=models.Status.BUILDING)
-
-        ids = [ref1.id, ref2.id, ref3.id, ref4.id]
-        self.assertEqual(len(ids), len(clusters_before), "Not able to get "
-                                                         "all created "
-                                                         "clusters")
-
-        models.Cluster.delete_batch(self.session, ids)
-        clusters_after = models.Cluster.get_all(self.session,
-                                                status=models.Status.DELETING)
-
-        self.assertEqual(len(ids), len(clusters_after), "Not all cluster "
-                                                        "record's statuses "
-                                                        "were marked as "
-                                                        "deleted")
-
-
-class NodeRepositoryTests(base.TestCase):
-    def test_create(self):
-        """Verifies a new cluster record and a new node record pointed to
-
-        correct cluster are created.
-        """
-
-        cluster = {
-            "project_id": UUID1,
-            "name": "test",
-            "nic": UUID2,
-            "volume_size": 0,
-            "status": "BUILDING",
-            "deleted": False
+            "volume_size": 425,
+            "deleted": False,
+            "created_at": timeutils.utcnow(),
+            "updated_at": timeutils.utcnow(),
+            "deleted_at": timeutils.utcnow(),
         }
 
-        cluster_ref = models.Cluster.create(self.session, **cluster)
+        node = models.Node()
+        node.update(node_values)
 
-        node = {
-            "flavor": 'foo',
-            "instance_id": 'bar',
-            "cluster_id": cluster_ref.id,
-            "volume_size": 0,
-            "status": "BUILDING",
-            "deleted": False
+        self.assertEqual(node_values["id"], node.id, "Invalid ID value")
+        self.assertEqual(node_values["cluster_id"], node.cluster_id,
+                         "Invalid cluster_id value")
+        self.assertEqual(node_values["instance_id"], node.instance_id,
+                         "Invalid instance_id value")
+        self.assertEqual(node_values["status"], node.status, "Invalid status "
+                                                             "value")
+        self.assertEqual(node_values["flavor"], node.flavor, "Invalid flavor "
+                                                             "value")
+        self.assertEqual(node_values["volume_size"], node.volume_size,
+                         "Invalid volume_size value")
+        self.assertEqual(node_values["deleted"], node.deleted,
+                         "Invalid deleted value")
+        self.assertEqual(node_values["created_at"], node.created_at,
+                         "Invalid created_at value")
+        self.assertEqual(node_values["updated_at"], node.updated_at,
+                         "Invalid updated_at value")
+        self.assertEqual(node_values["deleted_at"], node.deleted_at,
+                         "Invalid deleted_at value")
+
+    def test_create_endpoint_model(self):
+        """Verifies a new cluster record is created in DB."""
+
+        endpoint_values = {
+            "id": UUID1,
+            "node_id": UUID2,
+            "uri": "amqp://10.20.30.40:10000",
+            "type": "AMQP",
+            "deleted": False,
         }
 
-        node_ref = models.Node.create(self.session, **node)
-        self.assertIsInstance(node_ref, models.Node)
+        endpoint = models.Endpoint()
+        endpoint.update(endpoint_values)
+
+        self.assertEqual(endpoint_values["id"], endpoint.id, "Invalid ID "
+                                                             "value")
+        self.assertEqual(endpoint_values["node_id"], endpoint.node_id,
+                         "Invalid node_id value")
+        self.assertEqual(endpoint_values["uri"], endpoint.uri, "Invalid uri"
+                                                               "value")
+        self.assertEqual(endpoint_values["type"], endpoint.type, "Invalid "
+                                                                 "type"
+                                                                 "value")
+        self.assertEqual(endpoint_values["deleted"], endpoint.deleted,
+                         "Invalid nic value")
