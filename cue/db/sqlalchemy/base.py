@@ -13,8 +13,6 @@
 #    under the License.
 #
 # Copied from Octavia
-
-from cue.common import exception
 from cue.db.sqlalchemy import types
 
 import uuid
@@ -26,44 +24,6 @@ from sqlalchemy.ext import declarative
 
 
 class CueBase(models.ModelBase):
-    @classmethod
-    def create(cls, session, **kwargs):
-        with session.begin():
-            instance = cls(**kwargs)
-            session.add(instance)
-        return instance
-
-    @classmethod
-    def delete(cls, session, id):
-        model = session.query(cls).filter_by(id=id).first()
-        if not model:
-            raise exception.NotFound
-        with session.begin():
-            session.delete(model)
-            session.flush()
-
-    @classmethod
-    def delete_batch(self, session, ids=None):
-        [self.delete(session, id) for id in ids]
-
-    @classmethod
-    def update(cls, session, id, **kwargs):
-        with session.begin():
-            kwargs.update(updated_at=timeutils.utcnow())
-            session.query(cls).filter_by(id=id).update(kwargs)
-
-    @classmethod
-    def get(cls, session, **filters):
-        instance = session.query(cls).filter_by(**filters).first()
-        if not instance:
-            raise exception.NotFound
-        return instance
-
-    @classmethod
-    def get_all(cls, session, **filters):
-        data = session.query(cls).filter_by(**filters).all()
-        return data
-
     def as_dict(self):
         d = {}
         for c in self.__table__.columns:

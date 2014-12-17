@@ -1,4 +1,4 @@
-#    Copyright 2011 VMware, Inc.
+# Copyright 2011 VMware, Inc.
 #    All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,12 +14,15 @@
 #    under the License.
 #
 # Copied from Neutron
+import uuid
+
 from cue.db import api
 from cue.db.sqlalchemy import models
 
 from oslo.config import cfg
 from oslo.db import options as db_options
 from oslo.db.sqlalchemy import session
+from oslo.utils import timeutils
 
 CONF = cfg.CONF
 
@@ -58,6 +61,17 @@ def get_backend():
     return Connection()
 
 
+def model_query(model, *args, **kwargs):
+    """Query helper for simpler session usage.
+
+    :param session: if present, the session to use
+    """
+
+    session = kwargs.get('session') or get_session()
+    query = session.query(model, *args)
+    return query
+
+
 class Connection(api.Connection):
     """SqlAlchemy connection implementation."""
 
@@ -65,51 +79,58 @@ class Connection(api.Connection):
         pass
 
     def get_clusters(self, project_id):
-        db_session = get_session()
-        db_filter = {
-            # TODO(dagnello): update project_id accordingly when enabled
-            #'project_id': project_id,
-            'deleted': False,
+        query = model_query(models.Cluster).filter_by(deleted=False)
+                                                      #project_id=project_id)
+        return query.all()
+
+    def create_cluster(self, cluster_values):
+        if not cluster_values.get('id'):
+            cluster_values['id'] = str(uuid.uuid4())
+
+        cluster_values['status'] = models.Status.BUILDING
+
+        cluster = models.Cluster()
+        cluster.update(cluster_values)
+
+        node_values = {
+            'cluster_id': cluster_values['id'],
+            'flavor': cluster_values['flavor'],
+            'volume_size': cluster_values['volume_size'],
+            'status': models.Status.BUILDING,
         }
-        return models.Cluster.get_all(db_session, **db_filter)
 
-    def create_cluster(self, cluster_values, flavor, number_of_nodes):
         db_session = get_session()
+        with db_session.begin():
+            cluster.save(db_session)
+            db_session.flush()
 
-        cluster_ref = models.Cluster.add(db_session, cluster_values.project_id,
-                                         cluster_values.name,
-                                         cluster_values.nic,
-                                         cluster_values.volume_size)
+            for i in range(cluster_values['size']):
+                node = models.Node()
+                node_id = str(uuid.uuid4())
+                node_values['id'] = node_id
+                node.update(node_values)
+                node.save(db_session)
 
-        for i in range(number_of_nodes):
-            models.Node.add(db_session, cluster_ref.id, flavor,
-                            cluster_values['volume_size'])
+        return cluster
 
-        return cluster_ref
+    def get_cluster_by_id(self, cluster_id):
+        query = model_query(models.Cluster).filter_by(id=cluster_id)
+        return query.one()
 
-    def get_cluster(self, cluster_id):
-        db_session = get_session()
-        return models.Cluster.get(db_session, id=cluster_id)
+    def get_nodes_in_cluster(self, cluster_id):
+        query = model_query(models.Node).filter_by(cluster_id=cluster_id)
+        return query.all()
 
-    def get_nodes(self, cluster_id):
-        db_session = get_session()
+    def get_endpoints_in_node(self, node_id):
+        query = model_query(models.Endpoint).filter_by(node_id=node_id)
+        return query.all()
 
-        return models.Node.get_all(db_session, cluster_id=cluster_id)
+    def mark_cluster_as_delete(self, cluster_id):
+        values = {'status': models.Status.DELETING,
+                 'updated_at': timeutils.utcnow()}
 
-    def get_endpoints(self, node_id):
-        db_session = get_session()
+        cluster_query = model_query(models.Cluster).filter_by(id=cluster_id)
+        cluster_query.update(values)
 
-        node_endpoint_ref = models.Endpoint.get_all(db_session,
-                                                    node_id=node_id)
-
-        return node_endpoint_ref
-
-    def mark_as_delete_cluster(self, cluster_id):
-        db_session = get_session()
-
-        cluster_node_ref = models.Node.get_all(db_session,
-                                               cluster_id=cluster_id)
-        models.Cluster.delete(db_session, cluster_id)
-
-        for node in cluster_node_ref:
-            models.Node.delete(db_session, node.id)
+        nodes_query = model_query(models.Node).filter_by(cluster_id=cluster_id)
+        nodes_query.update(values)
