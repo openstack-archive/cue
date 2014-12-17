@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
 #         http://www.apache.org/licenses/LICENSE-2.0
@@ -12,38 +12,117 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 """
-Tests for the API /clusters/ methods.
+Tests for the API /clusters/ controller methods.
 """
-
-import cue.tests.api as api_base
-from cue.tests.db import utils as dbutils
-
-
-# class TestClusterObject(base.TestCase):
-#
-#     def test_cluster_init(self):
-#         # port_dict = apiutils.port_post_data(node_id=None)
-#         # del port_dict['extra']
-#         # port = api_port.Port(**port_dict)
-#         # self.assertEqual(wtypes.Unset, port.extra)
+from cue import objects
+from cue.tests.api import api_common
+from cue.tests import utils as test_utils
 
 
-class TestListClusters(api_base.FunctionalTest):
-
-    cluster_name = "test-cluster"
-
+class TestListClusters(api_common.ApiCommon):
     def setUp(self):
         super(TestListClusters, self).setUp()
-        #self.cluster = dbutils.create_test_cluster()
 
     def test_empty(self):
         data = self.get_json('/clusters')
-        # TODO(vipul): This should probably return a empty 'clusters'
         self.assertEqual([], data)
 
     def test_one(self):
-        cluster = dbutils.create_test_cluster(name=self.cluster_name)
+        cluster = test_utils.create_db_test_cluster_from_objects_api(
+            name=self.cluster_name)
         data = self.get_json('/clusters')
 
-        self.assertEqual(cluster.id, data[0]["id"])
-        self.assertEqual(self.cluster_name, data[0]["name"])
+        self.assertEqual(len(data), 1, "Invalid number of clusters returned")
+
+        self.validate_cluster_values(cluster, data[0])
+
+    def test_multiple(self):
+        cluster_0 = test_utils.create_db_test_cluster_from_objects_api(
+            name=self.cluster_name + '_0')
+        cluster_1 = test_utils.create_db_test_cluster_from_objects_api(
+            name=self.cluster_name + '_1')
+        cluster_2 = test_utils.create_db_test_cluster_from_objects_api(
+            name=self.cluster_name + '_2')
+        cluster_3 = test_utils.create_db_test_cluster_from_objects_api(
+            name=self.cluster_name + '_3')
+        cluster_4 = test_utils.create_db_test_cluster_from_objects_api(
+            name=self.cluster_name + '_4')
+
+        data = self.get_json('/clusters')
+
+        self.assertEqual(len(data), 5, "Invalid number of clusters returned")
+
+        self.validate_cluster_values(cluster_0, data[0])
+        self.validate_cluster_values(cluster_1, data[1])
+        self.validate_cluster_values(cluster_2, data[2])
+        self.validate_cluster_values(cluster_3, data[3])
+        self.validate_cluster_values(cluster_4, data[4])
+
+
+class TestCreateCluster(api_common.ApiCommon):
+    def setUp(self):
+        super(TestCreateCluster, self).setUp()
+
+    def test_create_empty(self):
+        """test create an empty cluster."""
+        api_cluster = test_utils.create_api_test_cluster(size=0)
+        header = {'Content-Type': 'application/json'}
+        data = self.post_json('/clusters', params=api_cluster.as_dict(),
+                              headers=header, expect_errors=True)
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+        self.assertEqual('400 Bad Request', data.status,
+                         'Invalid status value received.')
+        self.assertIn('Invalid cluster size provided',
+                      data.namespace["faultstring"],
+                      'Invalid faultstring received.')
+
+    def test_create_size_one(self):
+        """test create a cluster with one node."""
+        api_cluster = test_utils.create_api_test_cluster(size=1)
+        header = {'Content-Type': 'application/json'}
+        data = self.post_json('/clusters', params=api_cluster.as_dict(),
+                              headers=header, status=202)
+        cluster = objects.Cluster.get_cluster_by_id(data.json["id"])
+        self.validate_cluster_values(cluster, data.json)
+
+    def test_create_size_three(self):
+        """test create a cluster with three nodes."""
+        api_cluster = test_utils.create_api_test_cluster(size=3)
+        header = {'Content-Type': 'application/json'}
+        data = self.post_json('/clusters', params=api_cluster.as_dict(),
+                              headers=header, status=202)
+        cluster = objects.Cluster.get_cluster_by_id(data.json["id"])
+        self.validate_cluster_values(cluster, data.json)
+
+    def test_create_invalid_size_format(self):
+        """test with invalid formatted size parameter."""
+        api_cluster = test_utils.create_api_test_cluster(size="a")
+        header = {'Content-Type': 'application/json'}
+        data = self.post_json('/clusters', params=api_cluster.as_dict(),
+                              headers=header, expect_errors=True)
+        self.assertEqual(500, data.status_code,
+                         'Invalid status code value received.')
+        self.assertEqual('500 Internal Server Error', data.status,
+                         'Invalid status value received.')
+        self.assertIn('invalid literal for int() with base 10:',
+                      data.namespace["faultstring"],
+                      'Invalid faultstring received.')
+
+    def test_create_invalid_volume_size(self):
+        """test with invalid volume_size parameter."""
+
+    def test_create_invalid_parameter_set_id(self):
+        """test with invalid parameter set: id."""
+
+    def test_create_invalid_parameter_set_status(self):
+        """test with invalid parameter set: status."""
+
+    def test_create_invalid_parameter_set_created_at(self):
+        """test with invalid parameter set: created_at."""
+
+    def test_create_invalid_parameter_set_updated_at(self):
+        """test with invalid parameter set: updated_at."""
+
+    def test_create_invalid_parameter_set_deleted_at(self):
+        """test with invalid parameter set: deleted_at."""
