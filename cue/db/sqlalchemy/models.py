@@ -39,17 +39,6 @@ class Endpoint(base.BASE, base.IdMixin):
     sa.Index("endpoints_id_idx", "id", unique=True)
     sa.Index("endpoints_nodes_id_idx", "node_id", unique=False)
 
-    @classmethod
-    def add(cls, session, node_id, endpoint_type, uri):
-        endpoint = {
-            "node_id": node_id,
-            "uri": uri,
-            "type": endpoint_type,
-            "deleted": False
-        }
-
-        return super(Endpoint, cls).create(session, **endpoint)
-
 
 class Node(base.BASE, base.IdMixin, base.TimeMixin):
     __tablename__ = 'nodes'
@@ -61,25 +50,9 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=False)
-    deleted = sa.Column(sa.Boolean(), nullable=False)
+    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
     sa.Index("nodes_id_idx", "id", unique=True)
     sa.Index("nodes_cluster_id_idx", "cluster_id", unique=False)
-
-    @classmethod
-    def add(cls, session, cluster_id, flavor, vol_size):
-        node = {
-            "cluster_id": cluster_id,
-            "flavor": flavor,
-            "volume_size": vol_size,
-            "deleted": False,
-            "status": Status.BUILDING
-        }
-
-        return super(Node, cls).create(session, **node)
-
-    @classmethod
-    def delete(cls, session, node_id):
-        super(Node, cls).update(session, id=node_id, status=Status.DELETING)
 
 
 class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
@@ -90,23 +63,5 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
     name = sa.Column(sa.String(255), nullable=False)
     status = sa.Column(sa.String(50), nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=False)
-    deleted = sa.Column(sa.Boolean(), nullable=False)
+    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
     sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
-
-    @classmethod
-    def add(cls, session, project_id, name, nic, vol_size):
-        cluster = {
-            "project_id": project_id,
-            "name": name,
-            "nic": nic,
-            "volume_size": vol_size,
-            "deleted": False,
-            "status": Status.BUILDING
-        }
-
-        return super(Cluster, cls).create(session, **cluster)
-
-    @classmethod
-    def delete(cls, session, cluster_id):
-        super(Cluster, cls).update(session, id=cluster_id,
-                                   status=Status.DELETING)
