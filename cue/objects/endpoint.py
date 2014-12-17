@@ -47,6 +47,6 @@ class Endpoint(base.CueObject):
         :returns: a list of :class:'Endpoint' object.
 
         """
-        db_endpoints = cls.dbapi.get_endpoints(node_id)
+        db_endpoints = cls.dbapi.get_endpoints_in_node(node_id)
 
         return [Endpoint._from_db_object(Endpoint(), obj) for obj in db_endpoints]

@@ -27,11 +27,13 @@ class Cluster(base.CueObject):
 
     fields = {
         'id': obj_utils.str_or_none,
+        'network_id': obj_utils.str_or_none,
         'project_id': obj_utils.str_or_none,
         'name': obj_utils.str_or_none,
-        'nic': obj_utils.str_or_none,
-        'volume_size': obj_utils.int_or_none,
         'status': obj_utils.str_or_none,
+        'flavor': obj_utils.str_or_none,
+        'size': obj_utils.int_or_none,
+        'volume_size': obj_utils.int_or_none,
         'created_at': obj_utils.datetime_or_str_or_none,
         'updated_at': obj_utils.datetime_or_str_or_none,
         'deleted_at': obj_utils.datetime_or_str_or_none,
@@ -44,17 +46,16 @@ class Cluster(base.CueObject):
             cluster[field] = db_cluster[field]
         return cluster
 
-    def create_cluster(self, project_id, flavor, number_of_nodes):
+    def create_cluster(self, project_id):
         """Creates a new cluster.
 
         :param project_id: The project id the cluster resides in.
-        :param flavor: The required flavor for nodes in this cluster.
-        :param number_of_nodes: The number of nodes in this cluster.
 
         """
         self['project_id'] = project_id
-        db_cluster = self.dbapi.create_cluster(self, flavor,
-                                               number_of_nodes)
+        cluster_changes = self.obj_get_changes()
+
+        db_cluster = self.dbapi.create_cluster(cluster_changes)
 
         self._from_db_object(self, db_cluster)
 
@@ -70,22 +71,22 @@ class Cluster(base.CueObject):
         return [Cluster._from_db_object(Cluster(), obj) for obj in db_clusters]
 
     @classmethod
-    def get_cluster(cls, cluster_id):
+    def get_cluster_by_id(cls, cluster_id):
         """Returns a Cluster objects for specified cluster_id.
 
         :param cluster_id: UUID of a cluster.
         :returns: a :class:'Cluster' object.
 
         """
-        db_cluster = cls.dbapi.get_cluster(cluster_id)
+        db_cluster = cls.dbapi.get_cluster_by_id(cluster_id)
         cluster = Cluster._from_db_object(Cluster(), db_cluster)
         return cluster
 
     @classmethod
-    def mark_as_delete_cluster(cls, cluster_id):
+    def mark_cluster_as_delete(cls, cluster_id):
         """Marks specified cluster to indicate deletion.
 
         :param cluster_id: UUID of a cluster.
 
         """
-        cls.dbapi.mark_as_delete_cluster(cluster_id)
+        cls.dbapi.mark_cluster_as_delete(cluster_id)
