@@ -53,7 +53,7 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def create_cluster(self, cluster_values, flavor, number_of_nodes):
+    def create_cluster(self, cluster_values):
         """Creates a new cluster.
 
         :param cluster_values: Dictionary of several required items.
@@ -61,18 +61,18 @@ class Connection(object):
                ::
 
                {
+                'network_id': obj_utils.str_or_none,
                 'project_id': obj_utils.str_or_none,
                 'name': obj_utils.str_or_none,
-                'nic': obj_utils.str_or_none,
+                'flavor': obj_utils.str_or_none,
+                'size': obj_utils.int_or_none,
                 'volume_size': obj_utils.int_or_none,
                }
-        :param flavor: The required flavor for nodes in this cluster.
-        :param number_of_nodes: The number of nodes in this cluster.
 
         """
 
     @abc.abstractmethod
-    def get_cluster(self, cluster_id):
+    def get_cluster_by_id(self, cluster_id):
         """Returns a Cluster objects for specified cluster_id.
 
         :param cluster_id: UUID of a cluster.
@@ -81,7 +81,7 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_nodes(self, cluster_id):
+    def get_nodes_in_cluster(self, cluster_id):
         """Returns a list of Node objects for specified cluster.
 
         :param cluster_id: UUID of the cluster.
@@ -90,7 +90,16 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_endpoints(self, node_id):
+    def get_node_by_id(self, node_id):
+        """Returns a node for the specified node_id.
+
+        :param node_id: UUID of the node.
+        :returns: a :class:'Node' object.
+
+        """
+
+    @abc.abstractmethod
+    def get_endpoints_in_node(self, node_id):
         """Returns a list of Endpoint objects for specified node.
 
         :param node_id: UUID of the node.
@@ -99,7 +108,16 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def mark_as_delete_cluster(self, cluster_id):
+    def get_endpoint_by_id(self, endpoint_id):
+        """Returns an endpoint for the specified endpoint_id.
+
+        :param endpoint_id: UUID of the endpoint.
+        :returns: a :class:'Endpoint' object.
+
+        """
+
+    @abc.abstractmethod
+    def update_cluster_deleting(self, cluster_id):
         """Marks specified cluster to indicate deletion.
 
         :param cluster_id: UUID of a cluster.
