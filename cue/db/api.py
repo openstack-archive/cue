@@ -53,7 +53,7 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def create_cluster(self, cluster_values, flavor, number_of_nodes):
+    def create_cluster(self, cluster_values):
         """Creates a new cluster.
 
         :param cluster_values: Dictionary of several required items.
@@ -63,11 +63,9 @@ class Connection(object):
                {
                 'project_id': obj_utils.str_or_none,
                 'name': obj_utils.str_or_none,
-                'nic': obj_utils.str_or_none,
+                'network_id': obj_utils.str_or_none,
                 'volume_size': obj_utils.int_or_none,
                }
-        :param flavor: The required flavor for nodes in this cluster.
-        :param number_of_nodes: The number of nodes in this cluster.
 
         """
 
