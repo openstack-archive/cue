@@ -27,11 +27,13 @@ class Cluster(base.CueObject):
 
     fields = {
         'id': obj_utils.str_or_none,
+        'network_id': obj_utils.str_or_none,
         'project_id': obj_utils.str_or_none,
         'name': obj_utils.str_or_none,
-        'nic': obj_utils.str_or_none,
-        'volume_size': obj_utils.int_or_none,
         'status': obj_utils.str_or_none,
+        'flavor': obj_utils.str_or_none,
+        'size': obj_utils.int_or_none,
+        'volume_size': obj_utils.int_or_none,
         'created_at': obj_utils.datetime_or_str_or_none,
         'updated_at': obj_utils.datetime_or_str_or_none,
         'deleted_at': obj_utils.datetime_or_str_or_none,
@@ -44,7 +46,7 @@ class Cluster(base.CueObject):
             cluster[field] = db_cluster[field]
         return cluster
 
-    def create_cluster(self, project_id, flavor, number_of_nodes):
+    def create_cluster(self, project_id):
         """Creates a new cluster.
 
         :param project_id: The project id the cluster resides in.
@@ -55,8 +57,7 @@ class Cluster(base.CueObject):
         self['project_id'] = project_id
         cluster_changes = self.obj_get_changes()
 
-        db_cluster = self.dbapi.create_cluster(cluster_changes, flavor,
-                                               number_of_nodes)
+        db_cluster = self.dbapi.create_cluster(cluster_changes)
 
         self._from_db_object(self, db_cluster)
 

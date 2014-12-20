@@ -36,7 +36,7 @@ class ModelsTests(base.TestCase):
             "project_id": UUID2,
             "name": "Cluster test",
             "status": models.Status.BUILDING,
-            "nic": UUID3,
+            "network_id": UUID3,
             "volume_size": 250,
             "deleted": False,
             "created_at": timeutils.utcnow(),
@@ -55,8 +55,8 @@ class ModelsTests(base.TestCase):
         self.assertEqual(cluster_values["status"], cluster.status, "Invalid "
                                                                    "status"
                                                                    "value")
-        self.assertEqual(cluster_values["nic"], cluster.nic, "Invalid nic "
-                                                             "value")
+        self.assertEqual(cluster_values["network_id"], cluster.network_id,
+                         "Invalid network_id value")
         self.assertEqual(cluster_values["volume_size"], cluster.volume_size,
                          "Invalid volume_size value")
         self.assertEqual(cluster_values["deleted"], cluster.deleted,
@@ -131,4 +131,4 @@ class ModelsTests(base.TestCase):
                                                                  "type"
                                                                  "value")
         self.assertEqual(endpoint_values["deleted"], endpoint.deleted,
-                         "Invalid nic value")
+                         "Invalid network_id value")

@@ -63,7 +63,7 @@ class Connection(object):
                {
                 'project_id': obj_utils.str_or_none,
                 'name': obj_utils.str_or_none,
-                'nic': obj_utils.str_or_none,
+                'network_id': obj_utils.str_or_none,
                 'volume_size': obj_utils.int_or_none,
                }
         :param flavor: The required flavor for nodes in this cluster.
