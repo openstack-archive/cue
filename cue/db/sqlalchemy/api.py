@@ -83,7 +83,7 @@ class Connection(api.Connection):
                                                       #project_id=project_id)
         return query.all()
 
-    def create_cluster(self, cluster_values, flavor, number_of_nodes):
+    def create_cluster(self, cluster_values):
         if not cluster_values.get('id'):
             cluster_values['id'] = str(uuid.uuid4())
 
@@ -94,7 +94,7 @@ class Connection(api.Connection):
 
         node_values = {
             'cluster_id': cluster_values['id'],
-            'flavor': flavor,
+            'flavor': cluster_values['flavor'],
             'volume_size': cluster_values['volume_size'],
             'status': models.Status.BUILDING,
         }
@@ -104,8 +104,10 @@ class Connection(api.Connection):
             cluster.save(db_session)
             db_session.flush()
 
-            for i in range(number_of_nodes):
+            for i in range(cluster_values['size']):
                 node = models.Node()
+                node_id = str(uuid.uuid4())
+                node_values['id'] = node_id
                 node.update(node_values)
                 node.save(db_session)
 
