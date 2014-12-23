@@ -1,0 +1,183 @@
+# lib/cue
+# Install and start **Cue** service
+
+# To enable Cue services, add the following to localrc
+# enable_service cue,cue-api
+
+# stack.sh
+# ---------
+# install_cue
+# configure_cue
+# init_cue
+# start_cue
+# stop_cue
+# cleanup_cue
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Defaults
+# --------
+CUE_PLUGINS=$TOP_DIR/lib/cue_plugins
+
+# Set up default repos
+CUE_REPO=${CUE_REPO:-${GIT_BASE}/stackforge/cue.git}
+CUE_BRANCH=${CUE_BRANCH:-master}
+CUECLIENT_REPO=${CUECLIENT_REPO:-${GIT_BASE}/stackforge/python-cueclient.git}
+CUECLIENT_BRANCH=${CUECLIENT_BRANCH:-master}
+
+# Set up default paths
+CUE_BIN_DIR=$(get_python_exec_prefix)
+CUE_DIR=$DEST/cue
+CUECLIENT_DIR=$DEST/python-cueclient
+CUE_CONF_DIR=/etc/cue
+CUE_STATE_PATH=${CUE_STATE_PATH:=$DATA_DIR/cue}
+CUE_CONF=$CUE_CONF_DIR/cue.conf
+CUE_LOG_DIR=/var/log/cue
+CUE_AUTH_CACHE_DIR=${CUE_AUTH_CACHE_DIR:-/var/cache/cue}
+
+# Public IP/Port Settings
+CUE_SERVICE_PROTOCOL=${CUE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+CUE_SERVICE_HOST=${CUE_SERVICE_HOST:-$SERVICE_HOST}
+CUE_SERVICE_PORT=${CUE_SERVICE_PORT:-8795}
+
+# cleanup_cue - Remove residual data files, anything left over from previous
+# runs that a clean run would need to clean up
+function cleanup_cue {
+    sudo rm -rf $CUE_STATE_PATH $CUE_AUTH_CACHE_DIR
+}
+
+# configure_cue - Set config files, create data dirs, etc
+function configure_cue {
+    [ ! -d $CUE_CONF_DIR ] && sudo mkdir -m 755 -p $CUE_CONF_DIR
+    sudo chown $STACK_USER $CUE_CONF_DIR
+
+    [ ! -d $CUE_LOG_DIR ] &&  sudo mkdir -m 755 -p $CUE_LOG_DIR
+    sudo chown $STACK_USER $CUE_LOG_DIR
+
+    # (Re)create ``cue.conf``
+    rm -f $CUE_CONF
+
+    iniset_rpc_backend cue $CUE_CONF DEFAULT
+    iniset $CUE_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
+    iniset $CUE_CONF DEFAULT verbose True
+    iniset $CUE_CONF DEFAULT state_path $CUE_STATE_PATH
+    iniset $CUE_CONF database connection `database_connection_url cue`
+
+    if [ "$SYSLOG" != "False" ]; then
+        iniset $CUE_CONF DEFAULT use_syslog True
+    fi
+
+    # Format logging
+    if [ "$LOG_COLOR" == "True" ] && [ "$SYSLOG" == "False" ]; then
+        setup_colorized_logging $CUE_CONF DEFAULT "tenant" "user"
+    fi
+
+    if is_service_enabled key; then
+        # Setup the Keystone Integration
+        iniset $CUE_CONF service:api auth_strategy keystone
+        configure_auth_token_middleware $CUE_CONF cue $CUE_AUTH_CACHE_DIR
+    fi
+
+    iniset $CUE_CONF service:api api_host $CUE_SERVICE_HOST
+    iniset $CUE_CONF service:api api_base_uri $CUE_SERVICE_PROTOCOL://$CUE_SERVICE_HOST:$CUE_SERVICE_PORT/
+    if is_service_enabled tls-proxy; then
+        # Set the service port for a proxy to take the original
+        iniset $CUE_CONF service:api api_port $CUE_SERVICE_PORT_INT
+    else
+        iniset $CUE_CONF service:api api_port $CUE_SERVICE_PORT
+    fi
+
+    # Install the policy file for the API server
+    cp $CUE_DIR/etc/cue/policy.json $CUE_CONF_DIR/policy.json
+    iniset $CUE_CONF DEFAULT policy_file $CUE_CONF_DIR/policy.json
+}
+
+# create_cue_accounts - Set up common required cue accounts
+
+# Tenant               User       Roles
+# ------------------------------------------------------------------
+# service              cue  admin        # if enabled
+function create_cue_accounts {
+    local service_tenant=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
+    local admin_role=$(openstack role list | awk "/ admin / { print \$2 }")
+
+    if [[ "$ENABLED_SERVICES" =~ "cue-api" ]]; then
+        local cue_user=$(get_or_create_user "cue" \
+            "$SERVICE_PASSWORD" $service_tenant)
+        get_or_add_user_role $admin_role $cue_user $service_tenant
+
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+            local cue_service=$(get_or_create_service "cue" \
+                "message_queue" "Cue MQ Provisioning Service")
+            get_or_create_endpoint $cue_service \
+                "$REGION_NAME" \
+                "$CUE_SERVICE_PROTOCOL://$CUE_SERVICE_HOST:$CUE_SERVICE_PORT/" \
+                "$CUE_SERVICE_PROTOCOL://$CUE_SERVICE_HOST:$CUE_SERVICE_PORT/" \
+                "$CUE_SERVICE_PROTOCOL://$CUE_SERVICE_HOST:$CUE_SERVICE_PORT/"
+        fi
+    fi
+}
+
+function create_cue_initial_resources {
+    #ADMIN_TENANT_ID=$(keystone tenant-list | grep " admin " | get_field 1)
+    echo "Creating initial resources."
+}
+
+# init_cue - Initialize etc.
+function init_cue {
+    # Create cache dir
+    sudo mkdir -p $CUE_AUTH_CACHE_DIR
+    sudo chown $STACK_USER $CUE_AUTH_CACHE_DIR
+    rm -f $CUE_AUTH_CACHE_DIR/*
+
+    # (Re)create cue database
+    recreate_database cue utf8
+
+    # Init and migrate cue database
+    cue-manage --config-file $CUE_CONF database upgrade
+
+    # Init and migrate cue pool-manager-cache
+    #cue-manage --config-file $CUE_CONF taskflow upgrade
+}
+
+# install_cue - Collect source and prepare
+function install_cue {
+    git_clone $CUE_REPO $CUE_DIR $CUE_BRANCH
+    setup_develop $CUE_DIR
+
+    if is_service_enabled horizon; then
+        echo "Not implemented yet..."
+    fi
+}
+
+# install_cueclient - Collect source and prepare
+function install_cueclient {
+    git_clone $CUECLIENT_REPO $CUECLIENT_DIR $CUECLIENT_BRANCH
+    setup_develop $CUECLIENT_DIR
+}
+
+# start_cue - Start running processes, including screen
+function start_cue {
+    run_process cue-api "$CUE_BIN_DIR/cue-api --config-file $CUE_CONF"
+
+    # Start proxies if enabled
+    if is_service_enabled cue-api && is_service_enabled tls-proxy; then
+        start_tls_proxy '*' $CUE_SERVICE_PORT $CUE_SERVICE_HOST $CUE_SERVICE_PORT_INT &
+    fi
+
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- $CUE_SERVICE_PROTOCOL://$CUE_SERVICE_HOST:$CUE_SERVICE_PORT; do sleep 1; done"; then
+        die $LINENO "Cue did not start"
+    fi
+}
+
+# stop_cue - Stop running processes
+function stop_cue {
+    # Kill the cue screen windows
+    stop_process cue-api
+}
+
+# Restore xtrace
+$XTRACE
