@@ -1,0 +1,48 @@
+# lib/zookeeper
+# Install and start zookeeper
+
+# To enable zk add the following to your localrc
+# enable_service zookeeper
+
+# stack.sh
+# ----------
+# install_zookeeper
+# configure_zookeeper
+# init_zookeeper
+# start_zookeeper
+# stop_zookeeper
+# cleanup_zookeeper
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+function cleanup_zookeeper {
+    echo "Cleanup zookeeper"
+}
+
+function configure_zookeeper {
+    echo "Configure zookeeper"
+}
+
+function configure_zookeeper {
+    echo "Installing zookeeper"
+    if is_fedora; then
+        install_packages zookeeper
+    elif is_ubuntu; then
+        install_packages zookeeper zookeeper
+    else
+        exit_distro_not_supported "zookeeper installation"
+}
+
+function init_zookeeper {
+    echo "Init zookeeper"
+}
+
+function start_zookeeper {
+    echo "Starting zookeeper"
+}
+
+function stop_zookeeper {
+    echo "Stopping zookeeper"
+}
