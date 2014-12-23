@@ -25,7 +25,7 @@ TF_OPTS = [
 
     cfg.StrOpt('zk_hosts',
                help="Zookeeper jobboard hosts.",
-               default="localhost"),
+               default="localhost:2181"),
 
     cfg.StrOpt('zk_path',
                help="Zookeeper path for jobs.",

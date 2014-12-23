@@ -12,7 +12,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import contextlib
 import uuid
 
 from oslo.config import cfg
@@ -143,8 +142,6 @@ class Client(object):
                                 ))
             conf = _make_conf(connection)
         be = persistence_backends.fetch(conf=conf, **kwargs)
-        with contextlib.closing(be.get_connection()) as conn:
-            conn.upgrade()
         return be
 
     @staticmethod

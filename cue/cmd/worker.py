@@ -33,11 +33,10 @@ from cue.common.i18n import _LI  # noqa
 import cue.common.service as cue_service
 import cue.taskflow.service as tf_service
 
-
 WORKER_OPTS = [
     cfg.IntOpt('count',
                help="Number of worker processes to spawn",
-               default=10)
+               default=1)
 ]
 
 opt_group = cfg.OptGroup(
