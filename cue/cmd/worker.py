@@ -27,13 +27,13 @@ import cue.openstack.common.service as os_service
 import cue.taskflow.service as tf_service
 
 
-eventlet.monkey_patch(os=False)
+eventlet.monkey_patch(os=False, thread=True)
 
 
 WORKER_OPTS = [
     cfg.IntOpt('count',
                help="Number of worker processes to spawn",
-               default=10)
+               default=1)
 ]
 
 opt_group = cfg.OptGroup(
