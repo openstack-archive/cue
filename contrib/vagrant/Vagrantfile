@@ -1,0 +1,83 @@
+# -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+require 'fileutils'
+
+Vagrant.require_version ">= 1.6.0"
+
+CONFIG = File.join(File.dirname(__FILE__), "vagrant_config.rb")
+UBUNTU_COMMON = File.join(File.dirname(__FILE__), "lib/ubuntu.rb")
+FEDORA_COMMON = File.join(File.dirname(__FILE__), "lib/fedora.rb")
+DEVSTACK_SCRIPT = File.join(File.dirname(__FILE__), "lib/devstack_script.rb")
+
+GITCONFIG = `cat $HOME/.gitconfig`
+
+VAGRANTFILE_API_VERSION = "2"
+
+# Defaults for config options
+$hostname = File.basename(File.dirname(__FILE__))
+$forwarded_port = {}
+$install_devstack = false
+$install_build_deps = true
+$install_tmate = false
+$ubuntu_box = "sputnik13/trusty64"
+$vm_memory = 4096 
+$vm_cpus = 2
+
+if File.exist?(CONFIG)
+  require CONFIG
+end
+
+require UBUNTU_COMMON
+require FEDORA_COMMON
+require DEVSTACK_SCRIPT
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  $forwarded_port.each do |guest_port, host_port|
+    config.vm.network "forwarded_port", guest: guest_port, host: host_port
+  end
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = $vm_memory
+    v.cpus = $vm_cpus
+  end
+
+  config.vm.provider "vmware_fusion" do |v, override|
+    v.vmx["memsize"] = $vm_memory
+    v.vmx["numvcpus"] = $vm_cpus
+    v.vmx["vhv.enable"] = TRUE
+    v.vmx["ethernet0.virtualdev"] = "vmxnet3"
+  end
+
+  config.vm.synced_folder "../..", "/home/vagrant/cue"
+
+  if File.directory?("../../../python-cueclient")
+    config.vm.synced_folder "../../../python-cueclient", "/opt/stack/python-cueclient"
+  end
+
+  config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+
+  config.vm.define "ubuntu" do |ubuntu|
+    ubuntu.vm.hostname = "cuedev-ubuntu"
+    ubuntu_common(ubuntu)
+  end
+
+  config.vm.define "fedora" do |fedora|
+    fedora.vm.hostname = "cuedev-fedora"
+    fedora_common(fedora)
+  end
+
+  # Common provisioning steps
+  config.vm.provision :shell, :privileged => true,
+    :inline => "test -d /opt/stack || mkdir -p /opt/stack"
+  config.vm.provision :shell, :privileged => true,
+    :inline => "chown vagrant /opt/stack"
+  config.vm.provision :shell, :privileged => false,
+    :inline => $devstack_script
+
+  if $install_devstack
+    config.vm.provision :shell, :privileged => false,
+      :inline => "pushd $HOME/devstack; ./stack.sh"
+  end
+
+end
