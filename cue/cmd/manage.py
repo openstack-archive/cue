@@ -20,7 +20,7 @@ import sys
 
 import eventlet
 from oslo.config import cfg
-from oslo.log import log
+from oslo_log import log
 from stevedore import extension
 
 from cue.common.i18n import _LI  # noqa
