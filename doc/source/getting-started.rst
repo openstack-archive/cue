@@ -193,7 +193,7 @@ You'll now be seeing the log from the api service.
 Exercising the API
 ==================
 
-.. note:: If you have a firewall enabled, make sure to open port 53, as well as Cue's default port (6385).
+.. note:: If you have a firewall enabled, make sure to open port 53, as well as Cue's default port (8795).
 
 Using a web browser, curl statement, or a REST client, calls can be made to the Cue API using the following format where “command” is any of the commands listed in the :doc:`rest`
 

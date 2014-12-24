@@ -22,7 +22,7 @@ API_SERVICE_OPTS = [
                default='0.0.0.0',
                help='The listen IP for the Cue API server.'),
     cfg.IntOpt('port',
-               default=6385,
+               default=8795,
                help='The port for the Cue API server.'),
     cfg.IntOpt('max_limit',
                default=1000,
