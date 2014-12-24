@@ -22,7 +22,7 @@ import sys
 from wsgiref import simple_server
 
 from oslo.config import cfg
-from oslo.log import log
+from oslo_log import log
 from six.moves import socketserver
 
 from cue.api import app

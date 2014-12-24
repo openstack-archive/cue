@@ -23,7 +23,7 @@ SHOULD include dedicated exception logging.
 """
 
 from oslo.config import cfg
-from oslo.log import log as logging
+from oslo_log import log as logging
 import six
 
 from cue.common.i18n import _  # noqa
