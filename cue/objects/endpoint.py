@@ -40,7 +40,7 @@ class Endpoint(base.CueObject):
         return cluster
 
     @classmethod
-    def get_endpoints(cls, node_id):
+    def get_endpoints_by_node_id(cls, node_id):
         """Returns a list of Endpoint objects for specified node.
 
         :param node_id: UUID of the node.

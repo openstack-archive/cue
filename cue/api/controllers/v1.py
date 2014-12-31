@@ -96,11 +96,11 @@ def get_complete_cluster(cluster_id):
     # construct api cluster object
     cluster = Cluster(**cluster_obj.as_dict())
 
-    cluster_nodes = objects.Node.get_nodes(cluster_id)
+    cluster_nodes = objects.Node.get_nodes_by_cluster_id(cluster_id)
 
     for node in cluster_nodes:
         # extract endpoints from node
-        node_endpoints = objects.Endpoint.get_endpoints(node.id)
+        node_endpoints = objects.Endpoint.get_endpoints_by_node_id(node.id)
 
         # construct api endpoint objects
         cluster.end_points = [EndPoint(**obj_endpoint.as_dict()) for

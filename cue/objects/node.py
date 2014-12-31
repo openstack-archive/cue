@@ -44,7 +44,7 @@ class Node(base.CueObject):
         return node
 
     @classmethod
-    def get_nodes(cls, cluster_id):
+    def get_nodes_by_cluster_id(cls, cluster_id):
         """Returns a list of Node objects for specified cluster.
 
         :param cluster_id: UUID of the cluster.

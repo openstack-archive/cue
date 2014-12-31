@@ -34,6 +34,7 @@ class Cluster(base.CueObject):
         'flavor': obj_utils.str_or_none,
         'size': obj_utils.int_or_none,
         'volume_size': obj_utils.int_or_none,
+        'deleted': obj_utils.bool_or_none,
         'created_at': obj_utils.datetime_or_str_or_none,
         'updated_at': obj_utils.datetime_or_str_or_none,
         'deleted_at': obj_utils.datetime_or_str_or_none,
