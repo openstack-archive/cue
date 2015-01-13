@@ -23,18 +23,20 @@ import uuid
 
 from cue.db.sqlalchemy import models
 from cue import objects
-from cue.tests.api import api_common
+from cue.tests import api
+from cue.tests.api import api_utils
 from cue.tests import utils as test_utils
 
 
-class TestGetCluster(api_common.ApiCommon):
+class TestGetCluster(api.FunctionalTest,
+                     api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestGetCluster, self).setUp()
 
     def test_get_cluster_not_found(self):
         """test get non-existing cluster."""
         data = self.get_json('/clusters/' + str(uuid.uuid4()),
-                             expect_errors=True)
+                             headers=self.auth_headers, expect_errors=True)
 
         self.assertEqual(404, data.status_code,
                          'Invalid status code value received.')
@@ -47,7 +49,8 @@ class TestGetCluster(api_common.ApiCommon):
     def test_get_cluster_invalid_uuid_format(self):
         """test get cluster with invalid id uuid format."""
         invalid_uuid = u"25c06c22.fadd.4c83-a515-974a29668ba9"
-        data = self.get_json('/clusters/' + invalid_uuid, expect_errors=True)
+        data = self.get_json('/clusters/' + invalid_uuid,
+                             headers=self.auth_headers, expect_errors=True)
 
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
@@ -74,20 +77,22 @@ class TestGetCluster(api_common.ApiCommon):
     def test_get_cluster(self):
         """test get cluster on valid existing cluster."""
         cluster = test_utils.create_db_test_cluster_from_objects_api(
-            name=self.cluster_name)
-        data = self.get_json('/clusters/' + cluster.id)
+            self.context, name=self.cluster_name)
+        data = self.get_json('/clusters/' + cluster.id,
+                             headers=self.auth_headers)
 
         self.validate_cluster_values(cluster, data)
 
 
-class TestDeleteCluster(api_common.ApiCommon):
+class TestDeleteCluster(api.FunctionalTest,
+                        api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestDeleteCluster, self).setUp()
 
     def test_delete_cluster_not_found(self):
         """test delete non-existing cluster."""
         data = self.delete('/clusters/' + str(uuid.uuid4()),
-                           expect_errors=True)
+                           headers=self.auth_headers, expect_errors=True)
 
         self.assertEqual(404, data.status_code,
                          'Invalid status code value received.')
@@ -100,7 +105,8 @@ class TestDeleteCluster(api_common.ApiCommon):
     def test_delete_cluster_invalid_uuid_format(self):
         """test delete cluster with invalid uuid format."""
         invalid_uuid = u"25c06c22.fadd.4c83-a515-974a29668ba9"
-        data = self.delete('/clusters/' + invalid_uuid, expect_errors=True)
+        data = self.delete('/clusters/' + invalid_uuid,
+                           headers=self.auth_headers, expect_errors=True)
 
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
@@ -119,16 +125,19 @@ class TestDeleteCluster(api_common.ApiCommon):
     def test_delete_cluster(self):
         """test delete cluster on valid existing cluster."""
         cluster = test_utils.create_db_test_cluster_from_objects_api(
-            name=self.cluster_name)
-        cluster_in_db = objects.Cluster.get_cluster_by_id(cluster.id)
+            self.context, name=self.cluster_name)
+        cluster_in_db = objects.Cluster.get_cluster_by_id(self.context,
+                                                          cluster.id)
         self.assertEqual(models.Status.BUILDING, cluster_in_db.status,
                          "Invalid cluster status value")
-        self.delete('/clusters/' + cluster.id)
+        self.delete('/clusters/' + cluster.id, headers=self.auth_headers)
 
-        cluster_in_db = objects.Cluster.get_cluster_by_id(cluster.id)
+        cluster_in_db = objects.Cluster.get_cluster_by_id(self.context,
+                                                          cluster.id)
         cluster.status = models.Status.DELETING
         cluster.updated_at = cluster_in_db.created_at
         cluster.updated_at = cluster_in_db.updated_at
 
-        data = self.get_json('/clusters/' + cluster.id)
+        data = self.get_json('/clusters/' + cluster.id,
+                             headers=self.auth_headers)
         self.validate_cluster_values(cluster, data)

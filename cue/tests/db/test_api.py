@@ -45,7 +45,7 @@ class ApiTests(base.TestCase):
             "volume_size": 250,
         }
 
-        db_cluster = self.dbapi.create_cluster(cluster_values)
+        db_cluster = self.dbapi.create_cluster(self.context, cluster_values)
         self.assertEqual(cluster_values["name"], db_cluster.name,
                          "invalid name value")
         self.assertEqual(cluster_values["network_id"], db_cluster.network_id,
@@ -72,8 +72,8 @@ class ApiTests(base.TestCase):
             "volume_size": 250,
         }
 
-        db_cluster = self.dbapi.create_cluster(cluster_values)
-        db_nodes = self.dbapi.get_nodes_in_cluster(db_cluster.id)
+        db_cluster = self.dbapi.create_cluster(self.context, cluster_values)
+        db_nodes = self.dbapi.get_nodes_in_cluster(self.context, db_cluster.id)
 
         for node in db_nodes:
             self.assertEqual(db_cluster.id, node.cluster_id,

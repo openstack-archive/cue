@@ -21,10 +21,10 @@ inline callbacks.
 
 """
 
+from cue.common import context as cue_context
 from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import base as db_base
 from cue.manage import database
-from cue.openstack.common import context as cue_context
 
 import os
 import shutil
@@ -113,7 +113,10 @@ class TestCase(base.BaseTestCase):
     def setUp(self):
         """Run before each test method to initialize test environment."""
         super(TestCase, self).setUp()
-        self.context = cue_context.get_admin_context()
+        self.context = cue_context.RequestContext(auth_token="auth_xxx",
+                                                  user='user',
+                                                  tenant='tenant',
+                                                  )
 
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.flags(state_path='/tmp')
