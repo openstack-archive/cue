@@ -24,4 +24,11 @@ WSME>=0.6
 keystonemiddleware>=1.0.0
 paramiko>=1.13.0
 posix_ipc
-taskflow>=0.4
+
+taskflow>=0.6.1
+-e git+https://github.com/python-zk/kazoo.git#egg=kazoo
+#PyMySQL
+python-keystoneclient
+python-novaclient
+python-cinderclient
+python-neutronclient
