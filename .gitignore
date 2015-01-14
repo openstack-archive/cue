@@ -60,3 +60,10 @@ target/
 
 # Vagrant
 .vagrant
+
+# Rope
+.ropeproject
+
+#Virtualenv
+.virtualenv
+.venv
