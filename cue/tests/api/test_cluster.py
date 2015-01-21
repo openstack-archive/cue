@@ -77,7 +77,7 @@ class TestGetCluster(api_common.ApiCommon):
             name=self.cluster_name)
         data = self.get_json('/clusters/' + cluster.id)
 
-        self.validate_cluster_values(cluster, data)
+        self.validate_cluster_values(cluster, data["cluster"])
 
 
 class TestDeleteCluster(api_common.ApiCommon):
@@ -131,4 +131,4 @@ class TestDeleteCluster(api_common.ApiCommon):
         cluster.updated_at = cluster_in_db.updated_at
 
         data = self.get_json('/clusters/' + cluster.id)
-        self.validate_cluster_values(cluster, data)
+        self.validate_cluster_values(cluster, data["cluster"])

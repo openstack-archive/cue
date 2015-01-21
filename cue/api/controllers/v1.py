@@ -93,6 +93,25 @@ class Cluster(base.APIBase):
     "List of endpoints on accessing node"
 
 
+class ApiCluster(base.APIBase):
+    """API representation of a cluster."""
+
+    cluster = Cluster
+
+    def __init__(self, **kwargs):
+        self._type = 'cluster'
+
+
+class ClusterCollection(base.APIBase):
+    """API representation of a collection of clusters."""
+
+    clusters = [Cluster]
+    """A list containing Cluster objects"""
+
+    def __init__(self, **kwargs):
+        self._type = 'clusters'
+
+
 def get_complete_cluster(cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
 
@@ -120,13 +139,14 @@ class ClusterController(rest.RestController):
     def __init__(self, cluster_id):
         self.id = cluster_id
 
-    @wsme_pecan.wsexpose(Cluster, status_code=200)
+    @wsme_pecan.wsexpose(ApiCluster, status_code=200)
     def get(self):
         """Return this cluster."""
 
-        cluster = get_complete_cluster(self.id)
+        api_cluster = ApiCluster()
+        api_cluster.cluster = get_complete_cluster(self.id)
 
-        return cluster
+        return api_cluster
 
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
@@ -137,17 +157,18 @@ class ClusterController(rest.RestController):
 class ClustersController(rest.RestController):
     """Manages operations on Clusters of nodes."""
 
-    @wsme_pecan.wsexpose([Cluster], status_code=200)
+    @wsme_pecan.wsexpose(ClusterCollection, status_code=200)
     def get(self):
         """Return list of Clusters."""
         # TODO(dagnello): update project_id accordingly when enabled
         clusters = objects.Cluster.get_clusters(project_id=0)
-        cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
-                        clusters]
+        cluster_list = ClusterCollection()
+        cluster_list.clusters = [Cluster(**obj_cluster.as_dict())
+                                 for obj_cluster in clusters]
 
         return cluster_list
 
-    @wsme_pecan.wsexpose(Cluster, body=Cluster, status_code=202)
+    @wsme_pecan.wsexpose(ApiCluster, body=Cluster, status_code=202)
     def post(self, data):
         """Create a new Cluster.
 
@@ -166,9 +187,10 @@ class ClustersController(rest.RestController):
         # create new cluster with node related data from user
         new_cluster.create(project_id)
 
-        cluster = get_complete_cluster(new_cluster.id)
+        api_cluster = ApiCluster()
+        api_cluster.cluster = get_complete_cluster(new_cluster.id)
 
-        return cluster
+        return api_cluster
 
     @pecan.expose()
     def _lookup(self, cluster_id, *remainder):
