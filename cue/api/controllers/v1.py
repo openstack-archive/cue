@@ -93,6 +93,16 @@ class Cluster(base.APIBase):
     "List of endpoints on accessing node"
 
 
+class ClusterCollection(base.APIBase):
+    """API representation of a collection of clusters."""
+
+    clusters = [Cluster]
+    """A list containing Cluster objects"""
+
+    def __init__(self, **kwargs):
+        self._type = 'clusters'
+
+
 def get_complete_cluster(cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
 
@@ -137,13 +147,14 @@ class ClusterController(rest.RestController):
 class ClustersController(rest.RestController):
     """Manages operations on Clusters of nodes."""
 
-    @wsme_pecan.wsexpose([Cluster], status_code=200)
+    @wsme_pecan.wsexpose(ClusterCollection, status_code=200)
     def get(self):
         """Return list of Clusters."""
         # TODO(dagnello): update project_id accordingly when enabled
         clusters = objects.Cluster.get_clusters(project_id=0)
-        cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
-                        clusters]
+        cluster_list = ClusterCollection()
+        cluster_list.clusters = [Cluster(**obj_cluster.as_dict())
+                                 for obj_cluster in clusters]
 
         return cluster_list
 

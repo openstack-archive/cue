@@ -26,7 +26,7 @@ class TestListClusters(api_common.ApiCommon):
 
     def test_empty(self):
         data = self.get_json('/clusters')
-        self.assertEqual([], data)
+        self.assertEqual([], data["clusters"])
 
     def test_one(self):
         cluster = test_utils.create_db_test_cluster_from_objects_api(
@@ -35,7 +35,7 @@ class TestListClusters(api_common.ApiCommon):
 
         self.assertEqual(len(data), 1, "Invalid number of clusters returned")
 
-        self.validate_cluster_values(cluster, data[0])
+        self.validate_cluster_values(cluster, data["clusters"][0])
 
     def test_multiple(self):
         cluster_0 = test_utils.create_db_test_cluster_from_objects_api(
@@ -51,13 +51,14 @@ class TestListClusters(api_common.ApiCommon):
 
         data = self.get_json('/clusters')
 
-        self.assertEqual(len(data), 5, "Invalid number of clusters returned")
+        self.assertEqual(len(data["clusters"]), 5, "Invalid number of clusters"
+                                                   " returned")
 
-        self.validate_cluster_values(cluster_0, data[0])
-        self.validate_cluster_values(cluster_1, data[1])
-        self.validate_cluster_values(cluster_2, data[2])
-        self.validate_cluster_values(cluster_3, data[3])
-        self.validate_cluster_values(cluster_4, data[4])
+        self.validate_cluster_values(cluster_0, data["clusters"][0])
+        self.validate_cluster_values(cluster_1, data["clusters"][1])
+        self.validate_cluster_values(cluster_2, data["clusters"][2])
+        self.validate_cluster_values(cluster_3, data["clusters"][3])
+        self.validate_cluster_values(cluster_4, data["clusters"][4])
 
 
 class TestCreateCluster(api_common.ApiCommon):
