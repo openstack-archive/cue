@@ -1,0 +1,40 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$vm_count   = 3
+$hostname   = File.basename(File.dirname(__FILE__))
+$domain     = "localdomain"
+$ip_prefix  = "10.250.250"
+#$pkg_mirror = "http://localhost/mirror"
+
+
+$ip_list = ""
+(1..$vm_count).each do |i|
+  $ip_list += "#{$ip_prefix}.#{100+i} "
+end
+
+VAGRANTFILE_API_VERSION = "2"
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "sputnik13/wheezy64"
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = false
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+  end
+
+  config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+
+  (1..$vm_count).each do |i|
+    config.vm.define "#{$hostname}#{i}" do |node|
+      node.vm.hostname = "#{$hostname}#{i}"
+      node.vm.network :private_network, ip: "#{$ip_prefix}.#{100+i}", :netmask => "255.255.255.0"
+      node.hostmanager.aliases = ["#{$hostname}#{i}.#{$domain}", "#{$hostname}#{i}"]
+
+      if $pkg_mirror then
+        node.vm.provision "shell", inline: "sed -e 's/http:\/\/.*.archive.ubuntu.com/http:\/\/#{$pkg_mirror}/' -i /etc/apt/sources.list ; apt-get update"
+      end
+      node.vm.provision "shell", inline: "/vagrant/install.sh -n #{$vm_count} #{i} #{$ip_list}"
+    end
+  end
+end
