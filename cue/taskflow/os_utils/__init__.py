@@ -17,14 +17,21 @@ import cinderclient.client as CinderClient
 import neutronclient.neutron.client as NeutronClient
 import novaclient.client as NovaClient
 
+neutron_version = '2.0'
+neutron_client_parameters = {
+    'username': 'admin',
+    'password': 'messina',
+    'tenant_name': 'demo',
+    'auth_url': 'http://192.168.131.136:5000/v2.0'
+}
+
 
 def nova_client():
     return NovaClient.Client(2,
                              'admin',
                              'secrete',
                              'demo',
-                             'http://192.168.41.183:5000/v2.0'
-                            )
+                             'http://192.168.41.183:5000/v2.0')
 
 
 def cinder_client():
@@ -32,15 +39,9 @@ def cinder_client():
                                'admin',
                                'secrete',
                                'demo',
-                               'http://192.168.41.183:5000/v2.0'
-                              )
+                               'http://192.168.41.183:5000/v2.0')
 
 
 def neutron_client():
-    return NeutronClient.Client('2.0',
-                                'admin',
-                                'secrete',
-                                'demo',
-                                'http://192.168.41.183:5000/v2.0'
-                               )
-    return "blah"
+    return NeutronClient.Client(neutron_version,
+                                **neutron_client_parameters)
