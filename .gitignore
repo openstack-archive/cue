@@ -54,6 +54,7 @@ coverage.xml
 # Sphinx documentation
 doc/build
 doc/source/api
+doc/source/autoindex.rst
 
 # PyBuilder
 target/
