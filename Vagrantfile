@@ -84,6 +84,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Initialize project and environment
   config.vm.provision "shell", inline: "pushd /vagrant && tox ; true"
   config.vm.provision "shell", inline: "source /vagrant/.tox/py27/bin/activate ; pushd /vagrant && python setup.py develop"
-  config.vm.provision "shell", inline: "echo 'source /vagrant/.tox/py27/bin/activate' >> ~root/.profile"
+  #config.vm.provision "shell", inline: "echo 'source /vagrant/.tox/py27/bin/activate' >> ~root/.profile"
 
 end
