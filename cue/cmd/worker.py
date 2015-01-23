@@ -14,38 +14,52 @@
 # under the License.
 
 
+import logging
 import sys
 
-from taskflow.conductors import single_threaded
-from taskflow.jobs import backends as job_backends
-from taskflow.persistence import backends as persistence_backends
+import eventlet
+import oslo.config.cfg as cfg
+import oslo_log.log as log
 
-PERSISTENCE_BACKEND_CONF = {
-    #"connection": "mysql+pymysql://taskflow:taskflow@localhost/taskflow",
-    "connection": "zookeeper",
-}
+from cue.common.i18n import _LI  # noqa
+import cue.common.service as cue_service
+import cue.openstack.common.service as os_service
+import cue.runner.service as runner
 
-JOB_BACKEND_CONF = {
-    "board": "zookeeper",
-    "path": "/taskflow/jobs/tutorial_conduct",
-}
+
+eventlet.monkey_patch(os=False)
+
+
+WORKER_OPTS = [
+    cfg.IntOpt('count',
+               help="Number of worker processes to spawn",
+               default=10)
+]
+
+opt_group = cfg.OptGroup(
+    name='worker',
+    title='Options for cue worker'
+)
+
+cfg.CONF.register_group(opt_group)
+cfg.CONF.register_opts(WORKER_OPTS, group=opt_group)
 
 
 def main():
-    with persistence_backends.backend(
-            PERSISTENCE_BACKEND_CONF.copy()
-         ) as persistence:
+    # Initialize environment
+    CONF = cfg.CONF
+    cue_service.prepare_service(sys.argv)
 
-        with job_backends.backend(
-                'tutorial_conduct',
-                JOB_BACKEND_CONF.copy(),
-                persistence=persistence
-             ) as board:
+    # Log configuration and other startup information
+    LOG = log.getLogger(__name__)
+    LOG.info(_LI("Starting cue workers"))
+    LOG.info(_LI("Configuration:"))
+    CONF.log_opt_values(LOG, logging.INFO)
 
-            conductor = single_threaded.SingleThreadedConductor(
-                "conductor name", board, persistence, engine='serial')
-
-            conductor.run()
+    cue_worker = runner.ConductorService.create("cue-worker")
+    #cue_worker.start()
+    launcher = os_service.launch(service=cue_worker, workers=CONF.worker.count)
+    launcher.wait()
 
 
 if __name__ == "__main__":

@@ -25,10 +25,13 @@ import cue.common.service as cue_service
 
 PERSISTENCE_BACKEND_CONF = {
     "connection": "zookeeper",
+    "hosts": "localhost",
+    "path": "/cue/taskflow",
 }
 
 JOB_BACKEND_CONF = {
     "board": "zookeeper",
+    "path": "/cue/taskflow/jobs",
 }
 
 CONF = cfg.CONF
@@ -45,23 +48,12 @@ def main():
 
         with job_backends.backend(
                 'tutorial_simple',
-                {"board": "zookeeper",
-                 "path": "/taskflow/jobs/tutorial_simple"
-                },
+                JOB_BACKEND_CONF.copy(),
                 persistence=persistence
-             ) as board_simple:
-
-            with job_backends.backend(
-                    'tutorial_conduct',
-                    {"board": "zookeeper",
-                     "path": "/taskflow/jobs/tutorial_conduct"
-                    },
-                    persistence=persistence
-                 ) as board_conduct:
+             ) as board:
 
                 while True:
-                    job_count = board_simple.job_count
-                    job_count += board_conduct.job_count
+                    job_count = board.job_count
                     LOG.info("%d outstanding jobs" % (job_count))
                     time.sleep(1)
 
