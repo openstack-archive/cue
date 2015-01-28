@@ -1,5 +1,16 @@
 {
-    "admin": "role:admin or role:administrator",
-    "admin_api": "is_admin:True",
-    "default": "rule:admin_api"
+    "admin": "role:admin or is_admin:True",
+    "owner": "tenant:%(tenant_id)s",
+    "admin_or_owner": "rule:admin or rule:owner",
+    "target": "tenant:%(target_tenant_id)s",
+    "owner_or_target":"rule:target or rule:owner",
+    "admin_or_owner_or_target":"rule:owner_or_target or rule:admin",
+    "admin_or_target":"rule:admin or rule:target",
+
+    "default": "rule:admin_or_owner",
+
+    "create_cluster": "rule:admin_or_owner",
+    "get_clusters": "rule:admin_or_owner",
+    "get_cluster": "rule:admin_or_owner",
+    "delete_cluster": "rule:admin_or_owner"
 }

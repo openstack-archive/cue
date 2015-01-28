@@ -24,7 +24,7 @@ inline callbacks.
 from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import base as db_base
 from cue.manage import database
-from cue.openstack.common import context as cue_context
+from cue.tests import fixture
 
 import os
 import shutil
@@ -113,7 +113,6 @@ class TestCase(base.BaseTestCase):
     def setUp(self):
         """Run before each test method to initialize test environment."""
         super(TestCase, self).setUp()
-        self.context = cue_context.get_admin_context()
 
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.flags(state_path='/tmp')
@@ -143,7 +142,7 @@ class TestCase(base.BaseTestCase):
         self.injected = []
         # This will be cleaned up by the NestedTempfile fixture
         # CONF.set_override('lock_path', tempfile.mkdtemp())
-        #self.policy = self.useFixture(policy_fixture.PolicyFixture())
+        self.policy = self.useFixture(fixture.PolicyFixture())
 
         # self.CONF.register_opt('config_dir')
 

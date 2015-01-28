@@ -18,11 +18,8 @@
 
 from oslo.config import cfg
 from pecan import hooks
-from webob import exc
 
 from cue.common import context
-from cue.common import policy
-#from cue.conductor import rpcapi
 from cue.db import api as dbapi
 
 
@@ -72,13 +69,8 @@ class ContextHook(hooks.PecanHook):
         domain_id = state.request.headers.get('X-User-Domain-Id')
         domain_name = state.request.headers.get('X-User-Domain-Name')
         auth_token = state.request.headers.get('X-Auth-Token')
-        #creds = {'roles': state.request.headers.get('X-Roles', '').split(',')}
 
         is_public_api = state.request.environ.get('is_public_api', False)
-
-        #is_admin = policy.check('admin', state.request.headers, creds)
-        #TODO(dagnello): temp workaround to disably policy check for now
-        is_admin = True
 
         state.request.context = context.RequestContext(
             auth_token=auth_token,
@@ -86,7 +78,6 @@ class ContextHook(hooks.PecanHook):
             tenant=tenant,
             domain_id=domain_id,
             domain_name=domain_name,
-            is_admin=is_admin,
             is_public_api=is_public_api)
 
 
@@ -95,21 +86,6 @@ class ContextHook(hooks.PecanHook):
 #
 #     def before(self, state):
 #         state.request.rpcapi = rpcapi.ConductorAPI()
-
-
-class AdminAuthHook(hooks.PecanHook):
-    """Verify that the user has admin rights.
-
-    Checks whether the request context is an admin context and
-    rejects the request otherwise.
-
-    """
-    def before(self, state):
-        ctx = state.request.context
-        is_admin_api = policy.check('admin_api', {}, ctx.to_dict())
-
-        if not is_admin_api and not ctx.is_public_api:
-            raise exc.HTTPForbidden()
 
 
 class NoExceptionTracebackHook(hooks.PecanHook):

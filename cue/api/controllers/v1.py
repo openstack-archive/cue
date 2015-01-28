@@ -20,10 +20,9 @@
 """
 from cue.api.controllers import base
 from cue.common import exception
+from cue.common import policy
 from cue.common.i18n import _  # noqa
 from cue import objects
-
-import uuid
 
 import pecan
 from pecan import rest
@@ -123,14 +122,35 @@ class ClusterController(rest.RestController):
     @wsme_pecan.wsexpose(Cluster, status_code=200)
     def get(self):
         """Return this cluster."""
+        ctxt = pecan.request.context
 
         cluster = get_complete_cluster(self.id)
+
+        target = {
+            "tenant_id": ctxt.tenant,
+            "cluster_id": self.id,
+            "cluster_name": cluster.name
+        }
+
+        policy.check("get_cluster", ctxt, target)
 
         return cluster
 
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
         """Delete this Cluster."""
+        ctxt = pecan.request.context
+
+        cluster = objects.Cluster.get_cluster_by_id(self.id)
+
+        target = {
+            "tenant_id": ctxt.tenant,
+            "cluster_id": self.id,
+            "cluster_name": cluster.name
+        }
+
+        policy.check("delete_cluster", ctxt, target)
+
         objects.Cluster.update_cluster_deleting(self.id)
 
 
@@ -140,8 +160,14 @@ class ClustersController(rest.RestController):
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
         """Return list of Clusters."""
+        ctxt = pecan.request.context
+
+        target = {"tenant_id": ctxt.tenant}
+        policy.check("get_clusters", ctxt, target)
+
         # TODO(dagnello): update project_id accordingly when enabled
-        clusters = objects.Cluster.get_clusters(project_id=0)
+
+        clusters = objects.Cluster.get_clusters(project_id=ctxt.tenant)
         cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
                         clusters]
 
@@ -153,6 +179,7 @@ class ClustersController(rest.RestController):
 
         :param data: cluster parameters within the request body.
         """
+        ctxt = pecan.request.context
 
         if data.size <= 0:
             raise exception.Invalid(_("Invalid cluster size provided"))
@@ -160,11 +187,15 @@ class ClustersController(rest.RestController):
         # create new cluster object with required data from user
         new_cluster = objects.Cluster(**data.as_dict())
 
-        # TODO(dagnello): project_id will have to be extracted from HTTP header
-        project_id = unicode(uuid.uuid1())
+        target = {
+            "tenant_id": ctxt.tenant,
+            "cluster_name": new_cluster.name
+        }
+
+        policy.check("create_cluster", ctxt, target)
 
         # create new cluster with node related data from user
-        new_cluster.create(project_id)
+        new_cluster.create(ctxt.tenant)
 
         cluster = get_complete_cluster(new_cluster.id)
 

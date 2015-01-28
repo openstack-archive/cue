@@ -117,8 +117,10 @@ class TestCreateCluster(api_common.ApiCommon):
         """
         api_cluster = test_utils.create_api_test_cluster(size=3)
         header = {'Content-Type': 'application/json'}
+
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=header, status=202)
+
         cluster = objects.Cluster.get_cluster_by_id(data.json["id"])
         self.validate_cluster_values(cluster, data.json)
         self.assertEqual(models.Status.BUILDING, data.json['status'])
