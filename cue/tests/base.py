@@ -25,6 +25,7 @@ from cue.common import context as cue_context
 from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import base as db_base
 from cue.manage import database
+from cue.tests import fixture as cue_fixtures
 
 import os
 import shutil
@@ -115,10 +116,8 @@ class TestCase(base.BaseTestCase):
     def setUp(self):
         """Run before each test method to initialize test environment."""
         super(TestCase, self).setUp()
-        self.context = cue_context.RequestContext(auth_token="auth_xxx",
-                                                  user='user',
-                                                  tenant='tenant',
-                                                  )
+
+        self.context = self.get_context()
 
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.flags(state_path='/tmp')
@@ -148,7 +147,7 @@ class TestCase(base.BaseTestCase):
         self.injected = []
         # This will be cleaned up by the NestedTempfile fixture
         # CONF.set_override('lock_path', tempfile.mkdtemp())
-        #self.policy = self.useFixture(policy_fixture.PolicyFixture())
+        self.policy = self.useFixture(cue_fixtures.PolicyFixture())
 
         # self.CONF.register_opt('config_dir')
 
@@ -159,6 +158,15 @@ class TestCase(base.BaseTestCase):
             fixture = fixture_cls()
             self.useFixture(fixture)
             self._additional_fixtures.append(fixture)
+
+    def get_context(self, **kwargs):
+        auth_token = kwargs.get('auth_token', "auth_xxx")
+        user = kwargs.get("user", "user")
+        tenant = kwargs.get("tenant", "tenant-a")
+        return cue_context.RequestContext(auth_token=auth_token,
+                                          user=user,
+                                          tenant=tenant,
+                                          )
 
     def tearDown(self):
         """Runs after each test method to tear down test environment."""
