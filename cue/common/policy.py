@@ -59,7 +59,10 @@ def set_rules(data, default_rule=None, overwrite=True):
 
 
 def init(default_rule=None):
-    policy_file = cfg.CONF.find_file(cfg.CONF.policy_file)
+    if "config_dir" in cfg.CONF:
+        policy_file = cfg.CONF.find_file(cfg.CONF.policy_file)
+    else:
+        policy_file = cfg.CONF.pybasedir + '/etc/cue/' + cfg.CONF.policy_file
 
     if len(policy_file) == 0:
         msg = 'Unable to determine appropriate policy json file'
@@ -80,11 +83,11 @@ def init(default_rule=None):
 
 
 def check(rule, ctxt, target=None, do_raise=True, exc=exception.NotAuthorized):
-    #creds = ctxt.to_dict()
+    creds = ctxt.to_dict()
     target = target or {}
 
     try:
-        result = _ENFORCER.enforce(rule, target, ctxt, do_raise, exc)
+        result = _ENFORCER.enforce(rule, target, creds, do_raise, exc)
     except Exception:
         result = False
         raise

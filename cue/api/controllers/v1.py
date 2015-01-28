@@ -123,6 +123,7 @@ class ClusterController(rest.RestController):
     def get(self):
         """Return this cluster."""
         context = pecan.request.context
+
         cluster = get_complete_cluster(context, self.id)
 
         return cluster
@@ -131,6 +132,9 @@ class ClusterController(rest.RestController):
     def delete(self):
         """Delete this Cluster."""
         context = pecan.request.context
+
+        cluster = objects.Cluster.get_cluster_by_id(context, self.id)
+
         objects.Cluster.update_cluster_deleting(context, self.id)
 
 
@@ -140,8 +144,8 @@ class ClustersController(rest.RestController):
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
         """Return list of Clusters."""
-
         context = pecan.request.context
+
         clusters = objects.Cluster.get_clusters(context)
         cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
                         clusters]
