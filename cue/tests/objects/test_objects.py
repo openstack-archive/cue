@@ -20,8 +20,11 @@ Tests for cue objects classes.
 """
 import iso8601
 from oslo.utils import timeutils
+from mock import patch
+import testtools
 
 from cue.api.controllers import v1
+from cue.common import exception
 from cue.db import api as db_api
 from cue.db.sqlalchemy import models
 from cue import objects
@@ -192,11 +195,35 @@ class ClusterObjectsApiTests(base.TestCase):
     def test_get_clusters(self):
         """Tests getting all Clusters from Cluster objects API."""
 
-    def test_get_clusters_by_id(self):
+    def test_get_cluster_by_id(self):
         """Tests get Cluster by id from Cluster objects API."""
 
-    def test_mark_cluster_as_delete(self):
+    def test_get_cluster_by_id_forbidden(self):
+        """Tests get Cluster by id from Cluster objects API."""
+        api_cluster = test_utils.create_db_test_cluster_from_objects_api(
+            self.context)
+        tenant_b = self.get_context(tenant='b')
+
+        with patch.object(
+            objects.Cluster.dbapi, 'get_cluster_by_id',
+                return_value=api_cluster):
+            with testtools.ExpectedException(exception.NotAuthorized):
+                objects.Cluster.get_cluster_by_id(tenant_b, api_cluster.id)
+
         """Tests marking clusters for delete from Cluster objects API."""
+
+    def test_update_cluster_deleting(self):
+        """Tests marking clusters for delete from Cluster objects API."""
+        api_cluster = test_utils.create_db_test_cluster_from_objects_api(
+            self.context)
+        tenant_b = self.get_context(tenant='b')
+
+        with patch.object(
+            objects.Cluster.dbapi, 'get_cluster_by_id',
+                return_value=api_cluster):
+            with testtools.ExpectedException(exception.NotAuthorized):
+                objects.Cluster.update_cluster_deleting(
+                    tenant_b, api_cluster.id)
 
 
 class NodeObjectsApiTests(base.TestCase):

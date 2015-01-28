@@ -16,6 +16,7 @@
 # Copyright [2014] Hewlett-Packard Development Company, L.P.
 # limitations under the License.
 
+from cue.common import policy
 from cue.db import api as db_api
 from cue.objects import base
 from cue.objects import utils as obj_utils
@@ -56,6 +57,9 @@ class Cluster(base.CueObject):
         self['project_id'] = context.project_id
         cluster_changes = self.obj_get_changes()
 
+        target = {'tenant_id': self['project_id']}
+        policy.check('clusters:create', context, target)
+
         db_cluster = self.dbapi.create_cluster(context, cluster_changes)
 
         self._from_db_object(self, db_cluster)
@@ -68,6 +72,9 @@ class Cluster(base.CueObject):
         :returns: a list of :class:'Cluster' object.
 
         """
+        target = {'tenant_id': context.tenant}
+        policy.check('clusters:get', context, target)
+
         db_clusters = cls.dbapi.get_clusters(context)
         return [Cluster._from_db_object(Cluster(), obj) for obj in db_clusters]
 
@@ -81,7 +88,12 @@ class Cluster(base.CueObject):
 
         """
         db_cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
+
+        target = {'tenant_id': db_cluster.project_id}
+        policy.check("cluster:get", context, target)
+
         cluster = Cluster._from_db_object(Cluster(), db_cluster)
+
         return cluster
 
     @classmethod
@@ -92,4 +104,11 @@ class Cluster(base.CueObject):
         :param cluster_id: UUID of a cluster.
 
         """
+        cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
+
+        target = {
+            'tenant_id': cluster.project_id
+        }
+        policy.check("cluster:delete", context, target)
+
         cls.dbapi.update_cluster_deleting(context, cluster_id)

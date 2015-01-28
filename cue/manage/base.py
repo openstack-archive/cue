@@ -15,7 +15,7 @@
 # under the License.
 #
 # Copied: Designate
-from cue.openstack.common import context
+from cue.common import context
 
 
 # Decorators for actions
