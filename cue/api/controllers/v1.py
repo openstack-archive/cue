@@ -140,7 +140,6 @@ class ClustersController(rest.RestController):
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
         """Return list of Clusters."""
-
         context = pecan.request.context
         clusters = objects.Cluster.get_clusters(context)
         cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in

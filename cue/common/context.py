@@ -11,16 +11,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from cue.openstack.common import context
+from oslo_context import context
 
 
 class RequestContext(context.RequestContext):
     """Extends security contexts from the OpenStack common library."""
 
-    def __init__(self, auth_token=None, domain_id=None, domain_name=None,
-                 user=None, tenant=None, is_admin=False, is_public_api=False,
-                 read_only=False, show_deleted=False, request_id=None):
+    def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
+                 user_domain=None, project_domain=None, is_admin=False,
+                 read_only=False, show_deleted=False, request_id=None,
+                 resource_uuid=None, overwrite=True, roles=None,
+                 is_public_api=False, domain_id=None, domain_name=None):
         """Stores several additional request parameters:
 
         :param domain_id: The ID of the domain.
@@ -29,6 +30,7 @@ class RequestContext(context.RequestContext):
                               without authentication.
 
         """
+        self.roles = roles or []
         self.is_public_api = is_public_api
         self.domain_id = domain_id
         self.domain_name = domain_name
@@ -60,20 +62,16 @@ class RequestContext(context.RequestContext):
     def user_id(self, user_id):
         self.user = user_id
 
-    def to_dict(self):
-        return {'auth_token': self.auth_token,
-                'user': self.user,
-                'tenant': self.tenant,
-                'is_admin': self.is_admin,
-                'read_only': self.read_only,
-                'show_deleted': self.show_deleted,
-                'request_id': self.request_id,
-                'domain_id': self.domain_id,
-                'domain_name': self.domain_name,
-                'is_public_api': self.is_public_api}
-
     @classmethod
     def from_dict(cls, values):
-        values.pop('user', None)
-        values.pop('tenant', None)
         return cls(**values)
+
+    def to_dict(self):
+        values = super(RequestContext, self).to_dict()
+        values.update({
+            "roles": self.roles,
+            "is_public_api": self.is_public_api,
+            "domain_id": self.domain_id,
+            "domain_name": self.domain_name
+        })
+        return values

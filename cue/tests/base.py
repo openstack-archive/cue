@@ -25,6 +25,7 @@ from cue.common import context as cue_context
 from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import base as db_base
 from cue.manage import database
+from cue.tests import fixture
 
 import os
 import shutil
@@ -148,7 +149,7 @@ class TestCase(base.BaseTestCase):
         self.injected = []
         # This will be cleaned up by the NestedTempfile fixture
         # CONF.set_override('lock_path', tempfile.mkdtemp())
-        #self.policy = self.useFixture(policy_fixture.PolicyFixture())
+        self.policy = self.useFixture(fixture.PolicyFixture())
 
         # self.CONF.register_opt('config_dir')
 
