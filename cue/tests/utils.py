@@ -93,7 +93,7 @@ def create_api_test_cluster_all(**kw):
     return new_cluster
 
 
-def create_db_test_cluster_from_objects_api(**kw):
+def create_db_test_cluster_from_objects_api(context, **kw):
     """Create test Cluster entry in DB from objects API and return Cluster
 
     DB object.  Function to be used to create test Cluster objects in the
@@ -115,14 +115,12 @@ def create_db_test_cluster_from_objects_api(**kw):
 
     new_cluster = objects.Cluster(**cluster_parameters)
 
-    project_id = cluster['project_id']
-
-    new_cluster.create(project_id)
+    new_cluster.create(context)
 
     return new_cluster
 
 
-def create_db_test_cluster_model_object(**kw):
+def create_db_test_cluster_model_object(context, **kw):
     """Create test Cluster DB model object.
 
     :param kw: kwargs with overriding values for cluster's attributes.

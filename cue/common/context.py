@@ -40,6 +40,26 @@ class RequestContext(context.RequestContext):
                                              show_deleted=show_deleted,
                                              request_id=request_id)
 
+    @property
+    def project_id(self):
+        return self.tenant
+
+    @property
+    def tenant_id(self):
+        return self.tenant
+
+    @tenant_id.setter
+    def tenant_id(self, tenant_id):
+        self.tenant = tenant_id
+
+    @property
+    def user_id(self):
+        return self.user
+
+    @user_id.setter
+    def user_id(self, user_id):
+        self.user = user_id
+
     def to_dict(self):
         return {'auth_token': self.auth_token,
                 'user': self.user,

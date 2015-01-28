@@ -44,13 +44,13 @@ class Node(base.CueObject):
         return node
 
     @classmethod
-    def get_nodes_by_cluster_id(cls, cluster_id):
+    def get_nodes_by_cluster_id(cls, context, cluster_id):
         """Returns a list of Node objects for specified cluster.
 
         :param cluster_id: UUID of the cluster.
         :returns: a list of :class:'Node' object.
 
         """
-        db_nodes = cls.dbapi.get_nodes_in_cluster(cluster_id)
+        db_nodes = cls.dbapi.get_nodes_in_cluster(context, cluster_id)
 
         return [Node._from_db_object(Node(), obj) for obj in db_nodes]

@@ -16,11 +16,13 @@ Tests for the API /clusters/ controller methods.
 """
 from cue.db.sqlalchemy import models
 from cue import objects
-from cue.tests.api import api_common
+from cue.tests import api
+from cue.tests.api import api_utils
 from cue.tests import utils as test_utils
 
 
-class TestListClusters(api_common.ApiCommon):
+class TestListClusters(api.FunctionalTest,
+                       api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestListClusters, self).setUp()
 
@@ -30,8 +32,9 @@ class TestListClusters(api_common.ApiCommon):
 
     def test_one(self):
         cluster = test_utils.create_db_test_cluster_from_objects_api(
+            self.context,
             name=self.cluster_name)
-        data = self.get_json('/clusters')
+        data = self.get_json('/clusters', headers=self.auth_headers)
 
         self.assertEqual(len(data), 1, "Invalid number of clusters returned")
 
@@ -39,17 +42,22 @@ class TestListClusters(api_common.ApiCommon):
 
     def test_multiple(self):
         cluster_0 = test_utils.create_db_test_cluster_from_objects_api(
+            self.context,
             name=self.cluster_name + '_0')
         cluster_1 = test_utils.create_db_test_cluster_from_objects_api(
+            self.context,
             name=self.cluster_name + '_1')
         cluster_2 = test_utils.create_db_test_cluster_from_objects_api(
+            self.context,
             name=self.cluster_name + '_2')
         cluster_3 = test_utils.create_db_test_cluster_from_objects_api(
+            self.context,
             name=self.cluster_name + '_3')
         cluster_4 = test_utils.create_db_test_cluster_from_objects_api(
+            self.context,
             name=self.cluster_name + '_4')
 
-        data = self.get_json('/clusters')
+        data = self.get_json('/clusters', headers=self.auth_headers)
 
         self.assertEqual(len(data), 5, "Invalid number of clusters returned")
 
@@ -60,15 +68,16 @@ class TestListClusters(api_common.ApiCommon):
         self.validate_cluster_values(cluster_4, data[4])
 
 
-class TestCreateCluster(api_common.ApiCommon):
+class TestCreateCluster(api.FunctionalTest,
+                        api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestCreateCluster, self).setUp()
 
     def test_create_empty_body(self):
         cluster_params = {}
-        header = {'Content-Type': 'application/json'}
+        #header = {'Content-Type': 'application/json'}
         data = self.post_json('/clusters', params=cluster_params,
-                              headers=header, expect_errors=True)
+                              expect_errors=True)
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
         self.assertEqual('400 Bad Request', data.status,
@@ -80,9 +89,10 @@ class TestCreateCluster(api_common.ApiCommon):
     def test_create_size_zero(self):
         """test create an empty cluster."""
         api_cluster = test_utils.create_api_test_cluster(size=0)
-        header = {'Content-Type': 'application/json'}
-        data = self.post_json('/clusters', params=api_cluster.as_dict(),
-                              headers=header, expect_errors=True)
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster.as_dict(),
+                            expect_errors=True)
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
         self.assertEqual('400 Bad Request', data.status,
@@ -98,14 +108,16 @@ class TestCreateCluster(api_common.ApiCommon):
         returns the same cluster from the API.
         """
         api_cluster = test_utils.create_api_test_cluster(size=1)
-        header = {'Content-Type': 'application/json'}
+
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
-                              headers=header, status=202)
-        cluster = objects.Cluster.get_cluster_by_id(data.json["id"])
+                              headers=self.auth_headers, status=202)
+        cluster = objects.Cluster.get_cluster_by_id(self.context,
+                                                    data.json["id"])
         self.validate_cluster_values(cluster, data.json)
         self.assertEqual(models.Status.BUILDING, data.json['status'])
 
-        data_api = self.get_json('/clusters/' + cluster.id)
+        data_api = self.get_json('/clusters/' + cluster.id,
+                                 headers=self.auth_headers)
         self.validate_cluster_values(cluster, data_api)
         self.assertEqual(models.Status.BUILDING, data_api['status'])
 
@@ -116,23 +128,24 @@ class TestCreateCluster(api_common.ApiCommon):
         returns the same cluster from the API.
         """
         api_cluster = test_utils.create_api_test_cluster(size=3)
-        header = {'Content-Type': 'application/json'}
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
-                              headers=header, status=202)
-        cluster = objects.Cluster.get_cluster_by_id(data.json["id"])
+                              headers=self.auth_headers, status=202)
+        cluster = objects.Cluster.get_cluster_by_id(self.context,
+                                                    data.json["id"])
         self.validate_cluster_values(cluster, data.json)
         self.assertEqual(models.Status.BUILDING, data.json['status'])
 
-        data_api = self.get_json('/clusters/' + cluster.id)
+        data_api = self.get_json('/clusters/' + cluster.id,
+                                 headers=self.auth_headers)
         self.validate_cluster_values(cluster, data_api)
         self.assertEqual(models.Status.BUILDING, data_api['status'])
 
     def test_create_invalid_size_format(self):
         """test with invalid formatted size parameter."""
         api_cluster = test_utils.create_api_test_cluster(size="a")
-        header = {'Content-Type': 'application/json'}
+
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
-                              headers=header, expect_errors=True)
+                              headers=self.auth_headers, expect_errors=True)
         self.assertEqual(500, data.status_code,
                          'Invalid status code value received.')
         self.assertEqual('500 Internal Server Error', data.status,

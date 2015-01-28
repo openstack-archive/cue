@@ -36,7 +36,7 @@ class ModelsTests(base.TestCase):
         cluster_values = {
             "id": UUID1,
             "network_id": UUID3,
-            "project_id": UUID2,
+            "project_id": self.context.project_id,
             "name": "Cluster test",
             "status": models.Status.BUILDING,
             "flavor": "medium",
@@ -80,7 +80,8 @@ class ModelsTests(base.TestCase):
         cluster.save(db_session)
 
         dbapi = db_api.get_instance()
-        cluster_db = dbapi.get_cluster_by_id(cluster_values["id"])
+        cluster_db = dbapi.get_cluster_by_id(self.context,
+                                             cluster_values["id"])
 
         self.assertEqual(cluster_values["id"], cluster_db.id, "Invalid ID "
                                                               "value")
@@ -119,7 +120,7 @@ class ModelsTests(base.TestCase):
             "size": 3,
             "volume_size": 250,
         }
-        db_cluster = dbapi.create_cluster(cluster_values)
+        db_cluster = dbapi.create_cluster(self.context, cluster_values)
 
         node_values = {
             "id": UUID1,
@@ -157,7 +158,7 @@ class ModelsTests(base.TestCase):
         db_session = sql_api.get_session()
         node.save(db_session)
 
-        node_db = dbapi.get_node_by_id(node_values["id"])
+        node_db = dbapi.get_node_by_id(self.context, node_values["id"])
 
         self.assertEqual(node_values["id"], node_db.id, "Invalid ID value")
         self.assertEqual(node_values["cluster_id"], node_db.cluster_id,
@@ -189,7 +190,7 @@ class ModelsTests(base.TestCase):
             "size": 3,
             "volume_size": 250,
         }
-        db_cluster = dbapi.create_cluster(cluster_values)
+        db_cluster = dbapi.create_cluster(self.context, cluster_values)
 
         node_values = {
             "cluster_id": db_cluster.id,
@@ -226,7 +227,8 @@ class ModelsTests(base.TestCase):
                          "Invalid deleted value")
 
         endpoint.save(db_session)
-        endpoint_db = dbapi.get_endpoint_by_id(endpoint_values["id"])
+        endpoint_db = dbapi.get_endpoint_by_id(self.context,
+                                               endpoint_values["id"])
 
         self.assertEqual(endpoint_values["id"], endpoint_db.id, "Invalid ID "
                                                                 "value")

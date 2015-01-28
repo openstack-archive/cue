@@ -47,47 +47,49 @@ class Cluster(base.CueObject):
             cluster[field] = db_cluster[field]
         return cluster
 
-    def create(self, project_id):
+    def create(self, context):
         """Creates a new cluster.
 
-        :param project_id: The project id the cluster resides in.
+        :param context: The request context
 
         """
-        self['project_id'] = project_id
+        self['project_id'] = context.project_id
         cluster_changes = self.obj_get_changes()
 
-        db_cluster = self.dbapi.create_cluster(cluster_changes)
+        db_cluster = self.dbapi.create_cluster(context, cluster_changes)
 
         self._from_db_object(self, db_cluster)
 
     @classmethod
-    def get_clusters(cls, project_id):
-        """Returns a list of Cluster objects for specified project_id.
+    def get_clusters(cls, context):
+        """Returns a list of Cluster objects for project_id.
 
-        :param project_id: UUID of a project/tenant.
+        :param context: The request context.
         :returns: a list of :class:'Cluster' object.
 
         """
-        db_clusters = cls.dbapi.get_clusters(project_id)
+        db_clusters = cls.dbapi.get_clusters(context)
         return [Cluster._from_db_object(Cluster(), obj) for obj in db_clusters]
 
     @classmethod
-    def get_cluster_by_id(cls, cluster_id):
+    def get_cluster_by_id(cls, context, cluster_id):
         """Returns a Cluster objects for specified cluster_id.
 
-        :param cluster_id: UUID of a cluster.
+        :param context: The request context
+        :param cluster_id: the cluster_id to retrieve
         :returns: a :class:'Cluster' object.
 
         """
-        db_cluster = cls.dbapi.get_cluster_by_id(cluster_id)
+        db_cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
         cluster = Cluster._from_db_object(Cluster(), db_cluster)
         return cluster
 
     @classmethod
-    def update_cluster_deleting(cls, cluster_id):
+    def update_cluster_deleting(cls, context, cluster_id):
         """Marks specified cluster to indicate deletion.
 
+        :param context: The request context
         :param cluster_id: UUID of a cluster.
 
         """
-        cls.dbapi.update_cluster_deleting(cluster_id)
+        cls.dbapi.update_cluster_deleting(context, cluster_id)

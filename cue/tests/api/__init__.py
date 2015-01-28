@@ -22,6 +22,7 @@ from oslo.config import fixture as fixture_config
 import pecan
 import pecan.testing
 
+from cue.api import hooks
 from cue.tests import base
 
 OPT_GROUP_NAME = 'keystone_authtoken'
@@ -47,6 +48,8 @@ class FunctionalTest(base.TestCase):
         # self.CONF.set_override("policy_file",
         #                        self.path_get('etc/cue/policy.json'))
         self.app = self._make_app()
+        self.auth_headers = {'X-User-Id': str(self.context.user_id),
+                             'X-Tenant-Id': str(self.context.project_id)}
 
     def _make_app(self, enable_acl=False):
         # Determine where we are so we can set up paths in the config
@@ -56,6 +59,7 @@ class FunctionalTest(base.TestCase):
             'app': {
                 'root': 'cue.api.controllers.root.RootController',
                 'modules': ['cue.api'],
+                'hooks': [hooks.ContextHook],
                 'static_root': '%s/public' % root_dir,
                 'template_path': '%s/cue/api/templates' % root_dir,
                 'enable_acl': enable_acl,

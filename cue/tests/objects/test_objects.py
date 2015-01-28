@@ -124,7 +124,7 @@ class ClusterObjectsTests(base.TestCase):
         to db object.
         """
         db_cluster_object = test_utils.create_db_test_cluster_model_object(
-                            deleted_at=timeutils.utcnow(), deleted=True)
+            self.context, deleted_at=timeutils.utcnow(), deleted=True)
         object_cluster = objects.Cluster._from_db_object(objects.Cluster(),
                                                          db_cluster_object)
         self.validate_cluster_values(db_cluster_object, object_cluster)

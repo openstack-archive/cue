@@ -19,10 +19,8 @@
 Common API base class to controller test classes.
 """
 
-import cue.tests.api as api_base
 
-
-class ApiCommon(api_base.FunctionalTest):
+class ClusterValidationMixin(object):
     cluster_name = "test-cluster"
 
     def validate_cluster_values(self, cluster_ref, cluster_cmp):

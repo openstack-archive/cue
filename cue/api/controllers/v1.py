@@ -23,8 +23,6 @@ from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue import objects
 
-import uuid
-
 import pecan
 from pecan import rest
 import wsme
@@ -93,19 +91,20 @@ class Cluster(base.APIBase):
     "List of endpoints on accessing node"
 
 
-def get_complete_cluster(cluster_id):
+def get_complete_cluster(context, cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
 
-    cluster_obj = objects.Cluster.get_cluster_by_id(cluster_id)
+    cluster_obj = objects.Cluster.get_cluster_by_id(context, cluster_id)
 
     # construct api cluster object
     cluster = Cluster(**cluster_obj.as_dict())
 
-    cluster_nodes = objects.Node.get_nodes_by_cluster_id(cluster_id)
+    cluster_nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
 
     for node in cluster_nodes:
         # extract endpoints from node
-        node_endpoints = objects.Endpoint.get_endpoints_by_node_id(node.id)
+        node_endpoints = objects.Endpoint.get_endpoints_by_node_id(context,
+                                                                   node.id)
 
         # construct api endpoint objects
         cluster.end_points = [EndPoint(**obj_endpoint.as_dict()) for
@@ -123,15 +122,16 @@ class ClusterController(rest.RestController):
     @wsme_pecan.wsexpose(Cluster, status_code=200)
     def get(self):
         """Return this cluster."""
-
-        cluster = get_complete_cluster(self.id)
+        context = pecan.request.context
+        cluster = get_complete_cluster(context, self.id)
 
         return cluster
 
     @wsme_pecan.wsexpose(None, status_code=202)
     def delete(self):
         """Delete this Cluster."""
-        objects.Cluster.update_cluster_deleting(self.id)
+        context = pecan.request.context
+        objects.Cluster.update_cluster_deleting(context, self.id)
 
 
 class ClustersController(rest.RestController):
@@ -140,8 +140,9 @@ class ClustersController(rest.RestController):
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
         """Return list of Clusters."""
-        # TODO(dagnello): update project_id accordingly when enabled
-        clusters = objects.Cluster.get_clusters(project_id=0)
+
+        context = pecan.request.context
+        clusters = objects.Cluster.get_clusters(context)
         cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
                         clusters]
 
@@ -153,6 +154,7 @@ class ClustersController(rest.RestController):
 
         :param data: cluster parameters within the request body.
         """
+        context = pecan.request.context
 
         if data.size <= 0:
             raise exception.Invalid(_("Invalid cluster size provided"))
@@ -160,13 +162,10 @@ class ClustersController(rest.RestController):
         # create new cluster object with required data from user
         new_cluster = objects.Cluster(**data.as_dict())
 
-        # TODO(dagnello): project_id will have to be extracted from HTTP header
-        project_id = unicode(uuid.uuid1())
-
         # create new cluster with node related data from user
-        new_cluster.create(project_id)
+        new_cluster.create(context)
 
-        cluster = get_complete_cluster(new_cluster.id)
+        cluster = get_complete_cluster(context, new_cluster.id)
 
         return cluster
 

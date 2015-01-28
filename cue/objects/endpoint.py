@@ -40,13 +40,13 @@ class Endpoint(base.CueObject):
         return cluster
 
     @classmethod
-    def get_endpoints_by_node_id(cls, node_id):
+    def get_endpoints_by_node_id(cls, context, node_id):
         """Returns a list of Endpoint objects for specified node.
 
         :param node_id: UUID of the node.
         :returns: a list of :class:'Endpoint' object.
 
         """
-        db_endpoints = cls.dbapi.get_endpoints_in_node(node_id)
+        db_endpoints = cls.dbapi.get_endpoints_in_node(context, node_id)
 
         return [Endpoint._from_db_object(Endpoint(), obj) for obj in db_endpoints]
