@@ -22,6 +22,7 @@ from cue.api import acl
 from cue.api import config
 from cue.api import hooks
 from cue.api import middleware
+from cue.common import policy
 
 auth_opts = [
     cfg.StrOpt('auth_strategy',
@@ -40,6 +41,7 @@ def get_pecan_config():
 
 
 def setup_app(pecan_config=None, extra_hooks=None):
+    policy.init()
     app_hooks = [hooks.ConfigHook(),
                  #hooks.DBHook(),
                  hooks.ContextHook(pecan_config.app.acl_public_routes),
@@ -51,9 +53,6 @@ def setup_app(pecan_config=None, extra_hooks=None):
 
     if not pecan_config:
         pecan_config = get_pecan_config()
-
-    if pecan_config.app.enable_acl:
-        app_hooks.append(hooks.AdminAuthHook())
 
     pecan.configuration.set_config(dict(pecan_config), overwrite=True)
     app = pecan.make_app(
