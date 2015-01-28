@@ -21,6 +21,7 @@
 from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
+from cue.common import policy
 from cue import objects
 
 import pecan
@@ -123,7 +124,16 @@ class ClusterController(rest.RestController):
     def get(self):
         """Return this cluster."""
         context = pecan.request.context
+
         cluster = get_complete_cluster(context, self.id)
+
+        target = {
+            "tenant_id": context.tenant,
+            "cluster_id": self.id,
+            "cluster_name": cluster.name
+        }
+
+        policy.check("get_cluster", context, target)
 
         return cluster
 
@@ -131,6 +141,17 @@ class ClusterController(rest.RestController):
     def delete(self):
         """Delete this Cluster."""
         context = pecan.request.context
+
+        cluster = objects.Cluster.get_cluster_by_id(context, self.id)
+
+        target = {
+            "tenant_id": context.tenant,
+            "cluster_id": self.id,
+            "cluster_name": cluster.name
+        }
+
+        policy.check("delete_cluster", context, target)
+
         objects.Cluster.update_cluster_deleting(context, self.id)
 
 
@@ -140,8 +161,11 @@ class ClustersController(rest.RestController):
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get(self):
         """Return list of Clusters."""
-
         context = pecan.request.context
+
+        target = {"tenant_id": context.tenant}
+        policy.check("get_clusters", context, target)
+
         clusters = objects.Cluster.get_clusters(context)
         cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
                         clusters]
@@ -161,6 +185,13 @@ class ClustersController(rest.RestController):
 
         # create new cluster object with required data from user
         new_cluster = objects.Cluster(**data.as_dict())
+
+        target = {
+            "tenant_id": context.tenant,
+            "cluster_name": new_cluster.name
+        }
+
+        policy.check("create_cluster", context, target)
 
         # create new cluster with node related data from user
         new_cluster.create(context)
