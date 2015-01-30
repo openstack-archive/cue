@@ -13,18 +13,28 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-__author__ = 'sputnik13'
-
 import os_tasklib
 
 
 class CreatePort(os_tasklib.BaseTask):
     default_provides = 'neutron_port_id'
 
-    def execute(self, **kwargs):
-        print("Create Neutron Port")
-        return "RANDOM_NEUTRON_PORT_ID"
+    def execute(self, network_id, port_name, **kwargs):
+        body_value = {
+            "port": {
+                "admin_state_up": True,
+                "name": port_name,
+                "network_id": network_id,
+            }
+        }
+
+        port = self.os_client.create_port(body=body_value)
+        port_id = port['port']['id']
+
+        return port_id
 
     def revert(self, **kwargs):
-        print("Delete Neutron Port %s" % kwargs['result'])
+        """Revert function for a failed create port task."""
+        # TODO(dagnello): no action required for revert of a failed port create
+        # task, but logging should be added with a flow transaction ID which
+        # will provide context and state to the error.

@@ -110,6 +110,8 @@ class StubOutForTesting(object):
 class TestCase(base.BaseTestCase):
     """Test case base class for all unit tests."""
 
+    additional_fixtures = []
+
     def setUp(self):
         """Run before each test method to initialize test environment."""
         super(TestCase, self).setUp()
@@ -151,6 +153,12 @@ class TestCase(base.BaseTestCase):
         # self.CONF.register_opt('config_dir')
 
         self.session = db_api.get_session()
+
+        self._additional_fixtures = []
+        for fixture_cls in self.additional_fixtures:
+            fixture = fixture_cls()
+            self.useFixture(fixture)
+            self._additional_fixtures.append(fixture)
 
     def tearDown(self):
         """Runs after each test method to tear down test environment."""
