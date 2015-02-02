@@ -13,33 +13,70 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo.config import cfg
+
 import cinderclient.client as CinderClient
 import neutronclient.neutron.client as NeutronClient
 import novaclient.client as NovaClient
 
 
+CONF = cfg.CONF
+
+
+OS_OPTS = [
+    cfg.StrOpt('os_region_name',
+               help='Region name',
+               default=None),
+    cfg.StrOpt('os_tenant_id',
+               help='Openstack Tenant ID',
+               default=None),
+    cfg.StrOpt('os_tenant_name',
+               help='Openstack Tenant Name',
+               default=None),
+    cfg.StrOpt('os_username',
+               help='Openstack Username',
+               default=None),
+    cfg.StrOpt('os_password',
+               help='Openstack Password',
+               default=None),
+    cfg.StrOpt('os_auth_url',
+               help='Openstack Authentication (Identity) URL',
+               default=None),
+]
+
+opt_group = cfg.OptGroup(
+    name='openstack',
+    title='Options for Openstack.'
+)
+
+CONF.register_group(opt_group)
+CONF.register_opts(OS_OPTS, group=opt_group)
+
 def nova_client():
     return NovaClient.Client(2,
-                             'admin',
-                             'messina',
-                             'demo',
-                             'http://192.168.131.136:5000/v2.0'
+                             username=CONF.openstack.os_username,
+                             api_key=CONF.openstack.os_password,
+                             tenant_id=CONF.openstack.os_tenant_id,
+                             auth_url=CONF.openstack.os_auth_url,
+                             region_name=CONF.openstack.os_region_name,
                             )
 
 
 def cinder_client():
     return CinderClient.Client('1',
-                               'admin',
-                               'secrete',
-                               'demo',
-                               'http://192.168.41.183:5000/v2.0'
+                               CONF.openstack.os_username,
+                               CONF.openstack.os_password,
+                               CONF.openstack.os_tenant_name,
+                               CONF.openstack.os_auth_url
                               )
 
 
 def neutron_client():
     return NeutronClient.Client('2.0',
-                                username='admin',
-                                password='secrete',
-                                tenant_name='demo',
-                                auth_url='http://192.168.41.183:5000/v2.0'
+                                region_name=CONF.openstack.os_region_name,
+                                username=CONF.openstack.os_username,
+                                password=CONF.openstack.os_password,
+                                tenant_name=CONF.openstack.os_tenant_name,
+                                tenant_id=CONF.openstack.os_tenant_id,
+                                auth_url=CONF.openstack.os_auth_url
                                )

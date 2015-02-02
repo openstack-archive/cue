@@ -21,6 +21,31 @@ import neutronclient.neutron.client
 import cue.tests.test_fixtures.base as base
 
 
+def new_network_detail(admin_state_up=True,
+                       id=None,
+                       name=None,
+                       port_security_enabled=True,
+                       router_external=False,
+                       shared=False,
+                       status='ACTIVE',
+                       subnets=None,
+                       tenant_id=None):
+    if id is None:
+        id = uuid.uuid4().hex
+    if tenant_id is None:
+        tenant_id = uuid.uuid4().hex
+    return { 'admin_state_up': admin_state_up,
+             'id': id,
+             'name': name,
+             'port_security_enabled': port_security_enabled,
+             'router:external': router_external,
+             'shared': shared,
+             'status': status,
+             'subnets': subnets,
+             'tenant_id': tenant_id
+    }
+
+
 class NeutronClient(base.BaseFixture):
     """A test fixture to simulate a Neutron Client connection
 
@@ -28,17 +53,22 @@ class NeutronClient(base.BaseFixture):
     connection in the absence of a working Neutron API endpoint.
     """
 
+    def __init__(self, *args, **kwargs):
+        super(NeutronClient, self).__init__(*args, **kwargs)
+
+        network_detail = new_network_detail(name="test-network")
+        self._network_list = {network_detail['id']: network_detail}
+        self._port_list = {}
+
     def setUp(self):
         """Set up test fixture and apply all method overrides."""
         super(NeutronClient, self).setUp()
-
-        self._network_list = {}
-        self._port_list = {}
 
         v2_client = self.mock(neutronclient.neutron.client.API_VERSIONS['2.0'])
         v2_client.create_port = self.create_port
         v2_client.create_network = self.create_network
         v2_client.list_ports = self.list_ports
+        v2_client.list_networks = self.list_networks
 
     def create_port(self, body=None):
         """Mock'd version of neutronclient...create_port().
@@ -98,3 +128,18 @@ class NeutronClient(base.BaseFixture):
         """
         if retrieve_all:
             return {'ports': self._port_list.values()}
+
+    def list_networks(self, name=None, id=None):
+        if name is not None:
+            property = 'name'
+            value = name
+        elif id is not None:
+            property = 'id'
+            value = id
+
+        else:
+            return {'networks': self._network_list.values()}
+
+        for network in self._network_list.values():
+            if network[property] == value:
+                return {'networks': [network]}
