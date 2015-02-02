@@ -1,0 +1,57 @@
+[taskflow]
+
+#
+# Options for taskflow based workflow engine
+#
+
+#
+# Persistence connection, used to persist workflow state information.
+# If no connection string is supplied, zookeeper will be used by default
+# with the zookeeper configuration provided in the zk_* configurations.
+# Default:
+#
+#persistence_connection=zookeeper://127.0.0.1/cue/taskflow
+
+#
+# Zookeeper host list.  A single address can be provided for a standalone
+# Zookeeper instance, or a comma separated list may be provided to
+# connect to an ensemble of Zookeeper hosts.
+# Default: localhost
+#
+#zk_hosts=127.0.0.1
+
+#
+# Zookeeper znode path that will be used as the root for all taskflow related
+# information being persisted in Zookeeper.
+# Default: /cue/taskflow
+#
+#zk_path=/cue/taskflow
+
+#
+# Timeout (in seconds) for zookeeper operations
+# Default: 10
+#
+#zk_timeout=10
+
+#
+# Jobboard name
+# Default: cue
+#
+#jobboard_name=cue
+
+#
+# Taskflow Engine type used by the worker to run jobs.  Only serial and parallel
+# are supported
+# Default: serial
+#
+#engine_type=serial
+
+
+
+[worker]
+
+#
+# Number of worker processes to spawn.
+# Default: 10
+#
+#count=10
