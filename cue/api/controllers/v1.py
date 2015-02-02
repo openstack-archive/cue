@@ -49,8 +49,8 @@ class EndPoint(base.APIBase):
     "URL to endpoint"
 
 
-class Cluster(base.APIBase):
-    """Representation of a cluster."""
+class ClusterDetails(base.APIBase):
+    """Representation of a cluster's details."""
     # todo(dagnello): WSME attribute verification sometimes triggers 500 server
     # error when user input was actually invalid (400).  Example: if 'size' was
     # provided as a string/char, e.g. 'a', api returns 500 server error.
@@ -91,13 +91,32 @@ class Cluster(base.APIBase):
     "List of endpoints on accessing node"
 
 
+class Cluster(base.APIBase):
+    """API representation of a cluster."""
+
+    cluster = ClusterDetails
+
+    def __init__(self, **kwargs):
+        self._type = 'cluster'
+
+
+class ClusterCollection(base.APIBase):
+    """API representation of a collection of clusters."""
+
+    clusters = [ClusterDetails]
+    """A list containing Cluster objects"""
+
+    def __init__(self, **kwargs):
+        self._type = 'clusters'
+
+
 def get_complete_cluster(context, cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
 
     cluster_obj = objects.Cluster.get_cluster_by_id(context, cluster_id)
 
     # construct api cluster object
-    cluster = Cluster(**cluster_obj.as_dict())
+    cluster = ClusterDetails(**cluster_obj.as_dict())
 
     cluster_nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
 
@@ -123,7 +142,8 @@ class ClusterController(rest.RestController):
     def get(self):
         """Return this cluster."""
         context = pecan.request.context
-        cluster = get_complete_cluster(context, self.id)
+        cluster = Cluster()
+        cluster.cluster = get_complete_cluster(context, self.id)
 
         return cluster
 
@@ -137,18 +157,19 @@ class ClusterController(rest.RestController):
 class ClustersController(rest.RestController):
     """Manages operations on Clusters of nodes."""
 
-    @wsme_pecan.wsexpose([Cluster], status_code=200)
+    @wsme_pecan.wsexpose(ClusterCollection, status_code=200)
     def get(self):
         """Return list of Clusters."""
 
         context = pecan.request.context
         clusters = objects.Cluster.get_clusters(context)
-        cluster_list = [Cluster(**obj_cluster.as_dict()) for obj_cluster in
-                        clusters]
+        cluster_list = ClusterCollection()
+        cluster_list.clusters = [ClusterDetails(**obj_cluster.as_dict())
+                                 for obj_cluster in clusters]
 
         return cluster_list
 
-    @wsme_pecan.wsexpose(Cluster, body=Cluster, status_code=202)
+    @wsme_pecan.wsexpose(Cluster, body=ClusterDetails, status_code=202)
     def post(self, data):
         """Create a new Cluster.
 
@@ -165,7 +186,9 @@ class ClustersController(rest.RestController):
         # create new cluster with node related data from user
         new_cluster.create(context)
 
-        cluster = get_complete_cluster(context, new_cluster.id)
+        cluster = Cluster()
+
+        cluster.cluster = get_complete_cluster(context, new_cluster.id)
 
         return cluster
 

@@ -81,7 +81,7 @@ class TestGetCluster(api.FunctionalTest,
         data = self.get_json('/clusters/' + cluster.id,
                              headers=self.auth_headers)
 
-        self.validate_cluster_values(cluster, data)
+        self.validate_cluster_values(cluster, data["cluster"])
 
 
 class TestDeleteCluster(api.FunctionalTest,
@@ -140,4 +140,4 @@ class TestDeleteCluster(api.FunctionalTest,
 
         data = self.get_json('/clusters/' + cluster.id,
                              headers=self.auth_headers)
-        self.validate_cluster_values(cluster, data)
+        self.validate_cluster_values(cluster, data["cluster"])
