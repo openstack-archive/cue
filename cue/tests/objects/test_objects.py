@@ -118,7 +118,7 @@ class ClusterObjectsTests(base.TestCase):
         api_cluster = test_utils.create_api_test_cluster_all()
         object_cluster = objects.Cluster(**api_cluster.as_dict())
         self.validate_cluster_values(api_cluster, object_cluster)
-        api_cluster_2 = v1.Cluster(**object_cluster.as_dict())
+        api_cluster_2 = v1.ClusterDetails(**object_cluster.as_dict())
         self.validate_cluster_values(api_cluster, api_cluster_2)
 
     def test_cluster_db_to_object_to_db(self):
