@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import inspect
+
 import fixtures
 import mock
 
@@ -51,7 +53,15 @@ class BaseFixture(fixtures.Fixture):
         :param cls: Class to be mock'd.  Pass in the string path to the class.
         :return: A mock'd version of the class.
         """
-        patch = mock.patch(cls)
+        class_name = ''
+        if isinstance(cls, str):
+            class_name = cls
+        elif inspect.isclass(cls):
+            class_name = "%s.%s" % (cls.__module__, cls.__name__)
+        else:
+            raise Exception('Invalid parameter type provided')
+
+        patch = mock.patch(class_name)
         mock_instance = patch.__enter__()
         self.addCleanup(patch.__exit__)
         mocked_cls = mock_instance.return_value
