@@ -128,10 +128,10 @@ class ConductorService(object):
                   version_string, self._jobboard_name)
 
         with contextlib.closing(
-                tf_client.Client.persistence(conf=self._persistence_conf)
+                tf_client.create_persistence(conf=self._persistence_conf)
         ) as persistence:
             with contextlib.closing(
-                    tf_client.Client.jobboard(
+                    tf_client.create_jobboard(
                         board_name=self._jobboard_name,
                         conf=self._jobboard_conf,
                         persistence=persistence,
