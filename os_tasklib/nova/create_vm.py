@@ -20,6 +20,8 @@ import os_tasklib
 
 
 class CreateVm(os_tasklib.BaseTask):
+    default_provides = 'nova_vm_id'
+
     def execute(self, neutron_port_id, cinder_volume_id, **kwargs):
         #print self.os_client.servers.list()
         print("Create VM and attach %s port and %s volume" %

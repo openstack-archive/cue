@@ -22,9 +22,9 @@ import os_tasklib
 
 
 class GetVmStatus(os_tasklib.BaseTask):
-    def execute(self, vm_id, **kwargs):
+    def execute(self, nova_vm_id, **kwargs):
         #print(self.nova_client.servers.list())
-        print("Get VM Status for %s" % vm_id)
+        print("Get VM Status for %s" % nova_vm_id)
         vm_status = random.choice(['BUILDING',
                                    'ACTIVE',
                                    'DELETED',

@@ -14,3 +14,4 @@
 # under the License.
 
 from create_cluster import create_cluster   # noqa
+from delete_cluster import delete_cluster   # noqa
