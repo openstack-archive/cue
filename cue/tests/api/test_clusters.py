@@ -18,6 +18,7 @@ from cue.db.sqlalchemy import models
 from cue import objects
 from cue.tests import api
 from cue.tests.api import api_utils
+import cue.tests.test_fixtures.taskflow_client
 from cue.tests import utils as test_utils
 
 
@@ -71,6 +72,11 @@ class TestListClusters(api.FunctionalTest,
 
 class TestCreateCluster(api.FunctionalTest,
                         api_utils.ClusterValidationMixin):
+
+    additional_fixtures = [
+        cue.tests.test_fixtures.taskflow_client.TaskFlowClient
+    ]
+
     def setUp(self):
         super(TestCreateCluster, self).setUp()
 
