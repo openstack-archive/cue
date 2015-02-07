@@ -55,6 +55,24 @@ def _make_conf(backend_uri):
         }
     return conf
 
+_task_flow_client = None
+
+
+def get_client_instance(persistence=None, jobboard=None):
+    global _task_flow_client
+
+    if _task_flow_client is None:
+        if persistence is None:
+            persistence = Client.persistence()
+        if jobboard is None:
+            jobboard = Client.jobboard("cue_board",
+                                       persistence=persistence)
+        _task_flow_client = Client("Cue_job_client",
+                                   persistence=persistence,
+                                   jobboard=jobboard)
+
+    return _task_flow_client
+
 
 class Client(object):
     """An abstraction for interacting with Taskflow
