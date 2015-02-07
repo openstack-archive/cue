@@ -12,15 +12,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import contextlib
 
 from oslo.utils import uuidutils
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.task
-import zake.fake_client as fake_client
 
 import cue.taskflow.client as tf_client
+from cue.tests import api
 import cue.tests.base as base
+from cue.tests import utils as test_utils
 
 
 class TimesTwo(taskflow.task.Task):
@@ -37,16 +37,7 @@ def create_flow():
 class TaskflowClientTest(base.TestCase):
     def setUp(self):
         super(TaskflowClientTest, self).setUp()
-        self._zk_client = fake_client.FakeClient()
-        self.persistence = tf_client.Client.persistence(client=self._zk_client)
-        with contextlib.closing(self.persistence.get_connection()) as conn:
-            conn.upgrade()
-        self.jobboard = tf_client.Client.jobboard("test_board",
-                                                  persistence=self.persistence,
-                                                  client=self._zk_client)
-        self.tf_client = tf_client.Client("test_client",
-                                          persistence=self.persistence,
-                                          jobboard=self.jobboard)
+        self.tf_client = tf_client.get_client_instance()
 
     def tearDown(self):
         super(TaskflowClientTest, self).tearDown()
@@ -57,9 +48,9 @@ class TaskflowClientTest(base.TestCase):
         }
         tx_uuid = uuidutils.generate_uuid()
 
-        pre_count = self.jobboard.job_count
+        pre_count = self.tf_client.jobboard.job_count
         job = self.tf_client.post(create_flow, job_args, tx_uuid=tx_uuid)
-        post_count = self.jobboard.job_count
+        post_count = self.tf_client.jobboard.job_count
         expected = pre_count + 1
 
         self.assertEqual(expected, post_count,
@@ -79,11 +70,44 @@ class TaskflowClientTest(base.TestCase):
                              "Job in jobboard differs from job returned by "
                              "Client.post method")
 
-        pre_count = self.jobboard.job_count
+        pre_count = self.tf_client.jobboard.job_count
         self.tf_client.delete(job=job)
-        post_count = self.jobboard.job_count
+        post_count = self.tf_client.jobboard.job_count
         expected = pre_count - 1
 
         self.assertEqual(expected, post_count,
                          "expected %d jobs in the jobboard after a claim, "
+                         "got %d" % (expected, post_count))
+
+
+class ApiTaskFlowClientTest(api.FunctionalTest):
+
+    def setUp(self):
+        super(ApiTaskFlowClientTest, self).setUp()
+        self.tf_client = tf_client.get_client_instance()
+
+    def test_create_cluster_api(self):
+        """This test verifies create cluster job is posted from REST API."""
+        api_cluster = test_utils.create_api_test_cluster(size=1)
+        pre_count = self.tf_client.jobboard.job_count
+        self.post_json('/clusters', params=api_cluster.as_dict(),
+                       headers=self.auth_headers, status=202)
+        post_count = self.tf_client.jobboard.job_count
+        expected = pre_count + 1
+
+        self.assertEqual(expected, post_count,
+                         "expected %d jobs in the jobboard after a post, "
+                         "got %d" % (expected, post_count))
+
+    def test_delete_cluster_api(self):
+        """This test verifies delete cluster job is posted from REST API."""
+        cluster = test_utils.create_db_test_cluster_from_objects_api(
+            self.context, name="test_cluster")
+        pre_count = self.tf_client.jobboard.job_count
+        self.delete('/clusters/' + cluster.id, headers=self.auth_headers)
+        post_count = self.tf_client.jobboard.job_count
+        expected = pre_count + 1
+
+        self.assertEqual(expected, post_count,
+                         "expected %d jobs in the jobboard after a post, "
                          "got %d" % (expected, post_count))
