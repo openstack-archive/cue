@@ -18,5 +18,5 @@ import base_task as base_task
 
 
 class UpdateClusterStatus(base_task.BaseTask):
-    def execute(self, vm_status, **kwargs):
-        print("Update Cluster Status to %s" % vm_status)
+    def execute(self, cluster_status, **kwargs):
+        print("Update Cluster Status to %s" % cluster_status)
