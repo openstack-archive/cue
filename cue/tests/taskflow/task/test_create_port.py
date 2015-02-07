@@ -36,8 +36,8 @@ class CreatePortTests(base.TestCase):
     ]
 
     task_store = {
-        'network_id': "0",
-        'port_name': "port_0",
+        "network_id": "0",
+        "port_name": "port_0",
     }
 
     def test_create_port_invalid_network(self):
@@ -64,13 +64,7 @@ class CreatePortTests(base.TestCase):
         # retrieve neutron client API class
         neutron_client = client.neutron_client()
 
-        # retrieve networks
-        #network_list = neutron_client.list_networks()
-        #self.assertNotEqual(len(network_list['networks']), 0,
-        #                    "No networks found")
-
         # set a network_id and unique name to use
-        #network_id = network_list['networks'][0]['id']
         network = neutron_client.create_network()
         network_id = network['network']['id']
         CreatePortTests.task_store['network_id'] = network_id

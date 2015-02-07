@@ -18,7 +18,9 @@ import taskflow.task
 import zake.fake_client as fake_client
 
 import cue.taskflow.client as tf_client
+from cue.tests import api
 import cue.tests.base as base
+from cue.tests import utils as test_utils
 
 
 class TimesTwo(taskflow.task.Task):
@@ -82,4 +84,49 @@ class TaskflowClientTest(base.TestCase):
 
         self.assertEqual(expected, post_count,
                          "expected %d jobs in the jobboard after a claim, "
+                         "got %d" % (expected, post_count))
+
+
+class ApiTaskFlowClientTest(api.FunctionalTest):
+
+    def setUp(self):
+        super(ApiTaskFlowClientTest, self).setUp()
+        self._zk_client = fake_client.FakeClient()
+        self.persistence = tf_client.Client.persistence(client=self._zk_client)
+        self.jobboard = tf_client.Client.jobboard("test_board",
+                                                  persistence=self.persistence,
+                                                  client=self._zk_client)
+        self.tf_client = tf_client.get_client_instance(
+            persistence=self.persistence, jobboard=self.jobboard)
+
+    def test_create_cluster_api(self):
+        """This test verifies task flow job for create cluster is received from
+
+        REST API.
+        """
+        api_cluster = test_utils.create_api_test_cluster(size=1)
+        pre_count = self.tf_client.jobboard.job_count
+        self.post_json('/clusters', params=api_cluster.as_dict(),
+                       headers=self.auth_headers, status=202)
+        post_count = self.tf_client.jobboard.job_count
+        expected = pre_count + 1
+
+        self.assertEqual(expected, post_count,
+                         "expected %d jobs in the jobboard after a post, "
+                         "got %d" % (expected, post_count))
+
+    def test_delete_cluster_api(self):
+        """This test verifies task flow job for delete cluster is received from
+
+        REST API.
+        """
+        cluster = test_utils.create_db_test_cluster_from_objects_api(
+            self.context, name="test_cluster")
+        pre_count = self.tf_client.jobboard.job_count
+        self.delete('/clusters/' + cluster.id, headers=self.auth_headers)
+        post_count = self.tf_client.jobboard.job_count
+        expected = pre_count + 1
+
+        self.assertEqual(expected, post_count,
+                         "expected %d jobs in the jobboard after a post, "
                          "got %d" % (expected, post_count))

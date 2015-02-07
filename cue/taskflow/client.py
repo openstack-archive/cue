@@ -55,6 +55,26 @@ def _make_conf(backend_uri):
         }
     return conf
 
+_task_flow_client = None
+
+
+def get_client_instance(client_name=None, persistence=None, jobboard=None):
+    global _task_flow_client
+
+    if _task_flow_client is None:
+        if persistence is None:
+            persistence = Client.persistence()
+        if jobboard is None:
+            jobboard = Client.jobboard(persistence=persistence)
+        if client_name is None:
+            client_name = "cue_job_client"
+
+        _task_flow_client = Client(client_name,
+                                   persistence=persistence,
+                                   jobboard=jobboard)
+
+    return _task_flow_client
+
 
 class Client(object):
     """An abstraction for interacting with Taskflow
@@ -62,6 +82,9 @@ class Client(object):
     This class provides an abstraction for Taskflow to expose a simpler
     interface for posting jobs to Taskflow Jobboards than what is provided
     out of the box with Taskflow.
+
+    :ivar persistence: persistence backend instance
+    :ivar jobboard: jobboard backend instance
     """
 
     def __init__(self, client_name, board_name=None, persistence=None,
@@ -87,19 +110,20 @@ class Client(object):
 
         self._client_name = client_name
 
-        self._persistence = persistence or Client.persistence(**kwargs)
+        self.persistence = persistence if persistence else Client.persistence(
+            **kwargs)
 
-        self._jobboard = jobboard or Client.jobboard(board_name,
+        self.jobboard = jobboard if jobboard else Client.jobboard(board_name,
                                                      None,
-                                                     self._persistence,
+                                                     self.persistence,
                                                      **kwargs)
 
     def __del__(self):
         """Destructor for Client class."""
-        if self._jobboard is not None:
-            self._jobboard.close()
-        if self._persistence is not None:
-            self._persistence.close()
+        """if self.jobboard is not None:
+            self.jobboard.close()
+        if self.persistence is not None:
+            self.persistence.close()"""
 
     @classmethod
     def create(cls, client_name, board_name=None, persistence=None,
@@ -148,7 +172,7 @@ class Client(object):
         return be
 
     @staticmethod
-    def jobboard(board_name, conf=None, persistence=None, **kwargs):
+    def jobboard(board_name=None, conf=None, persistence=None, **kwargs):
         """Factory method for creating a jobboard backend instance
 
         :param board_name: Name of the jobboard
@@ -217,13 +241,13 @@ class Client(object):
         })
         job_details['flow_uuid'] = flow_detail.uuid
 
-        self._persistence.get_connection().save_logbook(book)
+        self.persistence.get_connection().save_logbook(book)
 
         engines.save_factory_details(
             flow_detail, flow_factory, flow_args, flow_kwargs,
-            self._persistence)
+            self.persistence)
 
-        job = self._jobboard.post(job_name, book, details=job_details)
+        job = self.jobboard.post(job_name, book, details=job_details)
         return job
 
     def joblist(self, only_unclaimed=False, ensure_fresh=False):
@@ -234,7 +258,7 @@ class Client(object):
                              Behavior of this parameter is backend specific.
         :return: A list of jobs in the jobboard
         """
-        return list(self._jobboard.iterjobs(only_unclaimed=only_unclaimed,
+        return list(self.jobboard.iterjobs(only_unclaimed=only_unclaimed,
                                             ensure_fresh=ensure_fresh))
 
     def delete(self, job=None, job_id=None):
@@ -257,5 +281,5 @@ class Client(object):
                 if j.uuid == job_id:
                     job = j
 
-        self._jobboard.claim(job, self._client_name)
-        self._jobboard.consume(job, self._client_name)
+        self.jobboard.claim(job, self._client_name)
+        self.jobboard.consume(job, self._client_name)

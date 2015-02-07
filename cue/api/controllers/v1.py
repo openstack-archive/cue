@@ -18,16 +18,26 @@
 
 """Version 1 of the Cue API
 """
+import uuid
+
 from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
+from cue.common.i18n import _LI  # noqa
 from cue import objects
+from cue.openstack.common import log as logging
+from cue.taskflow import client as task_flow_client
+from cue.taskflow.flow import create_cluster
+from cue.taskflow.flow import delete_cluster
 
+from oslo.utils import uuidutils
 import pecan
 from pecan import rest
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
+
+LOG = logging.getLogger(__name__)
 
 
 class EndPoint(base.APIBase):
@@ -151,7 +161,26 @@ class ClusterController(rest.RestController):
     def delete(self):
         """Delete this Cluster."""
         context = pecan.request.context
+
+        # update cluster to deleting
         objects.Cluster.update_cluster_deleting(context, self.id)
+
+        # prepare and post cluster delete job to backend
+        job_args = {
+            "cluster_id": self.id,
+            "cluster_status": "deleting",
+        }
+        job_client = task_flow_client.get_client_instance()
+        job_uuid = uuidutils.generate_uuid()
+        job_client.post(delete_cluster, job_args, tx_uuid=job_uuid)
+
+        msg_params = {
+            "cluster_id": self.id,
+            "job_id": job_uuid,
+        }
+        log_message = _LI('Delete Cluster Request:\n Cluster ID: {cluster_id}'
+                          '\n Job ID: {job_id}')
+        LOG.info(log_message.format(**msg_params))
 
 
 class ClustersController(rest.RestController):
@@ -186,9 +215,34 @@ class ClustersController(rest.RestController):
         # create new cluster with node related data from user
         new_cluster.create(context)
 
+        # retrieve cluster data
         cluster = Cluster()
-
         cluster.cluster = get_complete_cluster(context, new_cluster.id)
+
+        # prepare and post cluster create job to backend
+        job_args = {
+            "size": cluster.cluster.size,
+            "flavor": cluster.cluster.flavor,
+            "volume_size": cluster.cluster.volume_size,
+            "network_id": cluster.cluster.network_id,
+            "cluster_status": "BUILDING",
+            "node_id": "node_id",
+            "port_name": "port_" + str(uuid.uuid4()),
+        }
+        job_client = task_flow_client.get_client_instance()
+        job_uuid = uuidutils.generate_uuid()
+        job_client.post(create_cluster, job_args, tx_uuid=job_uuid)
+
+        msg_params = {
+            "cluster_id": cluster.cluster.id,
+            "size": cluster.cluster.size,
+            "network_id": cluster.cluster.network_id,
+            "job_id": job_uuid,
+        }
+        log_message = _LI('Create Cluster Request:\n Cluster ID: {cluster_id}'
+                          '\n Cluster size: {size}\n network ID: '
+                          '{network_id}\n Job ID: {job_id}')
+        LOG.info(log_message.format(**msg_params))
 
         return cluster
 
