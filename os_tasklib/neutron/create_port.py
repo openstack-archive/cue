@@ -19,11 +19,11 @@ import os_tasklib
 class CreatePort(os_tasklib.BaseTask):
     default_provides = 'neutron_port_id'
 
-    def execute(self, network_id, port_name, **kwargs):
+    def execute(self, network_id, **kwargs):
         body_value = {
             "port": {
                 "admin_state_up": True,
-                "name": port_name,
+                "name": 'cue_port',
                 "network_id": network_id,
             }
         }
