@@ -13,18 +13,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import taskflow.patterns.linear_flow as linear_flow
 
-__author__ = 'sputnik13'
-
-import os_tasklib
+import cue.taskflow.task as cue_task
 
 
-class CreateVolume(os_tasklib.BaseTask):
-    default_provides = 'cinder_volume_id'
-
-    def execute(self, **kwargs):
-        print("Create Cinder Volume")
-        return "RANDOM_CINDER_VOLUME_ID"
-
-    def revert(self, **kwargs):
-        print("Delete Cinder Volume %s" % kwargs['result'])
+def delete_cluster():
+    flow = linear_flow.Flow('deleting cluster').add(
+        cue_task.UpdateClusterStatus(cue_client="cue client")
+    )
+    return flow

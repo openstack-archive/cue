@@ -37,7 +37,7 @@ class CreatePortTests(base.TestCase):
 
     task_store = {
         'network_id': "0",
-        'port_name': "port_0",
+        "port_name": 'cue_port',
     }
 
     def test_create_port_invalid_network(self):
@@ -74,7 +74,6 @@ class CreatePortTests(base.TestCase):
         network = neutron_client.create_network()
         network_id = network['network']['id']
         CreatePortTests.task_store['network_id'] = network_id
-        CreatePortTests.task_store['port_name'] = "port_" + str(uuid.uuid4())
 
         # create flow with "CreatePort" task, given neutron client
         flow = linear_flow.Flow('create port').add(neutron_task.CreatePort(
