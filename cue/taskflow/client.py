@@ -64,6 +64,8 @@ class Client(object):
     out of the box with Taskflow.
     """
 
+    task_flow_client = None
+
     def __init__(self, client_name, board_name=None, persistence=None,
                  jobboard=None, **kwargs):
         """Constructor for Client class
@@ -100,6 +102,20 @@ class Client(object):
             self._jobboard.close()
         if self._persistence is not None:
             self._persistence.close()
+
+    @staticmethod
+    def get_client_instance(persistence=None, jobboard=None):
+        if Client.task_flow_client is None:
+            if persistence is None:
+                persistence = Client.persistence()
+            if jobboard is None:
+                jobboard = Client.jobboard("cue_board",
+                                           persistence=persistence)
+            Client.task_flow_client = Client("Cue_job_client",
+                                             persistence=persistence,
+                                             jobboard=jobboard)
+
+        return Client.task_flow_client
 
     @classmethod
     def create(cls, client_name, board_name=None, persistence=None,

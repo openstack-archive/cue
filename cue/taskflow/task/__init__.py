@@ -16,3 +16,4 @@
 
 from base_task import BaseTask                          # noqa
 from update_cluster_status import UpdateClusterStatus   # noqa
+from update_node_id import UpdateNodeNovaId   # noqa

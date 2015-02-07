@@ -13,5 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from create_cluster import create_cluster   # noqa
-from delete_cluster import delete_cluster   # noqa
+
+import base_task as base_task
+
+
+class UpdateNodeNovaId(base_task.BaseTask):
+    def execute(self, node_id, vm_id, **kwargs):
+        print("Update Node Nova ID to %s for node: %s" % (vm_id, node_id))

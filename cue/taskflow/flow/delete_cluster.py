@@ -13,5 +13,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from create_cluster import create_cluster   # noqa
-from delete_cluster import delete_cluster   # noqa
+import taskflow.patterns.linear_flow as linear_flow
+
+import cue.taskflow.task as cue_task
+
+
+def delete_cluster():
+    flow = linear_flow.Flow('deleting cluster').add(
+        cue_task.UpdateClusterStatus(cue_client="cue client")
+    )
+    return flow

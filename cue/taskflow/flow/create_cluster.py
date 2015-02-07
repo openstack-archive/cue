@@ -32,6 +32,7 @@ def create_cluster():
                                  provides='cinder_volume_id'),
         nova_task.CreateVm(os_client=client.nova_client(),
                            provides='vm_id'),
+        cue_task.UpdateNodeNovaId(cue_client="cue client"),
         linear_flow.Flow('wait for vm to become active',
                          retry=retry.Times(10)).add(
             nova_task.GetVmStatus(os_client=client.nova_client(),
