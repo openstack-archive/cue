@@ -687,4 +687,9 @@ max_limit=1000
 # Deprecated group/name - [DEFAULT]/matchmaker_ringfile
 #ringfile=/etc/oslo/matchmaker_ring.json
 
-
+[clients]
+auth_url = https://localhost:5000/v2.0
+username = cue
+password = cue
+tenant_name = service
+#ca_file = /etc/ssl/ca.crt

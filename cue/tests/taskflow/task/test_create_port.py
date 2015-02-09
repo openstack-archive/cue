@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.tests import base
 import cue.tests.test_fixtures.neutron
 import os_tasklib.neutron as neutron_task
@@ -42,7 +41,7 @@ class CreatePortTests(base.TestCase):
 
     def test_create_port_invalid_network(self):
         # retrieve neutron client API class
-        neutron_client = client.neutron_client()
+        neutron_client = self.clients['neutron']
 
         # create flow with "CreatePort" task
         flow = linear_flow.Flow('create port').add(neutron_task.CreatePort(
@@ -62,7 +61,7 @@ class CreatePortTests(base.TestCase):
 
     def test_create_port(self):
         # retrieve neutron client API class
-        neutron_client = client.neutron_client()
+        neutron_client = self.clients['neutron']
 
         # retrieve networks
         #network_list = neutron_client.list_networks()
