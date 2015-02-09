@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.tests import base
 from cue.tests.test_fixtures import nova
 import os_tasklib.nova.delete_vm as delete_vm
@@ -35,31 +34,29 @@ class DeleteVmTests(base.TestCase):
 
     def setUp(self):
         super(DeleteVmTests, self).setUp()
-        # retrieve nova client API class
-        self.nova_client = client.nova_client()
 
         # create flow with "DeleteVm" task
         self.flow = linear_flow.Flow('create port').add(delete_vm.DeleteVm(
-            os_client=self.nova_client))
+            os_client=self.clients["nova"]))
 
-        image_list = self.nova_client.images.list()
+        image_list = self.clients["nova"].images.list()
         for image in image_list:
             if (image.name.startswith("cirros")) and (
                     image.name.endswith("kernel")):
                 break
         self.valid_image = image
 
-        self.flavor = self.nova_client.flavors.find(name="m1.tiny")
+        self.flavor = self.clients["nova"].flavors.find(name="m1.tiny")
 
     def test_delete_vm_invalid_id(self):
         # create a few vms
-        new_instances = [self.nova_client.servers.create(name="vm1",
+        new_instances = [self.clients["nova"].servers.create(name="vm1",
                                                     image=self.valid_image,
                                                     flavor=self.flavor),
-                         self.nova_client.servers.create(name="vm2",
+                         self.clients["nova"].servers.create(name="vm2",
                                                     image=self.valid_image,
                                                     flavor=self.flavor),
-                         self.nova_client.servers.create(name="vm3",
+                         self.clients["nova"].servers.create(name="vm3",
                                                     image=self.valid_image,
                                                     flavor=self.flavor)]
 
@@ -70,7 +67,7 @@ class DeleteVmTests(base.TestCase):
         engines.run(self.flow, store=DeleteVmTests.task_store)
 
         # verify our existing vms have not been deleted
-        vms = self.nova_client.servers.list()
+        vms = self.clients["nova"].servers.list()
         found = 0
         for vm in vms:
             for created_vm in new_instances:
@@ -79,19 +76,19 @@ class DeleteVmTests(base.TestCase):
 
         # cleanup
         for vm in new_instances:
-            self.nova_client.servers.delete(vm)
+            self.clients["nova"].servers.delete(vm)
 
         self.assertEqual(len(new_instances), found, "Not all VMs were found")
 
     def test_delete_vm(self):
         # create a few vms
-        new_instances = [self.nova_client.servers.create(name="vm1",
+        new_instances = [self.clients["nova"].servers.create(name="vm1",
                                                     image=self.valid_image,
                                                     flavor=self.flavor),
-                         self.nova_client.servers.create(name="vm2",
+                         self.clients["nova"].servers.create(name="vm2",
                                                     image=self.valid_image,
                                                     flavor=self.flavor),
-                         self.nova_client.servers.create(name="vm3",
+                         self.clients["nova"].servers.create(name="vm3",
                                                     image=self.valid_image,
                                                     flavor=self.flavor)]
 
@@ -103,7 +100,7 @@ class DeleteVmTests(base.TestCase):
         engines.run(self.flow, store=DeleteVmTests.task_store)
 
         # verify vm has been deleted
-        vms = self.nova_client.servers.list()
+        vms = self.clients["nova"].servers.list()
         vm_found = False
         for vm in vms:
             if vm.id == vm_to_delete.id:
@@ -112,6 +109,6 @@ class DeleteVmTests(base.TestCase):
 
         # cleanup
         for vm in new_instances:
-            self.nova_client.servers.delete(vm)
+            self.clients["nova"].servers.delete(vm)
 
         self.assertEqual(False, vm_found, "VM was not deleted successfully")

@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.tests import base
 import cue.tests.test_fixtures.neutron
 import os_tasklib.neutron as neutron_task
@@ -46,14 +45,12 @@ class DeletePortTests(base.TestCase):
 
         network_name = 'private'
 
-        self.neutron_client = client.neutron_client()
-
-        network_list = self.neutron_client.list_networks(name=network_name)
+        network_list = self.clients["neutron"].list_networks(name=network_name)
         self.valid_network = network_list['networks'][0]
 
         # Delete port using DeletePort task
         self.flow = linear_flow.Flow('create port').add(
-            neutron_task.DeletePort(os_client=self.neutron_client))
+            neutron_task.DeletePort(os_client=self.clients["neutron"]))
 
     def test_delete_existing_port(self):
         # create port
@@ -64,7 +61,7 @@ class DeletePortTests(base.TestCase):
                 "network_id": self.valid_network['id'],
                 }
         }
-        port_info = self.neutron_client.create_port(body=body_value)
+        port_info = self.clients["neutron"].create_port(body=body_value)
         port_id = port_info['port']['id']
 
         # populate task_store with port-id of port created for this test
@@ -73,7 +70,7 @@ class DeletePortTests(base.TestCase):
         }
 
         # retrieve port list prior to delete
-        pre_port_list = self.neutron_client.list_ports()
+        pre_port_list = self.clients["neutron"].list_ports()
 
         # search for created port in port list
         self.assertEqual(True, _find_port(port_id, pre_port_list),
@@ -82,7 +79,7 @@ class DeletePortTests(base.TestCase):
         engines.run(self.flow, store=task_store)
 
         # retrieve port list after delete
-        post_port_list = self.neutron_client.list_ports()
+        post_port_list = self.clients["neutron"].list_ports()
 
         # search for deleted port in port list
         self.assertEqual(False, _find_port(port_id, post_port_list),
@@ -98,7 +95,7 @@ class DeletePortTests(base.TestCase):
         }
 
         # retrieve current port list
-        pre_port_list = self.neutron_client.list_ports()
+        pre_port_list = self.clients["neutron"].list_ports()
         self.assertEqual(False, _find_port(port_id, pre_port_list),
                          "port-id %s found in neutron port list" % port_id)
 

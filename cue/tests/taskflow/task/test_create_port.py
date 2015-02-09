@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.tests import base
 import cue.tests.test_fixtures.neutron
 import os_tasklib.neutron as neutron_task
@@ -41,12 +40,9 @@ class CreatePortTests(base.TestCase):
     }
 
     def test_create_port_invalid_network(self):
-        # retrieve neutron client API class
-        neutron_client = client.neutron_client()
-
         # create flow with "CreatePort" task
         flow = linear_flow.Flow('create port').add(neutron_task.CreatePort(
-            os_client=neutron_client, provides='neutron_port_id'))
+            os_client=self.clients['neutron'], provides='neutron_port_id'))
 
         # generate a new UUID for an 'invalid' network_id
         CreatePortTests.task_store['network_id'] = str(uuid.uuid4())
@@ -55,25 +51,22 @@ class CreatePortTests(base.TestCase):
                           store=CreatePortTests.task_store)
 
     def test_create_port(self):
-        # retrieve neutron client API class
-        neutron_client = client.neutron_client()
-
         # set an existing network_id and unique name to use
         network_name = "private"
-        networks = neutron_client.list_networks(name=network_name)
+        networks = self.clients['neutron'].list_networks(name=network_name)
         network = networks['networks'][0]
         CreatePortTests.task_store['network_id'] = network['id']
         CreatePortTests.task_store['port_name'] = "port_" + str(uuid.uuid4())
 
         # create flow with "CreatePort" task, given neutron client
         flow = linear_flow.Flow('create port').add(neutron_task.CreatePort(
-            os_client=neutron_client, provides='neutron_port_id'))
+            os_client=self.clients['neutron'], provides='neutron_port_id'))
 
         # execute flow with parameters required for "CreatePort" task
         engines.run(flow, store=CreatePortTests.task_store)
 
         # retrieve list of ports from Neutron service
-        port_list = neutron_client.list_ports()
+        port_list = self.clients['neutron'].list_ports()
 
         # find our newly created port
         found = False

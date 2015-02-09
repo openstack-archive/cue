@@ -16,7 +16,7 @@
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.retry as retry
 
-import cue.client as client
+from cue import clients
 from cue.db.sqlalchemy import models
 import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
@@ -55,9 +55,11 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
                                          'uri': vm_ip + ':',
                                          'type': 'AMQP'}
 
+    client_manager = clients.get_manager()
+
     create_port = neutron.CreatePort(
         name="create port %s" % node_name,
-        os_client=client.neutron_client(),
+        os_client=client_manager["neutron"],
         inject={'port_name': node_name},
         provides="port_info_%d" % node_number)
     graph_flow.add(create_port)
@@ -74,7 +76,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     graph_flow.link(extract_port_data, generate_userdata)
 
     create_vm = nova.CreateVm(name="create vm %s" % node_name,
-        os_client=client.nova_client(),
+        os_client=client_manager["nova"],
         requires=('name', 'image', 'flavor', 'nics'),
         inject={'name': node_name},
         rebind={'nics': "port_id_%d" % node_number},
@@ -95,7 +97,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
         retry=retry.Times(12))
     check_vm_active.add(
         nova.GetVmStatus(
-            os_client=client.nova_client(),
+            os_client=client_manager["nova"],
             name="get vm %s" % node_name,
             rebind={'nova_vm_id': "vm_id_%d" % node_number},
             provides="vm_status_%d" % node_number),

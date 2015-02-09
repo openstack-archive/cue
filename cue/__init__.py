@@ -30,5 +30,16 @@ cfg.CONF.register_opts([
     cfg.StrOpt('os_security_group',
                default=None,
                help='The default Security Group to use for VMs created as '
-                    'part of a cluster')
+                    'part of a cluster'),
 ])
+
+openstack_opts = [
+    cfg.StrOpt('os_key_name',
+               help='SSH key to be provisioned to cue VMs',
+               default=None),
+    cfg.StrOpt('os_availability_zone',
+               help='Default availability zone to provision cue VMs',
+               default=None)
+]
+
+cfg.CONF.register_opts(openstack_opts, group="openstack")
