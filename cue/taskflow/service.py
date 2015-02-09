@@ -14,14 +14,15 @@
 # under the License.
 import contextlib
 import logging as std_logging
+import signal
+import threading
 import time
 
-import eventlet.event as event
+import threading
 from oslo.config import cfg
 from oslo_log import log as logging
 from taskflow.conductors import single_threaded
 
-import cue.openstack.common.service as os_service
 import cue.taskflow.client as tf_client
 import cue.version as version
 
@@ -33,7 +34,7 @@ CONF = cfg.CONF
 SUPPORTED_ENGINE_TYPES = ['serial', 'parallel']
 
 
-class ConductorService(os_service.Service):
+class ConductorService:
     """A Service wrapper for executing taskflow jobs in a conductor.
 
     This class provides an oslo.service.Service wrapper for executing taskflow
@@ -68,8 +69,6 @@ class ConductorService(os_service.Service):
         :param kwargs: Keyword arguemtns to be passed to the jobboard and
                        persistence backend constructors
         """
-        super(ConductorService, self).__init__(*args, **kwargs)
-
         if (engine_conf['engine'] not in SUPPORTED_ENGINE_TYPES):
             raise ValueError("%s is not a supported engine type"
                              % engine_conf['engine'])
@@ -81,9 +80,11 @@ class ConductorService(os_service.Service):
         self._persistence_conf = persistence_conf
         self._engine_conf = engine_conf
         self._wait_timeout = wait_timeout
-        self._shutdown_event = event.Event()
+        self._shutdown_event = threading.Event()
         self._args = args
         self._kwargs = kwargs
+
+        self._signal_list = None
 
     @classmethod
     def create(cls, host=None, jobboard_name=None, jobboard_conf=None,
@@ -121,8 +122,6 @@ class ConductorService(os_service.Service):
 
     def start(self):
         """Interface to start the ConductorService."""
-        super(ConductorService, self).start()
-
         CONF.log_opt_values(LOG, std_logging.INFO)
 
         version_string = version.version_info.version_string()
@@ -147,17 +146,52 @@ class ConductorService(os_service.Service):
                     wait_timeout=self._wait_timeout)
 
                 time.sleep(0.5)
-                self._conductor.run()
+                if threading.current_thread().name == 'MainThread':
+                    t = threading.Thread(target=self._conductor.run)
+                    t.start()
+                    signal.pause()
+                else:
+                    self._conductor.run()
 
-        self._shutdown_event.send()
+        self._shutdown_event.set()
 
     def stop(self):
         """Interface to stop the ConductorService."""
         self._shutdown = True
         self._conductor.stop()
-        super(ConductorService, self).stop()
 
     def wait(self):
         """Interface to wait for ConductorService to complete."""
         self._shutdown_event.wait()
         super(ConductorService, self).wait()
+
+    def handle_signals(self, signals=None, handler=None):
+        """Set signal handlers
+
+        Set OS signal handlers.  By default SIGHUP, SIGINT, and SIGTERM are
+        handled.
+        """
+
+        if signals is None:
+            signals = [
+                signal.SIGHUP,
+                signal.SIGINT,
+                signal.SIGTERM,
+            ]
+
+        if self._signal_list is None:
+            self._signal_list = signals
+
+        if cmp(signals, self._signal_list):
+            for s in set(self._signal_list):
+                signal.signal(s, signal.SIG_DFL)
+
+        if handler is None:
+            handler = self.sighandler
+
+        for s in set(signals):
+            signal.signal(s, handler)
+
+    def sighandler(self, signum, frame):
+        self.handle_signals(signals=self._signal_list, handler=signal.SIG_DFL)
+        self.stop()
