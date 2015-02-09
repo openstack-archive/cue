@@ -21,6 +21,7 @@ inline callbacks.
 
 """
 
+from cue import clients
 from cue.common import context as cue_context
 from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import base as db_base
@@ -131,7 +132,6 @@ class TestCase(base.BaseTestCase):
         #             to work properly.
         self.start = timeutils.utcnow()
 
-        self.log_fixture = self.useFixture(fixtures.FakeLogger())
         self.useFixture(fixtures.NestedTempfile())
         self.useFixture(fixtures.TempHomeDir())
 
@@ -164,6 +164,9 @@ class TestCase(base.BaseTestCase):
                 fixture = fixture_cls()
                 self.useFixture(fixture)
                 self._additional_fixtures.append(fixture)
+
+        clients.init()
+        self.clients = clients.get_manager()
 
     def get_context(self, **kwargs):
         auth_token = kwargs.get('auth_token', "auth_xxx")

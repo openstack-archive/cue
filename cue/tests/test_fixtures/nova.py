@@ -18,7 +18,7 @@ import uuid
 import novaclient.exceptions as nova_exc
 import novaclient.v2.client as nova_client
 
-import cue.client as client
+from cue import clients
 import cue.tests.test_fixtures.base as base
 
 
@@ -179,7 +179,7 @@ class NovaClient(base.BaseFixture):
             raise nova_exc.BadRequest(400)
 
         if nics is not None:
-            neutron_client = client.neutron_client()
+            neutron_client = clients.get_manager()["neutron"]
             for nic in nics:
                 if 'net-id' in nic:
                     network_list = neutron_client.list_networks(
