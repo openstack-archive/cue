@@ -693,9 +693,19 @@ os_image_id=
 # Deprecated group/name - [DEFAULT]/matchmaker_ringfile
 #ringfile=/etc/oslo/matchmaker_ring.json
 
-
 [openstack]
 
+#
+# Openstack SSH keypair name
+#
+#os_key_name=
+
+#
+# Openstack Availability zone
+#
+#os_availability_zone=
+
+[clients]
 #
 # Openstack Region Name
 #
@@ -734,12 +744,6 @@ os_image_id=
 #
 #os_auth_url=
 
-#
-# Openstack SSH keypair name
-#
-#os_key_name=
+# SSL settings
+#ca_file = /etc/ssl/ca.crt
 
-#
-# Openstack Availability zone
-#
-#os_availability_zone=

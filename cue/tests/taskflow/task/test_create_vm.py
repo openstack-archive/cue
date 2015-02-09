@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.tests import base
 from cue.tests.test_fixtures import neutron
 from cue.tests.test_fixtures import nova
@@ -39,28 +38,25 @@ class CreateVmTests(base.TestCase):
         flavor_name = "m1.tiny"
         network_name = "private"
 
-        self.nova_client = client.nova_client()
-        self.neutron_client = client.neutron_client()
-
         self.new_vm_name = str(uuid.uuid4())
         self.new_vm_id = None
 
-        image_list = self.nova_client.images.list()
+        image_list = self.clients["nova"].images.list()
         for image in image_list:
             if (image.name.startswith("cirros")) and (
                     image.name.endswith("kernel")):
                 break
         self.valid_image = image
 
-        self.valid_flavor = self.nova_client.flavors.find(name=flavor_name)
+        self.valid_flavor = self.clients["nova"].flavors.find(name=flavor_name)
 
-        network_list = self.neutron_client.list_networks(name=network_name)
+        network_list = self.clients["neutron"].list_networks(name=network_name)
         self.valid_network = network_list['networks'][0]
 
         self.flow = linear_flow.Flow("create vm flow")
         self.flow.add(
             create_vm.CreateVm(
-                os_client=self.nova_client,
+                os_client=self.clients["nova"],
                 requires=('name', 'image', 'flavor', 'nics'),
                 provides='new_vm',
                 rebind={'name': 'vm_name'}
@@ -79,7 +75,7 @@ class CreateVmTests(base.TestCase):
 
         result = engines.run(self.flow, store=flow_store)
         self.new_vm_id = result['new_vm']['id']
-        new_vm = self.nova_client.servers.get(self.new_vm_id)
+        new_vm = self.clients["nova"].servers.get(self.new_vm_id)
         self.assertEqual(self.new_vm_name, new_vm.name)
 
     def test_create_vm_invalid_flavor(self):
@@ -147,5 +143,5 @@ class CreateVmTests(base.TestCase):
 
     def tearDown(self):
         if self.new_vm_id is not None:
-            self.nova_client.servers.delete(self.new_vm_id)
+            self.clients["nova"].servers.delete(self.new_vm_id)
         super(CreateVmTests, self).tearDown()

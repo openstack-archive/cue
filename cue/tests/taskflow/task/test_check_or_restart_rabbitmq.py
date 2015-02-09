@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import cue.client as client
 import cue.taskflow.task as cue_task
 from cue.tests import base
 from cue.tests.test_fixtures import nova
@@ -41,8 +40,6 @@ class CheckOrRestartRabbitTest(base.TestCase):
     def setUp(self):
         super(CheckOrRestartRabbitTest, self).setUp()
 
-        self.nova_client = client.nova_client()
-
         rabbitmq_retry_strategy = [
             'check',
             'check',
@@ -57,7 +54,7 @@ class CheckOrRestartRabbitTest(base.TestCase):
         self.flow = linear_flow.Flow(name="wait for RabbitMQ ready state",
                                      retry=retry_controller).add(
             cue_task.CheckOrRestartRabbitMq(
-                os_client=self.nova_client,
+                os_client=self.clients['nova'],
                 name="get RabbitMQ status %s",
                 rebind={'action': "retry_strategy"},
                 retry_delay_seconds=1))
@@ -86,7 +83,7 @@ class CheckOrRestartRabbitTest(base.TestCase):
         # create flow with "GetRabbitVmStatus" task
         # start engine to run task
         engines.run(self.flow, store=CheckOrRestartRabbitTest.task_store)
-        self.assertFalse(self.nova_client.servers.reboot.called)
+        self.assertFalse(self.clients["nova"].servers.reboot.called)
 
     def test_get_vm_status_flow_fail(self):
         """Verifies GetRabbitVmStatus in an unsuccessful retry flow.
@@ -107,4 +104,4 @@ class CheckOrRestartRabbitTest(base.TestCase):
         # start engine to run task
         self.assertRaises(IOError, engines.run, self.flow,
                           store=CheckOrRestartRabbitTest.task_store)
-        self.assertTrue(self.nova_client.servers.reboot.called)
+        self.assertTrue(self.clients["nova"].servers.reboot.called)
