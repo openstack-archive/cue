@@ -15,7 +15,6 @@
 
 import taskflow.retry as retry
 
-from cue import client
 from cue.tests import base
 from cue.tests.test_fixtures import nova
 import os_tasklib.common as common_task
@@ -41,7 +40,7 @@ class GetVmStatusTests(base.TestCase):
         flavor_name = "m1.tiny"
 
         # retrieve nova client API class
-        self.nova_client = client.nova_client()
+        self.nova_client = self.clients["nova"]
 
         self.image = self.nova_client.images.find(name=image_name)
         self.flavor = self.nova_client.flavors.find(name=flavor_name)
@@ -91,7 +90,7 @@ class GetVmStatusTests(base.TestCase):
         # create flow with "GetVmStatus" task
         self.flow = linear_flow.Flow('wait for vm to become active',
                                      retry=retry.Times(10)).add(
-            get_vm_status.GetVmStatus(os_client=client.nova_client(),
+            get_vm_status.GetVmStatus(os_client=self.nova_client,
                                       provides='vm_status'),
             common_task.CheckFor(rebind={'check_var': 'vm_status'},
                                  check_value='ACTIVE',
@@ -136,7 +135,7 @@ class GetVmStatusTests(base.TestCase):
         # create flow with "GetVmStatus" task
         self.flow = linear_flow.Flow('wait for vm to become active',
                                      retry=retry.Times(5)).add(
-            get_vm_status.GetVmStatus(os_client=client.nova_client(),
+            get_vm_status.GetVmStatus(os_client=self.nova_client,
                                       provides='vm_status'),
             common_task.CheckFor(rebind={'check_var': 'vm_status'},
                                  check_value='ACTIVE',

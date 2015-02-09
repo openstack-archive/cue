@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.db.sqlalchemy import models
 from cue import objects
 import cue.taskflow.task.update_cluster_task as update_cluster_status
@@ -93,7 +92,7 @@ class UpdateClusterStatusTest(base.TestCase):
         """
 
         # retrieve neutron client API class
-        neutron_client = client.neutron_client()
+        neutron_client = self.clients["neutron"]
 
         # setup a test cluster in DB for this test
         cluster_values = {

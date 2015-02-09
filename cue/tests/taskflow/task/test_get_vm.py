@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.tests import base
 from cue.tests.test_fixtures import nova
 import os_tasklib.nova.get_vm as get_vm
@@ -35,19 +34,17 @@ class GetVmTests(base.TestCase):
 
         flavor_name = "m1.tiny"
 
-        self.nova_client = client.nova_client()
-
         self.valid_vm_name = str(uuid.uuid4())
 
-        image_list = self.nova_client.images.list()
+        image_list = self.clients["nova"].images.list()
         for image in image_list:
             if (image.name.startswith("cirros")) and (
                     image.name.endswith("kernel")):
                 break
         valid_image = image
 
-        valid_flavor = self.nova_client.flavors.find(name=flavor_name)
-        new_vm = self.nova_client.servers.create(name=self.valid_vm_name,
+        valid_flavor = self.clients["nova"].flavors.find(name=flavor_name)
+        new_vm = self.clients["nova"].servers.create(name=self.valid_vm_name,
                                                  image=valid_image,
                                                  flavor=valid_flavor)
         self.valid_vm_id = new_vm.id
@@ -55,7 +52,7 @@ class GetVmTests(base.TestCase):
         self.flow = linear_flow.Flow("create vm flow")
         self.flow.add(
             get_vm.GetVm(
-                os_client=self.nova_client,
+                os_client=self.clients["nova"],
                 requires=('server',),
                 provides=('vm_info')
             )
@@ -82,5 +79,5 @@ class GetVmTests(base.TestCase):
 
     def tearDown(self):
         if self.valid_vm_id is not None:
-            self.nova_client.servers.delete(self.valid_vm_id)
+            self.clients["nova"].servers.delete(self.valid_vm_id)
         super(GetVmTests, self).tearDown()

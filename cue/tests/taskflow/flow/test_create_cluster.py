@@ -15,7 +15,6 @@
 
 import uuid
 
-from cue import client
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.taskflow.flow import create_cluster
@@ -42,23 +41,21 @@ class CreateClusterTests(base.TestCase):
         flavor_name = "m1.tiny"
         network_name = "private"
 
-        self.nova_client = client.nova_client()
-        self.neutron_client = client.neutron_client()
         self.port = u'5672'
 
         self.new_vm_name = str(uuid.uuid4())
         self.new_vm_list = []
 
-        image_list = self.nova_client.images.list()
+        image_list = self.clients["nova"].images.list()
         for image in image_list:
             if (image.name.startswith("cirros")) and (
                     image.name.endswith("kernel")):
                 break
         self.valid_image = image
 
-        self.valid_flavor = self.nova_client.flavors.find(name=flavor_name)
+        self.valid_flavor = self.clients["nova"].flavors.find(name=flavor_name)
 
-        network_list = self.neutron_client.list_networks(name=network_name)
+        network_list = self.clients["neutron"].list_networks(name=network_name)
         self.valid_network = network_list['networks'][0]
 
     def test_create_cluster(self):
@@ -121,8 +118,8 @@ class CreateClusterTests(base.TestCase):
             self.assertEqual('AMQP', endpoint.type, "invalid endpoint type")
 
     def test_create_cluster_overlimit(self):
-        vm_list = self.nova_client.servers.list()
-        port_list = self.neutron_client.list_ports()
+        vm_list = self.clients["nova"].servers.list()
+        port_list = self.clients["neutron"].list_ports()
 
         flow_store = {
             'image': self.valid_image.id,
@@ -156,10 +153,10 @@ class CreateClusterTests(base.TestCase):
         self.assertRaises(taskflow_exc.WrappedFailure, engines.run,
                           flow, store=flow_store)
 
-        self.assertEqual(vm_list, self.nova_client.servers.list())
-        self.assertEqual(port_list, self.neutron_client.list_ports())
+        self.assertEqual(vm_list, self.clients["nova"].servers.list())
+        self.assertEqual(port_list, self.clients["neutron"].list_ports())
 
     def tearDown(self):
         for vm_id in self.new_vm_list:
-            self.nova_client.servers.delete(vm_id)
+            self.clients["nova"].servers.delete(vm_id)
         super(CreateClusterTests, self).tearDown()

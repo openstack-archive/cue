@@ -15,7 +15,7 @@
 
 import taskflow.patterns.linear_flow as linear_flow
 
-import cue.client as client
+from cue import clients
 from cue.db.sqlalchemy import models
 import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
@@ -46,6 +46,8 @@ def delete_cluster_node(cluster_id, node_number, node_id):
 
     deleted_endpoints_values = {'deleted': True}
 
+    client_manager = clients.get_manager()
+
     flow = linear_flow.Flow(flow_name)
     flow.add(
         cue_tasks.GetNode(
@@ -58,7 +60,7 @@ def delete_cluster_node(cluster_id, node_number, node_id):
             rebind={'node': "node_%d" % node_number},
             provides="vm_id_%d" % node_number),
         nova.DeleteVm(
-            os_client=client.nova_client(),
+            os_client=client_manager["nova"],
             name="delete vm %s" % node_name,
             rebind={'server': "vm_id_%d" % node_number}),
         cue_tasks.UpdateNode(
