@@ -23,6 +23,15 @@ echo MYSQL_PASSWORD=password >> local.conf
 echo RABBIT_PASSWORD=password >> local.conf
 echo SERVICE_PASSWORD=password >> local.conf
 echo SERVICE_TOKEN=tokentoken >> local.conf
+echo HOST_IP=127.0.0.1 >> local.conf
+echo enable_service n-novnc >> local.conf
+echo disable_service n-net >> local.conf
+echo enable_service q-svc >> local.conf
+echo enable_service q-agt >> local.conf
+echo enable_service q-dhcp >> local.conf
+echo enable_service q-l3 >> local.conf
+echo enable_service q-meta >> local.conf
+echo enable_service tempest >> local.conf
 ./stack.sh
 SCRIPT
 
@@ -50,9 +59,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provider "vmware_fusion" do |v, override|
+    override.vm.box = "sputnik13/trusty64"
     v.vmx["memsize"] = $vm_memory
     v.vmx["numvcpus"] = $vm_cpus
-    override.vm.box = "puphpet/ubuntu1404-x64"
+    v.vmx["vhv.enable"] = TRUE
+    v.vmx["ethernet0.virtualdev"] = "vmxnet3"
   end
 
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
@@ -83,7 +94,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Initialize project and environment
   config.vm.provision "shell", inline: "pushd /vagrant && tox ; true"
-  config.vm.provision "shell", inline: "source /vagrant/.tox/py27/bin/activate ; pushd /vagrant && python setup.py develop"
-  #config.vm.provision "shell", inline: "echo 'source /vagrant/.tox/py27/bin/activate' >> ~root/.profile"
 
 end
