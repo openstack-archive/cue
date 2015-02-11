@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard Development Company, L.P.
+# Copyright 2015 Hewlett-Packard Development Company, L.P.
 #
 # Author: Endre Karlson <endre.karlson@hp.com>
 #
@@ -13,28 +13,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-#
-# Copied: Designate
-from cue.common import context
+import contextlib
+
+from oslo.config import cfg
+
+from cue.manage import base
+from cue.taskflow import client
+
+CONF = cfg.CONF
 
 
-# Decorators for actions
-def args(*args, **kwargs):
-    def _decorator(func):
-        func.__dict__.setdefault('args', []).insert(0, (args, kwargs))
-        return func
-    return _decorator
-
-
-def name(name):
-    """Give a command a alternate name."""
-    def _decorator(func):
-        func.__dict__['_cmd_name'] = name
-        return func
-    return _decorator
-
-
-class Commands(object):
+class TaskFlowCommands(base.Commands):
     def __init__(self):
-        self.context = context.RequestContext(is_admin=True)
-        self.context.request_id = 'cue-manage'
+        super(TaskFlowCommands, self).__init__()
+
+    def upgrade(self):
+        be = client.Client.persistence()
+        with contextlib.closing(be.get_connection()) as conn:
+            conn.upgrade()

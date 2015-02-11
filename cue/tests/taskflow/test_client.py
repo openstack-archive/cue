@@ -12,6 +12,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import contextlib
+
 from oslo.utils import uuidutils
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.task
@@ -37,6 +39,8 @@ class TaskflowClientTest(base.TestCase):
         super(TaskflowClientTest, self).setUp()
         self._zk_client = fake_client.FakeClient()
         self.persistence = tf_client.Client.persistence(client=self._zk_client)
+        with contextlib.closing(self.persistence.get_connection()) as conn:
+            conn.upgrade()
         self.jobboard = tf_client.Client.jobboard("test_board",
                                                   persistence=self.persistence,
                                                   client=self._zk_client)
