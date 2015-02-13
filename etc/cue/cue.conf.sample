@@ -688,3 +688,42 @@ max_limit=1000
 #ringfile=/etc/oslo/matchmaker_ring.json
 
 
+[openstack]
+
+#
+# Openstack Region Name
+#
+#os_region_name=
+
+#
+# Openstack Tenant ID
+#
+# Openstack Tenant ID and Tenant Name are not both required,
+# but at least one must be supplied.  If both are supplied,
+# Tenant ID will be preferred over the Tenant Name
+#
+#os_tenant_id=
+
+#
+# Openstack Tenant Name
+#
+# Openstack Tenant ID and Tenant Name are not both required,
+# but at least one must be supplied.  If both are supplied,
+# Tenant ID will be preferred over the Tenant Name
+#
+#os_tenant_name=
+
+#
+# Openstack Username
+#
+#os_username=
+
+#
+# Openstack Password
+#
+#os_password=
+
+#
+# Openstack Authentication (Identity) URL
+#
+#os_auth_url=
