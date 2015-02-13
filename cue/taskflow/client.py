@@ -152,6 +152,11 @@ class Client(object):
     interface for posting jobs to Taskflow Jobboards than what is provided
     out of the box with Taskflow.
 
+    TODO(sputnik13): persistence and jobboard should ideally be closed during
+                     __del__ but that seems to throw exceptions even though it
+                     doesn't seem like it should...  this should be
+                     investigated further
+
     :ivar persistence: persistence backend instance
     :ivar jobboard: jobboard backend instance
     """
@@ -185,13 +190,6 @@ class Client(object):
                                                     None,
                                                     self.persistence,
                                                     **kwargs)
-
-    def __del__(self):
-        """Destructor for Client class."""
-        if self.jobboard is not None:
-            self.jobboard.close()
-        if self.persistence is not None:
-            self.persistence.close()
 
     @classmethod
     def create(cls, client_name, board_name=None, persistence=None,
