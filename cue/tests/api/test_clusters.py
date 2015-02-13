@@ -71,6 +71,7 @@ class TestListClusters(api.FunctionalTest,
 
 class TestCreateCluster(api.FunctionalTest,
                         api_utils.ClusterValidationMixin):
+
     def setUp(self):
         super(TestCreateCluster, self).setUp()
 

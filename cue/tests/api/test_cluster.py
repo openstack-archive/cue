@@ -86,6 +86,7 @@ class TestGetCluster(api.FunctionalTest,
 
 class TestDeleteCluster(api.FunctionalTest,
                         api_utils.ClusterValidationMixin):
+
     def setUp(self):
         super(TestDeleteCluster, self).setUp()
 

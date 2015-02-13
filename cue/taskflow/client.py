@@ -12,6 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import contextlib
 import uuid
 
 from oslo.config import cfg
@@ -54,6 +55,95 @@ def _make_conf(backend_uri):
         }
     return conf
 
+_task_flow_client = None
+
+
+def get_client_instance(client_name=None, persistence=None, jobboard=None):
+    """Create and access a single instance of TaskFlow client
+
+    :param client_name: Name of the client interacting with the jobboard
+    :param persistence: A persistence backend instance to be used in lieu
+                        of auto-creating a backend instance based on
+                        configuration parameters
+    :param jobboard: A jobboard backend instance to be used in lieu of
+                     auto-creating a backend instance based on
+                     configuration parameters
+    :return: A :class:`.Client` instance.
+    """
+    global _task_flow_client
+
+    if _task_flow_client is None:
+        if persistence is None:
+            persistence = Client.create_persistence()
+        if jobboard is None:
+            jobboard = Client.create_jobboard(persistence=persistence)
+        if client_name is None:
+            client_name = "cue_job_client"
+
+        _task_flow_client = Client(client_name,
+                                   persistence=persistence,
+                                   jobboard=jobboard)
+
+    return _task_flow_client
+
+
+def create_persistence(conf=None, **kwargs):
+    """Factory method for creating a persistence backend instance
+
+    :param conf: Configuration parameters for the persistence backend.  If
+                 no conf is provided, zookeeper configuration parameters
+                 for the job backend will be used to configure the
+                 persistence backend.
+    :param kwargs: Keyword arguments to be passed forward to the
+                   persistence backend constructor
+    :return: A persistence backend instance.
+    """
+    if conf is None:
+        connection = cfg.CONF.taskflow.persistence_connection
+        if connection is None:
+            connection = ("zookeeper://%s/%s"
+                          % (
+                              cfg.CONF.taskflow.zk_hosts,
+                              cfg.CONF.taskflow.zk_path,
+                            ))
+        conf = _make_conf(connection)
+    be = persistence_backends.fetch(conf=conf, **kwargs)
+    with contextlib.closing(be.get_connection()) as conn:
+        conn.upgrade()
+    return be
+
+
+def create_jobboard(board_name=None, conf=None, persistence=None, **kwargs):
+    """Factory method for creating a jobboard backend instance
+
+    :param board_name: Name of the jobboard
+    :param conf: Configuration parameters for the jobboard backend.
+    :param persistence: A persistence backend instance to be used with the
+                        jobboard.
+    :param kwargs: Keyword arguments to be passed forward to the
+                   persistence backend constructor
+    :return: A persistence backend instance.
+    """
+    if board_name is None:
+        board_name = cfg.CONF.taskflow.jobboard_name
+
+    if conf is None:
+        conf = {'board': 'zookeeper'}
+
+        conf.update({
+            "path": "%s/jobs" % (cfg.CONF.taskflow.zk_path),
+            "hosts": cfg.CONF.taskflow.zk_hosts,
+            "timeout": cfg.CONF.taskflow.zk_timeout
+        })
+
+    jb = job_backends.fetch(
+            name=board_name,
+            conf=conf,
+            persistence=persistence,
+            **kwargs)
+    jb.connect()
+    return jb
+
 
 class Client(object):
     """An abstraction for interacting with Taskflow
@@ -61,6 +151,9 @@ class Client(object):
     This class provides an abstraction for Taskflow to expose a simpler
     interface for posting jobs to Taskflow Jobboards than what is provided
     out of the box with Taskflow.
+
+    :ivar persistence: persistence backend instance
+    :ivar jobboard: jobboard backend instance
     """
 
     def __init__(self, client_name, board_name=None, persistence=None,
@@ -86,19 +179,19 @@ class Client(object):
 
         self._client_name = client_name
 
-        self._persistence = persistence or Client.persistence(**kwargs)
+        self.persistence = persistence or create_persistence(**kwargs)
 
-        self._jobboard = jobboard or Client.jobboard(board_name,
-                                                     None,
-                                                     self._persistence,
-                                                     **kwargs)
+        self.jobboard = jobboard or create_jobboard(board_name,
+                                                    None,
+                                                    self.persistence,
+                                                    **kwargs)
 
     def __del__(self):
         """Destructor for Client class."""
-        if self._jobboard is not None:
-            self._jobboard.close()
-        if self._persistence is not None:
-            self._persistence.close()
+        if self.jobboard is not None:
+            self.jobboard.close()
+        if self.persistence is not None:
+            self.persistence.close()
 
     @classmethod
     def create(cls, client_name, board_name=None, persistence=None,
@@ -119,62 +212,6 @@ class Client(object):
         """
         return cls(client_name, board_name=board_name, persistence=persistence,
                    jobboard=jobboard, **kwargs)
-
-    @staticmethod
-    def persistence(conf=None, **kwargs):
-        """Factory method for creating a persistence backend instance
-
-        :param conf: Configuration parameters for the persistence backend.  If
-                     no conf is provided, zookeeper configuration parameters
-                     for the job backend will be used to configure the
-                     persistence backend.
-        :param kwargs: Keyword arguments to be passed forward to the
-                       persistence backend constructor
-        :return: A persistence backend instance.
-        """
-        if conf is None:
-            connection = cfg.CONF.taskflow.persistence_connection
-            if connection is None:
-                connection = ("zookeeper://%s/%s"
-                              % (
-                                  cfg.CONF.taskflow.zk_hosts,
-                                  cfg.CONF.taskflow.zk_path,
-                                ))
-            conf = _make_conf(connection)
-        be = persistence_backends.fetch(conf=conf, **kwargs)
-        return be
-
-    @staticmethod
-    def jobboard(board_name, conf=None, persistence=None, **kwargs):
-        """Factory method for creating a jobboard backend instance
-
-        :param board_name: Name of the jobboard
-        :param conf: Configuration parameters for the jobboard backend.
-        :param persistence: A persistence backend instance to be used with the
-                            jobboard.
-        :param kwargs: Keyword arguments to be passed forward to the
-                       persistence backend constructor
-        :return: A persistence backend instance.
-        """
-        if board_name is None:
-            board_name = cfg.CONF.taskflow.jobboard_name
-
-        if conf is None:
-            conf = {'board': 'zookeeper'}
-
-            conf.update({
-                "path": "%s/jobs" % (cfg.CONF.taskflow.zk_path),
-                "hosts": cfg.CONF.taskflow.zk_hosts,
-                "timeout": cfg.CONF.taskflow.zk_timeout
-            })
-
-        jb = job_backends.fetch(
-                name=board_name,
-                conf=conf,
-                persistence=persistence,
-                **kwargs)
-        jb.connect()
-        return jb
 
     def post(self, flow_factory, job_args=None,
              flow_args=None, flow_kwargs=None, tx_uuid=None):
@@ -214,13 +251,13 @@ class Client(object):
         })
         job_details['flow_uuid'] = flow_detail.uuid
 
-        self._persistence.get_connection().save_logbook(book)
+        self.persistence.get_connection().save_logbook(book)
 
         engines.save_factory_details(
             flow_detail, flow_factory, flow_args, flow_kwargs,
-            self._persistence)
+            self.persistence)
 
-        job = self._jobboard.post(job_name, book, details=job_details)
+        job = self.jobboard.post(job_name, book, details=job_details)
         return job
 
     def joblist(self, only_unclaimed=False, ensure_fresh=False):
@@ -231,7 +268,7 @@ class Client(object):
                              Behavior of this parameter is backend specific.
         :return: A list of jobs in the jobboard
         """
-        return list(self._jobboard.iterjobs(only_unclaimed=only_unclaimed,
+        return list(self.jobboard.iterjobs(only_unclaimed=only_unclaimed,
                                             ensure_fresh=ensure_fresh))
 
     def delete(self, job=None, job_id=None):
@@ -254,5 +291,5 @@ class Client(object):
                 if j.uuid == job_id:
                     job = j
 
-        self._jobboard.claim(job, self._client_name)
-        self._jobboard.consume(job, self._client_name)
+        self.jobboard.claim(job, self._client_name)
+        self.jobboard.consume(job, self._client_name)
