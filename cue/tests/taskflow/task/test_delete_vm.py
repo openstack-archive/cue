@@ -39,7 +39,7 @@ class DeleteVmTests(base.TestCase):
 
     def setUp(self):
         super(DeleteVmTests, self).setUp()
-        # retrieve neutron client API class
+        # retrieve nova client API class
         self.nova_client = client.nova_client()
 
         # create flow with "DeleteVm" task
