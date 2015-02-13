@@ -23,17 +23,19 @@ import cue.tests.test_fixtures.base as base
 
 
 class VmDetails(object):
-    def __init__(self, vm_id, name, flavor, image):
+    def __init__(self, vm_id, name, flavor, image, vm_status):
         self.id = vm_id
         self.name = name
         self.flavor = flavor
         self.image = image
+        self.status = vm_status
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'flavor': self.flavor,
+            'vm_status': self.status,
         }
 
 
@@ -66,6 +68,34 @@ class FlavorDetails(object):
         self.vcpus = vcpus or 2
 
 
+class VmStatusDetails(object):
+    vm_status_list = []
+
+    @staticmethod
+    def set_vm_status(statuses):
+        """Helper function to setup sequence of status labels provided to a VM.
+
+        :param statuses: list of statuses
+        """
+        for status in statuses:
+            VmStatusDetails.vm_status_list.append(status)
+
+    @staticmethod
+    def get_status():
+        """Returns the next status in configured sequence.
+
+        If status sequence is empty, a status of 'ACTIVE' is returned.
+
+        :return: Current VM status.
+        """
+        if len(VmStatusDetails.vm_status_list) == 0:
+            status = 'ACTIVE'
+        else:
+            status = VmStatusDetails.vm_status_list.pop()
+
+        return status
+
+
 class NovaClient(base.BaseFixture):
     """A test fixture to simulate a Nova Client connection
 
@@ -76,6 +106,7 @@ class NovaClient(base.BaseFixture):
     def __init__(self, *args, **kwargs):
         super(NovaClient, self).__init__(*args, **kwargs)
         self._vm_list = {}
+        self._vm_status_list = []
 
         image_detail = ImageDetails(name='cirros-0.3.2-x86_64-uec-kernel')
         self._image_list = {
@@ -136,7 +167,8 @@ class NovaClient(base.BaseFixture):
                         raise nova_exc.BadRequest(404)
 
         newVm = VmDetails(vm_id=uuid.uuid4(), name=name,
-                          flavor=flavor, image=image)
+                          flavor=flavor, image=image,
+                          vm_status='BUILDING')
 
         self._vm_list[newVm.id] = newVm
 
@@ -145,7 +177,7 @@ class NovaClient(base.BaseFixture):
     def delete_vm(self, server, **kwargs):
         """Mock'd version of novaclient...delete_vm().
 
-        :param vm object with id instance variable
+        :param server: vm object with populated id instance variable
         :return: n/a
         """
         try:
@@ -159,10 +191,19 @@ class NovaClient(base.BaseFixture):
             pass
 
     def get_vm(self, server, **kwargs):
+        """Mock'd version of novaclient...get()
+
+        :param server: vm object with populated id instance variable
+        :return: current server object for specified vm id
+        """
         try:
-            return self._vm_list[server.id]
+            server = self._vm_list[server.id]
         except AttributeError:
-            return self._vm_list[server]
+            server = self._vm_list[server]
+
+        server.status = VmStatusDetails.get_status()
+
+        return server
 
     def list_vms(self, retrieve_all=True, **_params):
         """Mock'd version of novaclient...list_vms().
