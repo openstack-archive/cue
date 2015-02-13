@@ -17,9 +17,24 @@ import os_tasklib
 
 
 class CreatePort(os_tasklib.BaseTask):
+    """CreatePort Task
+
+    This task interfaces with Neutron API and creates a port based on the
+    parameters provided to the Task.
+
+    """
     default_provides = 'neutron_port_id'
 
     def execute(self, network_id, port_name, **kwargs):
+        """Main execute method
+
+        :param network_id: Network id to connect new port to
+        :type network_id: string
+        :param port_name: Name for new port
+        :type port_name: string
+        :return: Port record provided by Neutron
+        :rtype: dict
+        """
         body_value = {
             "port": {
                 "admin_state_up": True,
@@ -29,9 +44,8 @@ class CreatePort(os_tasklib.BaseTask):
         }
 
         port = self.os_client.create_port(body=body_value)
-        port_id = port['port']['id']
 
-        return port_id
+        return port
 
     def revert(self, **kwargs):
         """Revert function for a failed create port task."""

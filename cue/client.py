@@ -21,9 +21,9 @@ import novaclient.client as NovaClient
 def nova_client():
     return NovaClient.Client(2,
                              'admin',
-                             'secrete',
+                             'messina',
                              'demo',
-                             'http://192.168.41.183:5000/v2.0'
+                             'http://192.168.131.136:5000/v2.0'
                             )
 
 
