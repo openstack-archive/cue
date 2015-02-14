@@ -15,3 +15,4 @@
 
 from assert_task import Assert  # noqa
 from check_for import CheckFor  # noqa
+from lambda_task import Lambda  # noqa
