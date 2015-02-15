@@ -13,8 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import inspect
-
+import oslo_utils.reflection as reflection
 import taskflow.task as task
 
 
@@ -24,9 +23,6 @@ class Lambda(task.Task):
     This Task takes a function (lambda or otherwise) and
     applies it to input parameters.
 
-    Input parameters must be specifically required by the task using the
-    requires argument in the task constructor.
-
     >>> from pprint import pprint
     >>> import taskflow.engines as engines
     >>> from taskflow.patterns import linear_flow
@@ -34,7 +30,7 @@ class Lambda(task.Task):
 
     >>> l = lambda x, y: x + y
     >>> flow = linear_flow.Flow("test lambda flow")
-    >>> flow = flow.add(Lambda(l, provides='z', requires=('x','y')))
+    >>> flow = flow.add(Lambda(l, provides='z'))
 
     >>> input_store = { 'x': 2, 'y': 3 }
     >>> result = engines.run(flow, store=input_store)
@@ -42,14 +38,19 @@ class Lambda(task.Task):
     >>> pprint(result)
     {'x': 2, 'y': 3, 'z': 5}
     """
-    def __init__(self, functor, name=None, **kwargs):
-        super(Lambda, self).__init__(name=name, **kwargs)
+    def __init__(self, functor, name=None, requires=None, **kwargs):
+        self.f_args = reflection.get_callable_args(functor)
+
+        if requires and tuple(requires) != tuple(self.f_args):
+            raise ValueError("requires must be the same as the functor "
+                             "argument list")
+
+        super(Lambda, self).__init__(name=name, requires=self.f_args, **kwargs)
 
         self.functor = functor
-        self.argspec = inspect.getargspec(functor)
 
-    def execute(self, *args, **kwargs):
-        common_keys = set(self.argspec.args).intersection(kwargs.keys())
+    def execute(self, **kwargs):
+        common_keys = set(self.f_args).intersection(kwargs.keys())
         functor_kwargs = {k: kwargs[k] for k in common_keys}
 
         result = self.functor(**functor_kwargs)

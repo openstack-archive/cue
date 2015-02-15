@@ -16,3 +16,5 @@
 from assert_task import Assert  # noqa
 from check_for import CheckFor  # noqa
 from lambda_task import Lambda  # noqa
+from map_task import Map        # noqa
+from reduce_task import Reduce  # noqa
