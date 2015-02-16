@@ -18,7 +18,6 @@ import taskflow.retry as retry
 
 import cue.client as client
 import cue.taskflow.task as cue_task
-import os_tasklib.cinder as cinder_task
 import os_tasklib.common as common_task
 import os_tasklib.neutron as neutron_task
 import os_tasklib.nova as nova_task
@@ -28,8 +27,6 @@ def create_cluster():
     flow = linear_flow.Flow('creating vm').add(
         neutron_task.CreatePort(os_client=client.neutron_client(),
                                 provides='neutron_port_id'),
-        cinder_task.CreateVolume(os_client=client.cinder_client(),
-                                 provides='cinder_volume_id'),
         nova_task.CreateVm(os_client=client.nova_client(),
                            requires=('name', 'image', 'flavor', 'nics'),
                            provides='nova_vm_id'),

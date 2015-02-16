@@ -160,9 +160,14 @@ class NovaClient(base.BaseFixture):
 
     def get_vm(self, server, **kwargs):
         try:
-            return self._vm_list[server.id]
+            server_id = server.id
         except AttributeError:
-            return self._vm_list[server]
+            server_id = server
+
+        try:
+            return self._vm_list[server_id]
+        except KeyError:
+            raise nova_exc.NotFound(404)
 
     def list_vms(self, retrieve_all=True, **_params):
         """Mock'd version of novaclient...list_vms().
