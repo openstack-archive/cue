@@ -68,6 +68,7 @@ class NeutronClient(base.BaseFixture):
         v2_client.create_network = self.create_network
         v2_client.list_ports = self.list_ports
         v2_client.list_networks = self.list_networks
+        v2_client.delete_port = self.delete_port
 
     def create_port(self, body=None):
         """Mock'd version of neutronclient...create_port().
@@ -87,7 +88,7 @@ class NeutronClient(base.BaseFixture):
         else:
             body = {'port': {}}
 
-        port_id = uuid.uuid4()
+        port_id = uuid.uuid4().hex
         body['port']['id'] = port_id
         self._port_list[port_id] = body['port']
         return body
@@ -106,7 +107,7 @@ class NeutronClient(base.BaseFixture):
         else:
             body = {'network': {}}
 
-        network_id = uuid.uuid4()
+        network_id = uuid.uuid4().hex
         body['network'].update({
             'id': network_id,
             'subnets': [],
@@ -142,3 +143,12 @@ class NeutronClient(base.BaseFixture):
         for network in self._network_list.values():
             if network[property] == value:
                 return {'networks': [network]}
+
+    def delete_port(self, port):
+        try:
+            port_id = port.id
+        except AttributeError:
+            port_id = port
+
+        if port_id in self._port_list:
+            self._port_list.pop(port_id)
