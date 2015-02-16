@@ -74,9 +74,9 @@ def get_client_instance(client_name=None, persistence=None, jobboard=None):
 
     if _task_flow_client is None:
         if persistence is None:
-            persistence = Client.create_persistence()
+            persistence = create_persistence()
         if jobboard is None:
-            jobboard = Client.create_jobboard(persistence=persistence)
+            jobboard = create_jobboard(persistence=persistence)
         if client_name is None:
             client_name = "cue_job_client"
 

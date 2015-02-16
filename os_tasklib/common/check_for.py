@@ -46,7 +46,5 @@ class CheckFor(task.Task):
                                  (self.check_value, check_var))
 
     def revert(self, check_var, *args, **kwargs):
-        print("Check failed, expected %s, got %s" %
-              (self.check_value, check_var))
         if self.sleep_time != 0:
             time.sleep(self.sleep_time)
