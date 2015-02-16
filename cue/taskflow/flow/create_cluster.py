@@ -14,31 +14,18 @@
 # under the License.
 
 import taskflow.patterns.linear_flow as linear_flow
-import taskflow.retry as retry
+import taskflow.patterns.unordered_flow as unordered_flow
 
-import cue.client as client
+from cue.taskflow.flow import create_cluster_node
 import cue.taskflow.task as cue_task
-import os_tasklib.common as common_task
-import os_tasklib.neutron as neutron_task
-import os_tasklib.nova as nova_task
 
 
-def create_cluster():
-    flow = linear_flow.Flow('creating vm').add(
-        neutron_task.CreatePort(os_client=client.neutron_client(),
-                                provides='neutron_port_id'),
-        nova_task.CreateVm(os_client=client.nova_client(),
-                           requires=('name', 'image', 'flavor', 'nics'),
-                           provides='nova_vm_id'),
-        linear_flow.Flow('wait for vm to become active',
-                         retry=retry.Times(10)).add(
-            nova_task.GetVmStatus(os_client=client.nova_client(),
-                                  provides='vm_status'),
-            common_task.CheckFor(rebind={'check_var': 'vm_status'},
-                                 check_value='ACTIVE',
-                                 timeout_seconds=1),
-        ),
-        cue_task.UpdateClusterStatus(cue_client="cue client"),
+def create_cluster(cluster_id, cluster_size):
+    flow = linear_flow.Flow("creating cluster %s" % cluster_id)
+    sub_flow = unordered_flow.Flow("create VMs")
+    for i in range(cluster_size):
+        sub_flow.add(create_cluster_node(cluster_id, i))
 
-    )
+    flow.add(sub_flow)
+
     return flow
