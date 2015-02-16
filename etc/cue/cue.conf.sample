@@ -365,6 +365,12 @@ port=8795
 max_limit=1000
 
 
+#
+# Openstack Image ID
+# TODO(sputnik13): this needs to be removed when image selection is integrated
+#
+os_image_id=
+
 [database]
 
 #

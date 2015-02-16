@@ -14,9 +14,9 @@
 # under the License.
 
 
-import base_task as base_task
+import taskflow.task as task
 
 
-class UpdateClusterStatus(base_task.BaseTask):
+class UpdateClusterStatus(task.Task):
     def execute(self, cluster_status, **kwargs):
         print("Update Cluster Status to %s" % cluster_status)
