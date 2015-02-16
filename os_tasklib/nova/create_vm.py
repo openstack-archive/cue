@@ -119,9 +119,9 @@ class CreateVm(os_tasklib.BaseTask):
         return new_vm.to_dict()
 
     def revert(self, *args, **kwargs):
-        """Revert CreateVmTask
+        """Revert CreateVm Task
 
-        This method is executed upon failure of the CreateVmTask or the Flow
+        This method is executed upon failure of the CreateVm Task or the Flow
         that the Task is part of.
 
         :param args: positional arguments that the task required to execute.
@@ -141,6 +141,9 @@ class CreateVm(os_tasklib.BaseTask):
 
         vm_info = kwargs.get('result')
         if vm_info and isinstance(vm_info, dict):
-            vm_id = vm_info['id']
-            if vm_id:
-                self.os_client.servers.delete()
+            try:
+                vm_id = vm_info['id']
+                if vm_id:
+                    self.os_client.servers.delete(vm_id)
+            except KeyError:
+                pass
