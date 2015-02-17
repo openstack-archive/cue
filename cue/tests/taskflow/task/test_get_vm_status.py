@@ -35,7 +35,7 @@ class GetVmStatusTests(base.TestCase):
     ]
 
     task_store = {
-        'vm_id': "0",
+        'nova_vm_id': "0",
     }
 
     def setUp(self):
@@ -64,7 +64,7 @@ class GetVmStatusTests(base.TestCase):
                                                        flavor=self.flavor)
 
         # set vm_id variable in TaskFlow's data store required for task
-        GetVmStatusTests.task_store['vm_id'] = new_instance.id
+        GetVmStatusTests.task_store['nova_vm_id'] = new_instance.id
 
         # start engine to run delete task
         result = engines.run(self.flow, store=GetVmStatusTests.task_store)
@@ -108,7 +108,7 @@ class GetVmStatusTests(base.TestCase):
                                                        flavor=self.flavor)
 
         # set vm_id variable in TaskFlow's data store required for task
-        GetVmStatusTests.task_store['vm_id'] = new_instance.id
+        GetVmStatusTests.task_store['nova_vm_id'] = new_instance.id
 
         # start engine to run delete task
         result = engines.run(self.flow, store=GetVmStatusTests.task_store)
@@ -153,7 +153,7 @@ class GetVmStatusTests(base.TestCase):
                                                        flavor=self.flavor)
 
         # set vm_id variable in TaskFlow's data store required for task
-        GetVmStatusTests.task_store['vm_id'] = new_instance.id
+        GetVmStatusTests.task_store['nova_vm_id'] = new_instance.id
 
         # start engine to run delete task and verify AssertRaises exception
         self.assertRaises(AssertionError, engines.run, self.flow,
