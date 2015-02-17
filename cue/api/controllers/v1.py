@@ -91,7 +91,7 @@ class ClusterDetails(base.APIBase):
     flavor = wsme.wsattr(wtypes.text, mandatory=True)
     "Flavor of cluster"
 
-    size = wtypes.IntegerType()
+    size = wsme.wsattr(wtypes.IntegerType(), mandatory=True)
     "Number of nodes in cluster"
 
     volume_size = wtypes.IntegerType()
