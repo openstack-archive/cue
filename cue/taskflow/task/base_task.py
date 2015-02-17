@@ -18,7 +18,7 @@ import taskflow.task
 
 
 class BaseTask(taskflow.task.Task):
-    def __init__(self, cue_client, name=None, **kwargs):
+    def __init__(self, cue_client=None, name=None, **kwargs):
         self.cue_client = cue_client
 
         super(BaseTask, self).__init__(name=name, **kwargs)
