@@ -224,6 +224,7 @@ class ClustersController(rest.RestController):
             "volume_size": cluster.cluster.volume_size,
             "network_id": cluster.cluster.network_id,
             "cluster_status": "BUILDING",
+            "rabbit_port": '5672'
         }
         job_client = task_flow_client.get_client_instance()
         job_uuid = uuidutils.generate_uuid()

@@ -13,10 +13,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
 import taskflow.task as task
 
 
-class UpdateClusterStatus(task.Task):
+class UpdateClusterStatus(task.BaseTask):
+    status_revert_pairs = {
+        'BUILDING': 'FAILED'
+    }
+
     def execute(self, cluster_status, **kwargs):
         print("Update Cluster Status to %s" % cluster_status)
+
+    def revert(self, *args, **kwargs):
+        if kwargs['cluster_status'] in UpdateClusterStatus.status_revert_pairs:
+            print("Update Cluster Status to %s"
+                  % UpdateClusterStatus.status_revert_pairs[kwargs['cluster_status']])

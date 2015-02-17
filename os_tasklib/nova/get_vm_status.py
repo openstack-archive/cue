@@ -22,7 +22,7 @@ class GetVmStatus(os_tasklib.BaseTask):
     This task will retrieve the current status of the indicated VM
 
     """
-    def execute(self, vm_id, **kwargs):
+    def execute(self, nova_vm_id, **kwargs):
         """Main execute method
 
         :param vm_id: VM id to get status of
@@ -30,7 +30,7 @@ class GetVmStatus(os_tasklib.BaseTask):
         :return: VM status
         :rtype: string
         """
-        server = self.os_client.servers.get(vm_id)
+        server = self.os_client.servers.get(nova_vm_id)
         return server.status
 
     def revert(self, **kwargs):

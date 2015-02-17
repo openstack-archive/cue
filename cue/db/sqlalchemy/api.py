@@ -150,6 +150,15 @@ class Connection(api.Connection):
         query = model_query(context, models.Node).filter_by(id=node_id)
         return query.one()
 
+    def update_node_status(self, context, node_id, status):
+        values = {'status': status,
+                  'updated_at': timeutils.utcnow()}
+
+        node_query = (model_query(context, models.Node)
+            .filter_by(id=node_id))
+
+        node_query.update(values)
+
     def get_endpoints_in_node(self, context, node_id):
         query = model_query(context, models.Endpoint).filter_by(
             node_id=node_id)
@@ -159,6 +168,15 @@ class Connection(api.Connection):
     def get_endpoint_by_id(self, context, endpoint_id):
         query = model_query(context, models.Endpoint).filter_by(id=endpoint_id)
         return query.one()
+
+    def update_cluster_status(self, context, cluster_id, status):
+        values = {'status': status,
+                  'updated_at': timeutils.utcnow()}
+
+        cluster_query = (model_query(context, models.Cluster)
+            .filter_by(id=cluster_id))
+
+        cluster_query.update(values)
 
     def update_cluster_deleting(self, context, cluster_id):
         values = {'status': models.Status.DELETING,
