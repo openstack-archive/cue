@@ -152,3 +152,5 @@ class NeutronClient(base.BaseFixture):
 
         if port_id in self._port_list:
             self._port_list.pop(port_id)
+        else:
+            raise exceptions.NeutronClientException("404 Not found")
