@@ -13,6 +13,26 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from cue.openstack.common import log as logging
+import os_tasklib
 
-from create_port import CreatePort  # noqa
-from delete_port import DeletePort  # noqa
+
+LOG = logging.getLogger(__name__)
+
+
+class DeletePort(os_tasklib.BaseTask):
+    """DeletePort Task
+
+    This task interfaces with Neutron API and creates a port based on the
+    parameters provided to the Task.
+
+    """
+
+    def execute(self, port_id, **kwargs):
+        """Main execute method
+
+        :param port_id: Port ID of the port being deleted
+        :type port_id: string
+        """
+
+        self.os_client.delete_port(port=port_id)
