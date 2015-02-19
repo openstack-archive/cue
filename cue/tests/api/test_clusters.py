@@ -88,6 +88,25 @@ class TestCreateCluster(api.FunctionalTest,
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
+    def test_create_size_missing(self):
+        """test create an empty cluster."""
+        api_cluster = test_utils.create_api_test_cluster(size=0)
+        request_body = api_cluster.as_dict()
+
+        # remove size field
+        del request_body['size']
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=request_body,
+                            expect_errors=True)
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+        self.assertEqual('400 Bad Request', data.status,
+                         'Invalid status value received.')
+        self.assertIn('Mandatory field missing',
+                      data.namespace["faultstring"],
+                      'Invalid faultstring received.')
+
     def test_create_size_zero(self):
         """test create an empty cluster."""
         api_cluster = test_utils.create_api_test_cluster(size=0)
