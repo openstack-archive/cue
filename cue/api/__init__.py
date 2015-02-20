@@ -28,6 +28,9 @@ API_SERVICE_OPTS = [
                default=1000,
                help='The maximum number of items returned in a single '
                     'response from a collection resource.'),
+    cfg.IntOpt('rabbit_port',
+               default=5672,
+               help='The port for the RabbitMQ AMQP service.'),
     # TODO(sputnik13): this needs to be removed when image selection is done
     cfg.StrOpt('os_image_id',
                help='The Image ID to use for VMs created as part of a cluster')
