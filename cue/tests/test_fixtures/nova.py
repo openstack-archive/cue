@@ -69,6 +69,34 @@ class FlavorDetails(object):
         self.vcpus = vcpus or 2
 
 
+class VmStatusDetails(object):
+    vm_status_list = []
+
+    @staticmethod
+    def set_vm_status(statuses):
+        """Helper function to setup sequence of status labels provided to a VM.
+
+        :param statuses: list of statuses
+        """
+        for status in statuses:
+            VmStatusDetails.vm_status_list.append(status)
+
+    @staticmethod
+    def get_status():
+        """Returns the next status in configured sequence.
+
+        If status sequence is empty, a status of 'ACTIVE' is returned.
+
+        :return: Current VM status.
+        """
+        if len(VmStatusDetails.vm_status_list) == 0:
+            status = 'ACTIVE'
+        else:
+            status = VmStatusDetails.vm_status_list.pop()
+
+        return status
+
+
 class NovaClient(base.BaseFixture):
     """A test fixture to simulate a Nova Client connection
 
@@ -112,8 +140,9 @@ class NovaClient(base.BaseFixture):
         v2_client.servers.delete = self.delete_vm
         v2_client.servers.get = self.get_vm
         v2_client.servers.list = self.list_vms
-        v2_client.images.find = self.images_find
-        v2_client.flavors.find = self.flavors_find
+        v2_client.images.find = self.find_images
+        v2_client.images.list = self.list_images
+        v2_client.flavors.find = self.find_flavors
 
     def create_vm(self, name, image, flavor, nics=None, **kwargs):
         """Mock'd version of novaclient...create_vm().
@@ -156,7 +185,8 @@ class NovaClient(base.BaseFixture):
                     pass
 
         newVm = VmDetails(vm_id=uuid.uuid4(), name=name,
-                          flavor=flavor, image=image)
+                          flavor=flavor, image=image,
+                          status='BUILDING')
 
         self._vm_list[newVm.id] = newVm
 
@@ -165,7 +195,7 @@ class NovaClient(base.BaseFixture):
     def delete_vm(self, server, **kwargs):
         """Mock'd version of novaclient...delete_vm().
 
-        :param vm object with id instance variable
+        :param server: vm object with populated id instance variable
         :return: n/a
         """
         try:
@@ -176,30 +206,39 @@ class NovaClient(base.BaseFixture):
         try:
             del (self._vm_list[server_id])
         except KeyError:
-            pass
+            raise nova_exc.NotFound("Invalid server provided")
 
     def get_vm(self, server, **kwargs):
+        """Mock'd version of novaclient...get()
+
+        :param server: vm object with populated id instance variable
+        :return: current server object for specified vm id
+        """
         try:
             server_id = server.id
         except AttributeError:
             server_id = server
 
         try:
-            return self._vm_list[server_id]
+            server = self._vm_list[server_id]
         except KeyError:
             raise nova_exc.NotFound(404)
+
+        server.status = VmStatusDetails.get_status()
+
+        return server
 
     def list_vms(self, retrieve_all=True, **_params):
         """Mock'd version of novaclient...list_vms().
 
         List available vms.
 
-        :param retrieve_all: Set to true to retrieve all available ports
+        :param retrieve_all: Set to true to retrieve all available vms
         """
         if retrieve_all:
             return self._vm_list.values()
 
-    def images_find(self, name, **kwargs):
+    def find_images(self, name, **kwargs):
         """Mock'd version of novaclient...image_find().
 
         Finds an image detail based on provided name
@@ -211,7 +250,17 @@ class NovaClient(base.BaseFixture):
             if image_detail.name == name:
                 return image_detail
 
-    def flavors_find(self, name, **kwargs):
+    def list_images(self, retrieve_all=True, **_params):
+        """Mock'd version of novaclient...list_images().
+
+        List available images.
+
+        :param retrieve_all: Set to true to retrieve all available images
+        """
+        if retrieve_all:
+            return self._image_list.values()
+
+    def find_flavors(self, name, **kwargs):
         """Mock'd version of novaclient...flavors_find().
 
         Finds a flavor detail based on provided name.

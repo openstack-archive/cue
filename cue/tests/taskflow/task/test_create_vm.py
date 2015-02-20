@@ -36,16 +36,22 @@ class CreateVmTests(base.TestCase):
     def setUp(self):
         super(CreateVmTests, self).setUp()
 
-        image_name = "cirros-0.3.2-x86_64-uec-kernel"
         flavor_name = "m1.tiny"
-        network_name = "test-network"
+        network_name = "private"
 
         self.nova_client = client.nova_client()
         self.neutron_client = client.neutron_client()
 
         self.new_vm_name = uuid.uuid4().hex
         self.new_vm_id = None
-        self.valid_image = self.nova_client.images.find(name=image_name)
+
+        image_list = self.nova_client.images.list()
+        for image in image_list:
+            if (image.name.startswith("cirros")) and (
+                    image.name.endswith("kernel")):
+                break
+        self.valid_image = image
+
         self.valid_flavor = self.nova_client.flavors.find(name=flavor_name)
 
         network_list = self.neutron_client.list_networks(name=network_name)

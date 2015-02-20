@@ -112,6 +112,9 @@ class TestCase(base.BaseTestCase):
     """Test case base class for all unit tests."""
 
     additional_fixtures = []
+    #todo(dagnello): add enable_fixures as a configurable parameters for
+    #running tests.
+    enable_fixtures = True
 
     def setUp(self):
         """Run before each test method to initialize test environment."""
@@ -153,11 +156,12 @@ class TestCase(base.BaseTestCase):
 
         self.session = db_api.get_session()
 
-        self._additional_fixtures = []
-        for fixture_cls in self.additional_fixtures:
-            fixture = fixture_cls()
-            self.useFixture(fixture)
-            self._additional_fixtures.append(fixture)
+        if self.enable_fixtures:
+            self._additional_fixtures = []
+            for fixture_cls in self.additional_fixtures:
+                fixture = fixture_cls()
+                self.useFixture(fixture)
+                self._additional_fixtures.append(fixture)
 
     def get_context(self, **kwargs):
         auth_token = kwargs.get('auth_token', "auth_xxx")

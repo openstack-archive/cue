@@ -22,6 +22,7 @@ from oslo.config import cfg
 from oslo_log import log as logging
 from taskflow.conductors import single_threaded
 
+from cue.common import policy
 import cue.taskflow.client as tf_client
 import cue.version as version
 
@@ -122,6 +123,8 @@ class ConductorService(object):
     def start(self):
         """Interface to start the ConductorService."""
         CONF.log_opt_values(LOG, std_logging.INFO)
+
+        policy.init()
 
         version_string = version.version_info.version_string()
         LOG.debug("Starting runner %s on board %s",
