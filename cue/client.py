@@ -31,16 +31,16 @@ OS_OPTS = [
                default=None),
     cfg.StrOpt('os_tenant_name',
                help='Openstack Tenant Name',
-               default=None),
+               default='demo'),
     cfg.StrOpt('os_username',
                help='Openstack Username',
-               default=None),
+               default='admin'),
     cfg.StrOpt('os_password',
                help='Openstack Password',
-               default=None),
+               default='messina'),
     cfg.StrOpt('os_auth_url',
                help='Openstack Authentication (Identity) URL',
-               default=None),
+               default='http://192.168.131.136:5000/v2.0'),
 ]
 
 opt_group = cfg.OptGroup(
@@ -54,11 +54,10 @@ CONF.register_opts(OS_OPTS, group=opt_group)
 
 def nova_client():
     return NovaClient.Client(2,
-                             username=CONF.openstack.os_username,
-                             api_key=CONF.openstack.os_password,
-                             tenant_id=CONF.openstack.os_tenant_id,
-                             auth_url=CONF.openstack.os_auth_url,
-                             region_name=CONF.openstack.os_region_name,
+                             CONF.openstack.os_username,
+                             CONF.openstack.os_password,
+                             CONF.openstack.os_tenant_name,
+                             CONF.openstack.os_auth_url
                             )
 
 
@@ -73,10 +72,8 @@ def cinder_client():
 
 def neutron_client():
     return NeutronClient.Client('2.0',
-                                region_name=CONF.openstack.os_region_name,
                                 username=CONF.openstack.os_username,
                                 password=CONF.openstack.os_password,
                                 tenant_name=CONF.openstack.os_tenant_name,
-                                tenant_id=CONF.openstack.os_tenant_id,
                                 auth_url=CONF.openstack.os_auth_url
                                )

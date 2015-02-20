@@ -33,13 +33,19 @@ class GetVmTests(base.TestCase):
     def setUp(self):
         super(GetVmTests, self).setUp()
 
-        image_name = "cirros-0.3.2-x86_64-uec-kernel"
         flavor_name = "m1.tiny"
 
         self.nova_client = client.nova_client()
 
         self.valid_vm_name = uuid.uuid4().hex
-        valid_image = self.nova_client.images.find(name=image_name)
+
+        image_list = self.nova_client.images.list()
+        for image in image_list:
+            if (image.name.startswith("cirros")) and (
+                    image.name.endswith("kernel")):
+                break
+        valid_image = image
+
         valid_flavor = self.nova_client.flavors.find(name=flavor_name)
         new_vm = self.nova_client.servers.create(name=self.valid_vm_name,
                                                  image=valid_image,

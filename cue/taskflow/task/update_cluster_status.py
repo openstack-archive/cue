@@ -13,10 +13,35 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
 import taskflow.task as task
+
+from cue.common import context as context_module
+from cue.db.sqlalchemy import models
+from cue import objects
 
 
 class UpdateClusterStatus(task.Task):
-    def execute(self, cluster_status, **kwargs):
-        print("Update Cluster Status to %s" % cluster_status)
+    status_revert_pairs = {
+        models.Status.BUILDING: models.Status.ERROR
+    }
+
+    def execute(self, context, cluster_id, cluster_status, **kwargs):
+        if 'user_identity' in context:
+            del context['user_identity']
+        request_context = context_module.RequestContext(**context)
+        objects.Cluster.update_cluster_status(request_context, cluster_id,
+                                              cluster_status)
+
+    def revert(self, *args, **kwargs):
+        if 'user_identity' in kwargs['context']:
+            del kwargs['context']['user_identity']
+        request_context = context_module.RequestContext(**kwargs['context'])
+        cluster_id = kwargs['cluster_id']
+        if kwargs['cluster_status'] in UpdateClusterStatus.status_revert_pairs:
+            objects.Cluster.update_cluster_status(
+                request_context, cluster_id,
+                UpdateClusterStatus.status_revert_pairs
+                [kwargs['cluster_status']])
+        else:
+            objects.Cluster.update_cluster_status(request_context, cluster_id,
+                                                  models.Status.ERROR)
