@@ -8,5 +8,6 @@
     "cluster:create": "rule:admin_or_owner",
     "cluster:get": "rule:admin_or_owner",
     "cluster:delete": "rule:admin_or_owner",
+    "cluster:update_status": "rule:admin_or_owner",
     "clusters:get": "rule:admin_or_owner"
 }

@@ -16,12 +16,6 @@
 
 import os_tasklib
 
-from cue.common.i18n import _LW  # noqa
-from cue.openstack.common import log as logging
-
-
-LOG = logging.getLogger(__name__)
-
 
 class GetVm(os_tasklib.BaseTask):
     """GetVm Task

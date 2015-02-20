@@ -15,12 +15,6 @@
 
 import os_tasklib
 
-from cue.common.i18n import _LI  # noqa
-from cue.openstack.common import log as logging
-
-
-LOG = logging.getLogger(__name__)
-
 
 class DeleteVm(os_tasklib.BaseTask):
     """DeleteVm Task
@@ -32,9 +26,8 @@ class DeleteVm(os_tasklib.BaseTask):
     def execute(self, vm_id, **kwargs):
         """Main execute method
 
-        :param vm_id: Network id to connect new port to
+        :param vm_id: VM id to delete
         :type vm_id: string
         :return: n/a
         """
         self.os_client.servers.delete(vm_id)
-        LOG.info(_LI('Deleting VM, id: %s') % vm_id)
