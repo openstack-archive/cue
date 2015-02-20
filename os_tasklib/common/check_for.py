@@ -13,9 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-__author__ = 'sputnik13'
-
 import time
 
 import taskflow.task as task
@@ -24,17 +21,17 @@ import taskflow.task as task
 class CheckFor(task.Task):
     def __init__(self,
                  check_value,
-                 timeout_seconds=None,
-                 timeout_ms=None,
+                 retry_delay_seconds=None,
+                 retry_delay_ms=None,
                  name=None,
                  **kwargs):
         self.check_value = check_value
         self.sleep_time = 0
-        if timeout_seconds:
-            self.sleep_time = timeout_seconds
+        if retry_delay_seconds:
+            self.sleep_time = retry_delay_seconds
 
-        if timeout_ms:
-            self.sleep_time += timeout_ms / 1000.0
+        if retry_delay_ms:
+            self.sleep_time += retry_delay_ms / 1000.0
 
         super(CheckFor, self).__init__(name=name, **kwargs)
 

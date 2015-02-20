@@ -47,6 +47,7 @@ class Node(base.CueObject):
     def get_nodes_by_cluster_id(cls, context, cluster_id):
         """Returns a list of Node objects for specified cluster.
 
+        :param context: request context object
         :param cluster_id: UUID of the cluster.
         :returns: a list of :class:'Node' object.
 
@@ -54,3 +55,25 @@ class Node(base.CueObject):
         db_nodes = cls.dbapi.get_nodes_in_cluster(context, cluster_id)
 
         return [Node._from_db_object(Node(), obj) for obj in db_nodes]
+
+    @classmethod
+    def get_node_by_id(cls, context, node_id):
+        """Returns a Node specified by it's id.
+
+        :param context: request context object
+        :param node_id: UUID of a node
+        :param status: status of a node
+
+        """
+        return cls.dbapi.get_node_by_id(context, node_id)
+
+    @classmethod
+    def update_node_status(cls, context, node_id, status):
+        """Updates status field in a cluster record.
+
+        :param context: request context object
+        :param node_id: UUID of a node
+        :param status: status of a node
+
+        """
+        cls.dbapi.update_node_status(context, node_id, status)

@@ -15,4 +15,5 @@
 
 
 from base_task import BaseTask                          # noqa
+from get_rabbit_vm_status import GetRabbitVmStatus   # noqa
 from update_cluster_status import UpdateClusterStatus   # noqa

@@ -32,7 +32,7 @@ class DeleteVm(os_tasklib.BaseTask):
     def execute(self, vm_id, **kwargs):
         """Main execute method
 
-        :param vm_id: Network id to connect new port to
+        :param vm_id: VM id to delete
         :type vm_id: string
         :return: n/a
         """

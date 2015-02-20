@@ -84,7 +84,7 @@ class Cluster(base.CueObject):
 
         :param context: The request context
         :param cluster_id: the cluster_id to retrieve
-        :returns: a :class:'Cluster' object.
+        :returns: a :class:'Cluster' object
 
         """
         db_cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
@@ -97,18 +97,32 @@ class Cluster(base.CueObject):
         return cluster
 
     @classmethod
+    def update_cluster_status(cls, context, cluster_id, status):
+        """Updates status field in a cluster record.
+
+        :param context: The request context
+        :param cluster_id: UUID of a cluster
+        :param status: status of a cluster
+
+        """
+        db_cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
+
+        target = {'tenant_id': db_cluster.project_id}
+        policy.check("cluster:update_status", context, target)
+
+        cls.dbapi.update_cluster_status(context, cluster_id, status)
+
+    @classmethod
     def update_cluster_deleting(cls, context, cluster_id):
         """Marks specified cluster to indicate deletion.
 
         :param context: The request context
-        :param cluster_id: UUID of a cluster.
+        :param cluster_id: UUID of a cluster
 
         """
-        cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
+        db_cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
 
-        target = {
-            'tenant_id': cluster.project_id
-        }
+        target = {'tenant_id': db_cluster.project_id}
         policy.check("cluster:delete", context, target)
 
         cls.dbapi.update_cluster_deleting(context, cluster_id)

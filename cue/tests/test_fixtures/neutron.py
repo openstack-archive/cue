@@ -90,6 +90,8 @@ class NeutronClient(base.BaseFixture):
 
         port_id = uuid.uuid4().hex
         body['port']['id'] = port_id
+        body['port']['fixed_ips'] = []
+        body['port']['fixed_ips'].append({'ip_address': '0.0.0.0'})
         self._port_list[port_id] = body['port']
         return body
 
