@@ -54,11 +54,11 @@ CONF.register_opts(OS_OPTS, group=opt_group)
 
 def nova_client():
     return NovaClient.Client(2,
-                             username=CONF.openstack.os_username,
-                             api_key=CONF.openstack.os_password,
-                             tenant_id=CONF.openstack.os_tenant_id,
-                             auth_url=CONF.openstack.os_auth_url,
-                             region_name=CONF.openstack.os_region_name,
+                             CONF.openstack.os_username,
+                             CONF.openstack.os_password,
+                             CONF.openstack.os_tenant_name,
+                             CONF.openstack.os_auth_url,
+                             CONF.openstack.os_region_name,
                             )
 
 
@@ -73,10 +73,9 @@ def cinder_client():
 
 def neutron_client():
     return NeutronClient.Client('2.0',
-                                region_name=CONF.openstack.os_region_name,
                                 username=CONF.openstack.os_username,
                                 password=CONF.openstack.os_password,
                                 tenant_name=CONF.openstack.os_tenant_name,
-                                tenant_id=CONF.openstack.os_tenant_id,
-                                auth_url=CONF.openstack.os_auth_url
+                                auth_url=CONF.openstack.os_auth_url,
+                                region_name=CONF.openstack.os_region_name,
                                )

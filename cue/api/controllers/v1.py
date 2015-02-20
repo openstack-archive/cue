@@ -215,20 +215,31 @@ class ClustersController(rest.RestController):
         cluster = Cluster()
         cluster.cluster = get_complete_cluster(context, new_cluster.id)
 
+        nodes = objects.Node.get_nodes_by_cluster_id(context,
+                                                     cluster.cluster.id)
+
+        # create list with node id's for create cluster flow
+        node_ids = []
+        for node in nodes:
+            node_ids.append(node.id)
+
         # prepare and post cluster create job to backend
         flow_kwargs = {
             'cluster_id': cluster.cluster.id,
-            'cluster_size': cluster.cluster.size,
+            'node_ids': node_ids,
         }
+
         job_args = {
             "flavor": cluster.cluster.flavor,
             # TODO(sputnik13): need to remove this when image selector is done
             "image": CONF.api.os_image_id,
             "volume_size": cluster.cluster.volume_size,
             "network_id": cluster.cluster.network_id,
-            "cluster_status": "BUILDING",
+            "port": "5672",
+            "context": context.to_dict(),
         }
         job_client = task_flow_client.get_client_instance()
+        #TODO(dagnello): might be better to use request_id for job_uuid
         job_uuid = uuidutils.generate_uuid()
         job_client.post(create_cluster, job_args,
                         flow_kwargs=flow_kwargs,
