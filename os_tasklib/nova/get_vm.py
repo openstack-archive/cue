@@ -41,3 +41,6 @@ class GetVm(os_tasklib.BaseTask):
 
         vm_info = self.os_client.servers.get(server=server)
         return vm_info.to_dict()
+
+    def revert(self, **kwargs):
+        print(kwargs)

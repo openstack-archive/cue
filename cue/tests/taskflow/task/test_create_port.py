@@ -58,10 +58,10 @@ class CreatePortTests(base.TestCase):
         # retrieve neutron client API class
         neutron_client = client.neutron_client()
 
-        # set a network_id and unique name to use
-        network = neutron_client.create_network()
-        network_id = network['network']['id']
-        CreatePortTests.task_store['network_id'] = network_id
+        # set an existing network_id and unique name to use
+        networks = neutron_client.list_networks()
+        network = networks['networks'].pop()
+        CreatePortTests.task_store['network_id'] = network['id']
         CreatePortTests.task_store['port_name'] = "port_" + str(uuid.uuid4())
 
         # create flow with "CreatePort" task, given neutron client
