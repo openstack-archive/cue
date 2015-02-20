@@ -13,6 +13,5 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-from base_task import BaseTask                          # noqa
-from update_cluster_status import UpdateClusterStatus   # noqa
+from update_cluster_task import UpdateClusterStatus   # noqa
+from update_node_task import UpdateNode               # noqa

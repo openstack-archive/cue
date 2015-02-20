@@ -55,7 +55,7 @@ class NeutronClient(base.BaseFixture):
     def __init__(self, *args, **kwargs):
         super(NeutronClient, self).__init__(*args, **kwargs)
 
-        network_detail = new_network_detail(name="test-network")
+        network_detail = new_network_detail(name="private")
         self._network_list = {network_detail['id']: network_detail}
         self._port_list = {}
 
@@ -90,6 +90,8 @@ class NeutronClient(base.BaseFixture):
 
         port_id = uuid.uuid4().hex
         body['port']['id'] = port_id
+        body['port']['fixed_ips'] = []
+        body['port']['fixed_ips'].append({'ip_address': '0.0.0.0'})
         self._port_list[port_id] = body['port']
         return body
 

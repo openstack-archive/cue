@@ -64,6 +64,8 @@ class RequestContext(context.RequestContext):
 
     @classmethod
     def from_dict(cls, values):
+        if 'user_identity' in values:
+            del values['user_identity']
         return cls(**values)
 
     def to_dict(self):
