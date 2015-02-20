@@ -39,6 +39,18 @@ class Endpoint(base.CueObject):
             cluster[field] = db_cluster[field]
         return cluster
 
+    def create(self, context):
+        """Creates a new endpoint.
+
+        :param context: The request context
+
+        """
+        endpoint_changes = self.obj_get_changes()
+
+        db_endpoint = self.dbapi.create_endpoint(context, endpoint_changes)
+
+        self._from_db_object(self, db_endpoint)
+
     @classmethod
     def get_endpoints_by_node_id(cls, context, node_id):
         """Returns a list of Endpoint objects for specified node.

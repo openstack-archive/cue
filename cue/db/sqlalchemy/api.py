@@ -125,6 +125,12 @@ class Connection(api.Connection):
 
         return cluster
 
+    def update_cluster_by_id(self, context, cluster_values, cluster_id):
+        cluster_query = (model_query(context, models.Cluster)
+            .filter_by(id=cluster_id))
+
+        cluster_query.update(cluster_values)
+
     def get_cluster_by_id(self, context, cluster_id):
         query = model_query(context, models.Cluster).filter_by(id=cluster_id)
         try:
@@ -150,11 +156,28 @@ class Connection(api.Connection):
         query = model_query(context, models.Node).filter_by(id=node_id)
         return query.one()
 
+    def update_node_by_id(self, context, node_values, node_id):
+        node_query = (model_query(context, models.Node).filter_by(id=node_id))
+
+        node_query.update(node_values)
+
     def get_endpoints_in_node(self, context, node_id):
         query = model_query(context, models.Endpoint).filter_by(
             node_id=node_id)
         # No need to catch user-derived exceptions for same reason as above
         return query.all()
+
+    def create_endpoint(self, context, endpoint_values):
+        if not endpoint_values.get('id'):
+            endpoint_values['id'] = str(uuid.uuid4())
+
+        endpoint = models.Endpoint()
+        endpoint.update(endpoint_values)
+
+        db_session = get_session()
+        endpoint.save(db_session)
+
+        return endpoint
 
     def get_endpoint_by_id(self, context, endpoint_id):
         query = model_query(context, models.Endpoint).filter_by(id=endpoint_id)

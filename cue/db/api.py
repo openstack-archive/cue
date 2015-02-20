@@ -48,7 +48,7 @@ class Connection(object):
         """Returns a list of Cluster objects for specified project_id.
 
         :param context: request context object
-        :returns: a list of :class:'Cluster' object.
+        :returns: a list of :class:'Cluster' object
 
         """
 
@@ -57,7 +57,7 @@ class Connection(object):
         """Creates a new cluster.
 
         :param context: request context object
-        :param cluster_values: Dictionary of several required items.
+        :param cluster_values: Dictionary of several required items
 
                ::
 
@@ -73,19 +73,32 @@ class Connection(object):
         """
 
     @abc.abstractmethod
+    def update_cluster_by_id(self, context, cluster_values, cluster_id):
+        """Updates values in a cluster record indicated by cluster_id
+
+        :param context: request context object
+        :param cluster_values: Dictionary of cluster values to update
+        :param cluster_id: UUID of a cluster
+
+        """
+
+    @abc.abstractmethod
     def get_cluster_by_id(self, context, cluster_id):
         """Returns a Cluster objects for specified cluster_id.
 
-        :param cluster_id: UUID of a cluster.
-        :returns: a :class:'Cluster' object.
+        :param context: request context object
+        :param cluster_id: UUID of a cluster
+        :returns: a :class:'Cluster' object
+
         """
 
     @abc.abstractmethod
     def get_nodes_in_cluster(self, context, cluster_id):
         """Returns a list of Node objects for specified cluster.
 
-        :param cluster_id: UUID of the cluster.
-        :returns: a list of :class:'Node' object.
+        :param context: request context object
+        :param cluster_id: UUID of the cluster
+        :returns: a list of :class:'Node' object
 
         """
 
@@ -93,17 +106,47 @@ class Connection(object):
     def get_node_by_id(self, context, node_id):
         """Returns a node for the specified node_id.
 
-        :param node_id: UUID of the node.
-        :returns: a :class:'Node' object.
+        :param context: request context object
+        :param node_id: UUID of the node
+        :returns: a :class:'Node' object
 
+        """
+
+    @abc.abstractmethod
+    def update_node_by_id(self, context, node_values, node_id):
+        """Updates values in a node record indicated by node_id
+
+        :param context: request context object
+        :param node_values: Dictionary of node values to update
+        :param node_id:
+        :return:
         """
 
     @abc.abstractmethod
     def get_endpoints_in_node(self, context, node_id):
         """Returns a list of Endpoint objects for specified node.
 
-        :param node_id: UUID of the node.
-        :returns: a list of :class:'Endpoint' object.
+        :param context: request context object
+        :param node_id: UUID of the node
+        :returns: a list of :class:'Endpoint' object
+
+        """
+
+    @abc.abstractmethod
+    def create_endpoint(self, context, endpoint_values):
+        """Creates a new endpoint.
+
+        :param context: request context object
+        :param endpoint_values: Dictionary of several required items
+
+               ::
+
+               {
+                'id': obj_utils.str_or_none,
+                'node_id': obj_utils.str_or_none,
+                'uri': obj_utils.str_or_none,
+                'type': obj_utils.str_or_none,
+               }
 
         """
 
@@ -111,8 +154,9 @@ class Connection(object):
     def get_endpoint_by_id(self, context, endpoint_id):
         """Returns an endpoint for the specified endpoint_id.
 
-        :param endpoint_id: UUID of the endpoint.
-        :returns: a :class:'Endpoint' object.
+        :param context: request context object
+        :param endpoint_id: UUID of the endpoint
+        :returns: a :class:'Endpoint' object
 
         """
 
@@ -120,6 +164,7 @@ class Connection(object):
     def update_cluster_deleting(self, context, cluster_id):
         """Marks specified cluster to indicate deletion.
 
-        :param cluster_id: UUID of a cluster.
+        :param context: request context object
+        :param cluster_id: UUID of a cluster
 
         """

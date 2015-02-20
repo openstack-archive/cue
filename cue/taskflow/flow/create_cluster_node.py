@@ -17,20 +17,25 @@ import taskflow.patterns.linear_flow as linear_flow
 import taskflow.retry as retry
 
 import cue.client as client
+import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
 import os_tasklib.neutron as neutron
 import os_tasklib.nova as nova
 
 
-def create_cluster_node(cluster_id, node_number):
+def create_cluster_node(context, cluster_id, node_number, node_id):
     """Create Cluster Node factory function
 
     This factory function creates a flow for creating a node of a cluster.
 
+    :param context: The request context in dict format.
+    :type context: oslo_context.RequestContext
     :param cluster_id: Unique ID for the cluster that the node is part of.
     :type cluster_id: string
     :param node_number: Cluster node # for the node being created.
     :type node_number: number
+    :param node_id: Unique ID for the node.
+    :type node_id: string
     :return: A flow instance that represents the workflow for creating a
              cluster node.
     """
@@ -40,9 +45,10 @@ def create_cluster_node(cluster_id, node_number):
     extract_port_id = (lambda port_info:
                        [{'port-id': port_info['port']['id']}])
 
-    extract_vm_id = lambda vm_info: vm_info['id']
+    extract_port_ip = (lambda port_info:
+                       port_info['port']['fixed_ips'][0]['ip_address'])
 
-    extract_vm_status = lambda vm_info: vm_info['status']
+    extract_vm_id = lambda vm_info: vm_info['id']
 
     flow = linear_flow.Flow(flow_name)
     flow.add(
@@ -56,6 +62,11 @@ def create_cluster_node(cluster_id, node_number):
             name="extract port id %s" % node_name,
             rebind={'port_info': "port_info_%d" % node_number},
             provides="port_id_%d" % node_number),
+        os_common.Lambda(
+            extract_port_ip,
+            name="extract port ip %s" % node_name,
+            rebind={'port_info': "port_info_%d" % node_number},
+            provides="vm_ip_%d" % node_number),
         nova.CreateVm(
             name="create vm %s" % node_name,
             os_client=client.nova_client(),
@@ -68,23 +79,26 @@ def create_cluster_node(cluster_id, node_number):
             name="extract vm id %s" % node_name,
             rebind={'vm_info': "vm_info_%d" % node_number},
             provides="vm_id_%d" % node_number),
-        linear_flow.Flow(name="wait for active state %s" % node_name,
+        linear_flow.Flow(name="wait for VM active state %s" % node_name,
                          retry=retry.Times(12)).add(
-            nova.GetVm(
+            nova.GetVmStatus(
                 os_client=client.nova_client(),
                 name="get vm %s" % node_name,
-                rebind={'server': "vm_id_%d" % node_number},
-                provides="vm_info_%d" % node_number),
-            os_common.Lambda(
-                extract_vm_status,
-                name="extract vm status %s" % node_name,
-                rebind={'vm_info': "vm_info_%d" % node_number},
+                rebind={'nova_vm_id': "vm_id_%d" % node_number},
                 provides="vm_status_%d" % node_number),
             os_common.CheckFor(
                 name="check vm status %s" % node_name,
                 rebind={'check_var': "vm_status_%d" % node_number},
                 check_value='ACTIVE',
-                timeout_seconds=10),
+                retry_delay_seconds=10),
             ),
+        linear_flow.Flow(name="wait for RabbitMQ ready state %s" % node_name,
+                         retry=retry.Times(10)).add(
+            cue_tasks.GetRabbitVmStatus(
+                name="get RabbitMQ status %s" % node_name,
+                inject={'node_id': node_id, 'context': context},
+                rebind={'vm_ip': "vm_ip_%d" % node_number},
+                retry_delay_seconds=10),
+            )
         )
     return flow
