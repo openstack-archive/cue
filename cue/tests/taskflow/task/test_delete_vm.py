@@ -20,12 +20,9 @@ from cue.tests import base
 from cue.tests.test_fixtures import nova
 import os_tasklib.nova.delete_vm as delete_vm
 
+import novaclient.exceptions as nova_exc
 from taskflow import engines
 from taskflow.patterns import linear_flow
-
-SHARED_CONF = {
-    'connection': 'zookeeper',
-}
 
 
 class DeleteVmTests(base.TestCase):
@@ -39,33 +36,40 @@ class DeleteVmTests(base.TestCase):
 
     def setUp(self):
         super(DeleteVmTests, self).setUp()
-        # retrieve neutron client API class
+        # retrieve nova client API class
         self.nova_client = client.nova_client()
 
         # create flow with "DeleteVm" task
         self.flow = linear_flow.Flow('create port').add(delete_vm.DeleteVm(
             os_client=self.nova_client))
-        self.image = self.nova_client.images.find(
-            name="cirros-0.3.2-x86_64-uec-kernel")
+
+        image_list = self.nova_client.images.list()
+        for image in image_list:
+            if (image.name.startswith("cirros")) and (
+                    image.name.endswith("kernel")):
+                break
+        self.valid_image = image
+
         self.flavor = self.nova_client.flavors.find(name="m1.tiny")
 
     def test_delete_vm_invalid_id(self):
         # create a few vms
         new_instances = [self.nova_client.servers.create(name="vm1",
-                                                    image=self.image,
+                                                    image=self.valid_image,
                                                     flavor=self.flavor),
                          self.nova_client.servers.create(name="vm2",
-                                                    image=self.image,
+                                                    image=self.valid_image,
                                                     flavor=self.flavor),
                          self.nova_client.servers.create(name="vm3",
-                                                    image=self.image,
+                                                    image=self.valid_image,
                                                     flavor=self.flavor)]
 
         # delete non-existing vm (invalid id)
-        DeleteVmTests.task_store['vm_id'] = uuid.uuid4()
+        DeleteVmTests.task_store['vm_id'] = uuid.uuid4().hex
 
         # start engine to run delete task
-        engines.run(self.flow, store=DeleteVmTests.task_store)
+        self.assertRaises(nova_exc.NotFound, engines.run, self.flow,
+                          store=DeleteVmTests.task_store)
 
         # verify our existing vms have not been deleted
         vms = self.nova_client.servers.list()
@@ -83,19 +87,15 @@ class DeleteVmTests(base.TestCase):
 
     def test_delete_vm(self):
         # create a few vms
-        image = self.nova_client.images.find(
-            name="cirros-0.3.2-x86_64-uec-kernel")
-        flavor = self.nova_client.flavors.find(name="m1.tiny")
-
         new_instances = [self.nova_client.servers.create(name="vm1",
-                                                    image=image,
-                                                    flavor=flavor),
+                                                    image=self.valid_image,
+                                                    flavor=self.flavor),
                          self.nova_client.servers.create(name="vm2",
-                                                    image=image,
-                                                    flavor=flavor),
+                                                    image=self.valid_image,
+                                                    flavor=self.flavor),
                          self.nova_client.servers.create(name="vm3",
-                                                    image=image,
-                                                    flavor=flavor)]
+                                                    image=self.valid_image,
+                                                    flavor=self.flavor)]
 
         # delete one vm
         vm_to_delete = new_instances.pop()

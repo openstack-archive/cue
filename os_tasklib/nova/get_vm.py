@@ -16,11 +16,6 @@
 
 import os_tasklib
 
-from oslo_log import log as logging
-
-
-LOG = logging.getLogger(__name__)
-
 
 class GetVm(os_tasklib.BaseTask):
     """GetVm Task
