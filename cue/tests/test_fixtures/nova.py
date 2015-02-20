@@ -16,24 +16,27 @@
 import uuid
 
 import novaclient.exceptions as nova_exc
-import novaclient.v1_1.client as nova_client
+import novaclient.v2.client as nova_client
 
 import cue.client as client
 import cue.tests.test_fixtures.base as base
 
 
 class VmDetails(object):
-    def __init__(self, vm_id, name, flavor, image):
+    def __init__(self, vm_id, name, flavor, image, status=None):
         self.id = vm_id
         self.name = name
         self.flavor = flavor
         self.image = image
+        self.status = status if status else 'ACTIVE'
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'flavor': self.flavor,
+            'image': self.image,
+            'status': self.status
         }
 
 
@@ -73,19 +76,32 @@ class NovaClient(base.BaseFixture):
     connection in the absence of a working Neutron API endpoint.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, image_list=None, flavor_list=None,
+                 vm_limit=None, *args, **kwargs):
         super(NovaClient, self).__init__(*args, **kwargs)
-        self._vm_list = {}
+        self._vm_list = dict()
+        self._image_list = dict()
+        self._flavor_list = dict()
 
-        image_detail = ImageDetails(name='cirros-0.3.2-x86_64-uec-kernel')
-        self._image_list = {
-            image_detail.id: image_detail
-        }
+        if not image_list:
+            image_list = ['cirros-0.3.2-x86_64-uec-kernel']
 
-        flavor_detail = FlavorDetails(name='m1.tiny')
-        self._flavor_list = {
-            flavor_detail.id: flavor_detail
-        }
+        if not flavor_list:
+            flavor_list = ['m1.tiny']
+
+        self._vm_limit = vm_limit if vm_limit else 3
+
+        for image in image_list:
+            image_detail = ImageDetails(name=image)
+            self._image_list.update({
+                image_detail.id: image_detail
+            })
+
+        for flavor in flavor_list:
+            flavor_detail = FlavorDetails(name=flavor)
+            self._flavor_list.update({
+                flavor_detail.id: flavor_detail
+            })
 
     def setUp(self):
         """Set up test fixture and apply all method overrides."""
@@ -108,6 +124,8 @@ class NovaClient(base.BaseFixture):
         :return: An updated copy of the 'body' that was passed in, with other
                  information populated.
         """
+        if len(self._vm_list) >= self._vm_limit:
+            raise nova_exc.OverLimit(413)
         try:
             flavor_id = flavor.id
         except AttributeError:
@@ -119,10 +137,10 @@ class NovaClient(base.BaseFixture):
             image_id = image
 
         if not self._flavor_list.get(flavor_id):
-            raise nova_exc.BadRequest(404)
+            raise nova_exc.BadRequest(400)
 
         if not self._image_list.get(image_id):
-            raise nova_exc.BadRequest(404)
+            raise nova_exc.BadRequest(400)
 
         if nics is not None:
             neutron_client = client.neutron_client()
@@ -133,7 +151,9 @@ class NovaClient(base.BaseFixture):
                     if (not network_list or
                             not network_list.get('networks') or
                                 len(network_list['networks']) == 0):
-                        raise nova_exc.BadRequest(404)
+                        raise nova_exc.BadRequest(400)
+                if nic.get('port-id'):
+                    pass
 
         newVm = VmDetails(vm_id=uuid.uuid4(), name=name,
                           flavor=flavor, image=image)

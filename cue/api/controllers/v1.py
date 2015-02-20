@@ -18,8 +18,6 @@
 
 """Version 1 of the Cue API
 """
-import uuid
-
 from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
@@ -30,6 +28,7 @@ from cue.taskflow import client as task_flow_client
 from cue.taskflow.flow import create_cluster
 from cue.taskflow.flow import delete_cluster
 
+from oslo.config import cfg
 from oslo.utils import uuidutils
 import pecan
 from pecan import rest
@@ -38,6 +37,7 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class EndPoint(base.APIBase):
@@ -216,18 +216,23 @@ class ClustersController(rest.RestController):
         cluster.cluster = get_complete_cluster(context, new_cluster.id)
 
         # prepare and post cluster create job to backend
+        flow_kwargs = {
+            'cluster_id': cluster.cluster.id,
+            'cluster_size': cluster.cluster.size,
+        }
         job_args = {
-            "size": cluster.cluster.size,
             "flavor": cluster.cluster.flavor,
+            # TODO(sputnik13): need to remove this when image selector is done
+            "image": CONF.api.os_image_id,
             "volume_size": cluster.cluster.volume_size,
             "network_id": cluster.cluster.network_id,
             "cluster_status": "BUILDING",
-            "node_id": "node_id",
-            "port_name": "port_" + str(uuid.uuid4()),
         }
         job_client = task_flow_client.get_client_instance()
         job_uuid = uuidutils.generate_uuid()
-        job_client.post(create_cluster, job_args, tx_uuid=job_uuid)
+        job_client.post(create_cluster, job_args,
+                        flow_kwargs=flow_kwargs,
+                        tx_uuid=job_uuid)
 
         LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s Cluster'
                      ' size %(size)s network ID %(network_id)s Job ID '

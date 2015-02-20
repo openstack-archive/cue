@@ -13,5 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from create_cluster import create_cluster   # noqa
-from delete_cluster import delete_cluster   # noqa
+from create_cluster import create_cluster               # noqa
+from create_cluster_node import create_cluster_node     # noqa
+from delete_cluster import delete_cluster               # noqa

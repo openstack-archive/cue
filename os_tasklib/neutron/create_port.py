@@ -15,6 +15,12 @@
 
 import os_tasklib
 
+from cue.common.i18n import _LW  # noqa
+from cue.openstack.common import log as logging
+
+
+LOG = logging.getLogger(__name__)
+
 
 class CreatePort(os_tasklib.BaseTask):
     """CreatePort Task
@@ -48,7 +54,30 @@ class CreatePort(os_tasklib.BaseTask):
         return port
 
     def revert(self, **kwargs):
-        """Revert function for a failed create port task."""
-        # TODO(dagnello): no action required for revert of a failed port create
-        # task, but logging should be added with a flow transaction ID which
-        # will provide context and state to the error.
+        """Revert CreatePort Task
+
+        This method is executed upon failure of the CreatePort Task or the Flow
+        that the Task is part of.
+
+        :param args: positional arguments that the task required to execute.
+        :type args: list
+        :param kwargs: keyword arguments that the task required to execute; the
+                       special key `result` will contain the :meth:`execute`
+                       results (if any) and the special key `flow_failures`
+                       will contain any failure information.
+        """
+        if kwargs.get('tx_id'):
+            LOG.warning(_LW("%(tx_id)s Create Port failed %(result)s") %
+                        {'tx_id': kwargs['tx_id'],
+                         'result': kwargs['flow_failures']})
+        else:
+            LOG.warning(_LW("Create Port failed %s") % kwargs['flow_failures'])
+
+        port_info = kwargs.get('result')
+        if port_info and isinstance(port_info, dict):
+            try:
+                port_id = port_info['port']['id']
+                if port_id:
+                    self.os_client.delete_port(port=port_id)
+            except KeyError:
+                pass
