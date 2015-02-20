@@ -44,7 +44,7 @@ class DeletePortTests(base.TestCase):
     def setUp(self):
         super(DeletePortTests, self).setUp()
 
-        network_name = 'test-network'
+        network_name = 'private'
 
         self.neutron_client = client.neutron_client()
 

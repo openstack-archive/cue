@@ -13,26 +13,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-__author__ = 'sputnik13'
-
-import random
-
 import os_tasklib
 
 
 class GetVmStatus(os_tasklib.BaseTask):
-    def execute(self, nova_vm_id, **kwargs):
-        #print(self.nova_client.servers.list())
-        print("Get VM Status for %s" % nova_vm_id)
-        vm_status = random.choice(['BUILDING',
-                                   'ACTIVE',
-                                   'DELETED',
-                                   'SUSPENDED',
-                                   'PAUSED',
-                                   'ERROR',
-                                   'STOPPED'])
-        return vm_status
+    """GetVmStatus Task
 
-    def revert(self, **kwargs):
-        print(kwargs)
+    This task will retrieve the current status of the indicated VM
+
+    """
+    def execute(self, nova_vm_id, **kwargs):
+        """Main execute method
+
+        :param nova_vm_id: VM id to get status of
+        :type param: string
+        :return: VM status
+        :rtype: string
+        """
+        server = self.os_client.servers.get(nova_vm_id)
+        return server.status
