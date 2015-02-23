@@ -1,0 +1,28 @@
+[
+  {kernel,
+          [{inet_dist_listen_min, 65535},
+           {inet_dist_listen_max, 65535},
+           {inet_default_listen_options, [{nodelay, true}, 
+                                          {sndbuf, 65535}, 
+                                          {recbuf, 65535}, 
+                                          {keepalive, true}
+                                         ]
+           },
+           {inet_default_connect_options, [{nodelay, true},
+                                           {keepalive, true}
+                                          ]
+           }
+          ]
+  },
+  {mnesia, [{dump_log_write_threshold, 1000}]},
+  {rabbit, [{auth_backends,[rabbit_auth_backend_keystone]},
+            {vm_memory_high_watermark, 0.4},
+            {memory_alarms, true},
+            {disk_free_limit, {mem_relative, 1.0}},
+            {cluster_partition_handling, pause_minority}
+           ]
+  },
+  {rabbitmq_auth_backend_keystone,
+     [{user_path, "##keystone_url##"}]}
+].
+            

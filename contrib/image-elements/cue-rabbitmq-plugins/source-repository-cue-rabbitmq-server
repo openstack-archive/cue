@@ -1,0 +1,1 @@
+rabbitmq-auth-backend-keystone git /opt/stack/rabbitmq-auth-backend-keystone https://github.com/brc859844/rabbitmq-auth-backend-keystone

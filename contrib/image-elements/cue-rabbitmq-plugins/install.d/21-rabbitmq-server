@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -eux
+
+# Download and build Keystone extension and fixup the management UI. Before we can do
+# anything we'll need zip and unzuip (the plugin .ez file is really just a zip file).
+apt-get -y install zip unzip
+
+# The following assumes that the Keystone plugin repo has already been cloned (as per 
+# the # source-repository element). The other option would be to do the git clone in
+# this script. 
+#
+cd /opt/stack/rabbitmq-auth-backend-keystone
+make
+make package
+#
+RABBITMQ_PLUGINS_DIR=`find /usr/lib/rabbitmq/lib -name plugins -print | head -n1`
+cp dist/*.ez ${RABBITMQ_PLUGINS_DIR}/
+./ui/install.sh
+
+# Do a bit of cheating to enable the management and Keystone plugins so we don't need to worry
+# about doing this later...
+echo "[rabbitmq_management,rabbitmq_auth_backend_keystone]." > /etc/rabbitmq/enabled_plugins
+cat /etc/rabbitmq/enabled_plugins
+
