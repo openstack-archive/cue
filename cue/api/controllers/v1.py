@@ -23,13 +23,13 @@ from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
 from cue import objects
-from cue.openstack.common import log as logging
 from cue.taskflow import client as task_flow_client
 from cue.taskflow.flow import create_cluster
 from cue.taskflow.flow import delete_cluster
 
 from oslo.config import cfg
 from oslo.utils import uuidutils
+from oslo_log import log as logging
 import pecan
 from pecan import rest
 import wsme

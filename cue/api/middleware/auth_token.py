@@ -15,11 +15,11 @@
 import re
 
 from keystonemiddleware import auth_token
+from oslo_log import log
 
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common import utils
-from cue.openstack.common import log
 
 LOG = log.getLogger(__name__)
 

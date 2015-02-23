@@ -20,8 +20,8 @@ import socket
 import sys
 
 from oslo.config import cfg
+from oslo_log import log
 
-from cue.openstack.common import log
 
 service_opts = [
     cfg.IntOpt('periodic_interval',

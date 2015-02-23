@@ -31,6 +31,7 @@ import uuid
 import netaddr
 from oslo.config import cfg
 from oslo.utils import excutils
+from oslo_log import log as logging
 import paramiko
 import six
 
@@ -38,7 +39,6 @@ from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LE  # noqa
 from cue.common.i18n import _LW  # noqa
-from cue.openstack.common import log as logging
 from cue.openstack.common import processutils
 
 utils_opts = [
