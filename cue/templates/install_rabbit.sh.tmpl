@@ -6,42 +6,24 @@ cat > /etc/hosts << EOF
 {%- endfor %}
 EOF
 
-cat > /etc/network/interfaces.d/eth1.cfg << EOF
-auto eth1
-iface eth1 inet dhcp
-EOF
-
-ifup eth1
-
-if [[ ! "`grep rabbitmq /etc/passwd`" ]]; then
-  useradd -d /var/lib/rabbitmq -U -m rabbitmq
+if [ ! -d /var/lib/os-collect-config/local-data ]; then
+  mkdir /var/lib/os-collect-config/local-data
 fi
 
-mkdir -p /etc/rabbitmq /var/lib/rabbitmq
-echo {{erlang_cookie}} > /var/lib/rabbitmq/.erlang.cookie
-chmod 0400 /var/lib/rabbitmq/.erlang.cookie
-
-cat > /etc/rabbitmq/rabbitmq.config << EOF
-[
-  {rabbit, [
-        {cluster_nodes, {[
-        {%- for node_name in rabbit_nodes -%}
+cat > /var/lib/os-collect-config/local-data/metadata.json << EOF
+{
+  "rabbit" : {
+    "cluster_nodes": "{%- for node_name in rabbit_nodes -%}
             'rabbit@{{node_name}}' {%- if not loop.last -%},{%- endif -%}
-        {%- endfor -%}
-        ], disc}},
-        {default_user, <<"{{default_rabbit_user}}">>},
-        {default_pass, <<"{{default_rabbit_pass}}">>}
-  ]}
-].
+        {%- endfor -%}",
+    "cookie": "{{erlang_cookie}}",
+    "default_user": "{{default_rabbit_user}}",
+    "default_pass": "{{default_rabbit_pass}}"
+  },
+  "os-collect-config": {
+    "collectors": [ "local", "ec2" ]
+  }
+}
 EOF
 
-chown -R rabbitmq:rabbitmq /var/lib/rabbitmq
-apt-get update
-apt-get install -y rabbitmq-server
-
-for i in `seq 5`; do
-    if [[ ! "`service rabbitmq-server status | grep pid`" ]]; then
-        sleep 1
-        service rabbitmq-server start
-    fi
-done
+os-apply-config

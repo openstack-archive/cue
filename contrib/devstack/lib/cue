@@ -55,16 +55,17 @@ CUE_SERVICE_PORT=${CUE_SERVICE_PORT:-8795}
 CUE_MANAGEMENT_KEY='cue-mgmt-key'
 CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
 
-UBUNTU_IMAGE_NAME='ubuntu-14.04-server'
-UBUNTU_IMAGE_URL='https://cloud-images.ubuntu.com/releases/14.04/release-20150305/ubuntu-14.04-server-cloudimg-amd64-disk1.img'
-UBUNTU_IMAGE_MD5='00662c59ca52558e7a3bb9a67d194730'
-UBUNTU_IMAGE_MINDISK=4
+CUE_RABBIT_IMAGE_MINDISK=4
 
 CUE_FLAVOR=cue.small
-CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $UBUNTU_IMAGE_MINDISK --vcpus 1"
+CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $CUE_RABBIT_IMAGE_MINDISK --vcpus 1"
 CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
 CUE_MANAGEMENT_NETWORK_NAME='cue_management_net'
 CUE_MANAGEMENT_SUBNET_NAME='cue_management_subnet'
+
+CUE_RABBIT_IMAGE_ELEMENTS=${CUE_RABBIT_IMAGE_ELEMENTS:-\
+vm ubuntu os-refresh-config os-apply-config ntp hosts \
+ifmetric cue-rabbitmq-base}
 
 # cleanup_cue - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
@@ -182,35 +183,22 @@ function init_cue {
         cue-manage --config-file $CUE_CONF taskflow upgrade
     fi
 
-    # Download ubuntu image to devstack/files
-    if [[ ! -f $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img ]]; then
-        curl -o $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img -L $UBUNTU_IMAGE_URL
-    fi
 
     NEUTRON_OS_URL="${Q_PROTOCOL}://$Q_HOST:$Q_PORT"
     OPENSTACK_CMD="openstack --os-token $TOKEN"
     NEUTRON_CMD="neutron --os-token $TOKEN --os-url $NEUTRON_OS_URL"
-    # Load ubuntu image to glance if one does not exist
-    if [[ -z $($OPENSTACK_CMD image list | grep $UBUNTU_IMAGE_NAME) ]]; then
-        $OPENSTACK_CMD image create --disk-format qcow2 --container-format bare --min-disk $UBUNTU_IMAGE_MINDISK --file $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img --checksum $UBUNTU_IMAGE_MD5 --public $UBUNTU_IMAGE_NAME
-    fi
 
     # Create cue specific flavor if one does not exist
     if [[ -z $($OPENSTACK_CMD flavor list | grep $CUE_FLAVOR) ]]; then
         $OPENSTACK_CMD flavor create $CUE_FLAVOR_PARAMS $CUE_FLAVOR
     fi
 
-    # Set os_image_id
-    # TODO(sputnik13): this is a workaround until "image selector" is complete
-    UBUNTU_IMAGE_ID=$($OPENSTACK_CMD image list | grep $UBUNTU_IMAGE_NAME | tr -d ' ' | cut -f 2 -d '|')
-    if [ "$UBUNTU_IMAGE_ID" ]; then
-        iniset $CUE_CONF api os_image_id $UBUNTU_IMAGE_ID
-    fi
-
     # Set os_security_group
     if [[ -z $($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP) ]]; then
         $OPENSTACK_CMD security group create --description "Cue RabbitMQ broker security group" $CUE_RABBIT_SECURITY_GROUP
         $OPENSTACK_CMD security group rule create --src-ip 0.0.0.0/0 --proto tcp --dst-port 5672:5672 $CUE_RABBIT_SECURITY_GROUP
+        $OPENSTACK_CMD security group rule create --src-ip 0.0.0.0/0 --proto tcp --dst-port 4369:4369 $CUE_RABBIT_SECURITY_GROUP
+        $OPENSTACK_CMD security group rule create --src-ip 0.0.0.0/0 --proto tcp --dst-port 61000:61000 $CUE_RABBIT_SECURITY_GROUP
     fi
 
     CUE_RABBIT_SECURITY_GROUP_ID=$($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP | tr -d ' ' | cut -f 2 -d '|')
@@ -245,6 +233,8 @@ function init_cue {
     if [ $CUE_MANAGEMENT_NETWORK_ID ]; then
         iniset $CUE_CONF DEFAULT management_network_id $CUE_MANAGEMENT_NETWORK_ID
     fi
+
+    build_cue_rabbit_test_image
 }
 
 # install_cue - Collect source and prepare
@@ -295,6 +285,30 @@ function stop_cue {
     # Kill the cue screen windows
     stop_process cue-api
 }
+
+# build_cue_rabbit_test_image() - Build and upload functional test image
+function build_cue_rabbit_test_image {
+    if is_service_enabled dib; then
+        local image_name=cue-rabbitmq-test-image
+
+        # Elements path for tripleo-image-elements and cue-image-elements
+        local elements_path=$TIE_DIR/elements:$CUE_DIR/contrib/image-elements
+
+        disk_image_create_upload "$image_name" "$CUE_RABBIT_IMAGE_ELEMENTS" "$elements_path"
+
+        # Set os_image_id
+        # TODO(sputnik13): this is a workaround until "image selector" is complete
+        RABBIT_IMAGE_ID=$($OPENSTACK_CMD image list | grep $image_name | tr -d ' ' | cut -f 2 -d '|')
+        if [ "$RABBIT_IMAGE_ID" ]; then
+            iniset $CUE_CONF api os_image_id $RABBIT_IMAGE_ID
+        fi
+    else
+        echo "Error, Builing RabbitMQ Image requires dib" >&2
+        echo "Add \"enable_service dib\" to your localrc" >&2
+        exit 1
+    fi
+}
+
 
 # Restore xtrace
 $XTRACE
