@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -eux
+
+install-packages rabbitmq-server
+
+# Enable ulimits in pam if needed
+PAM_FILE=/etc/pam.d/su
+sed -i '/# session.*pam_limits\.so/s/# //' ${PAM_FILE}
+
+# Reserve the cluster port from the ephemeral port range. For no reason in particular
+# we're using 65535. One way or another it would be wise to stick with some such high
+# port number.
+sysctl-append-value net.ipv4.ip_local_reserved_ports 65535
+
+

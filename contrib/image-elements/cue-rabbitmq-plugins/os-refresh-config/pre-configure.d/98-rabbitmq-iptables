@@ -1,0 +1,5 @@
+#!/bin/bash
+set -eu
+
+# Note that 4369 and 65535 could already be sorted
+add-rule INPUT -p tcp -m multiport --dports 4369,65535,15672,15671,5672,5671 -j ACCEPT
