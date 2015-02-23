@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -eux
+
+os-svc-enable-upstart os-collect-config disable
+
