@@ -221,12 +221,16 @@ class ClustersController(rest.RestController):
             'cluster_size': cluster.cluster.size,
         }
         job_args = {
-            "flavor": cluster.cluster.flavor,
+            'flavor': cluster.cluster.flavor,
             # TODO(sputnik13): need to remove this when image selector is done
-            "image": CONF.api.os_image_id,
-            "volume_size": cluster.cluster.volume_size,
-            "network_id": cluster.cluster.network_id,
-            "cluster_status": "BUILDING",
+            'image': CONF.api.os_image_id,
+            'volume_size': cluster.cluster.volume_size,
+            'network_id': cluster.cluster.network_id,
+            'cluster_status': 'BUILDING',
+            # TODO(sputnik13: this needs to come from the create request and
+            # default to a configuration value rather than always using config
+            # value
+            'security_groups': [CONF.api.os_security_group],
         }
         job_client = task_flow_client.get_client_instance()
         job_uuid = uuidutils.generate_uuid()

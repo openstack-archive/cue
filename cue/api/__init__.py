@@ -30,6 +30,10 @@ API_SERVICE_OPTS = [
                     'response from a collection resource.'),
     # TODO(sputnik13): this needs to be removed when image selection is done
     cfg.StrOpt('os_image_id',
+               help='The Image ID to use for VMs created as part of a '
+                    'cluster'),
+    cfg.StrOpt('os_security_group',
+               default='default',
                help='The Image ID to use for VMs created as part of a cluster')
     ]
 
