@@ -83,7 +83,7 @@ class CreateVmTests(base.TestCase):
         self.assertEqual(self.new_vm_name, new_vm.name)
 
     def test_create_vm_invalid_flavor(self):
-        invalid_flavor = uuid.uuid4()
+        invalid_flavor = uuid.uuid4().hex
         flow_store = {
             'vm_name': self.new_vm_name,
             'image': self.valid_image,
@@ -97,7 +97,7 @@ class CreateVmTests(base.TestCase):
                           self.flow, store=flow_store)
 
     def test_create_vm_invalid_image(self):
-        invalid_image = uuid.uuid4()
+        invalid_image = uuid.uuid4().hex
         flow_store = {
             'vm_name': self.new_vm_name,
             'image': invalid_image,
@@ -111,13 +111,13 @@ class CreateVmTests(base.TestCase):
                           self.flow, store=flow_store)
 
     def test_create_vm_invalid_nic(self):
-        invalid_nic = uuid.uuid4()
+        invalid_nic = uuid.uuid4().hex
         flow_store = {
             'vm_name': self.new_vm_name,
             'image': self.valid_image,
             'flavor': self.valid_flavor,
             'nics': [{
-                         'net-id': invalid_nic.hex
+                         'net-id': invalid_nic
                      }]
         }
 
@@ -130,6 +130,20 @@ class CreateVmTests(base.TestCase):
 
         self.assertRaises(taskflow_exc.MissingDependencies,
                           engines.run, self.flow, store=flow_store)
+
+    def test_invalid_security_group(self):
+        invalid_security_group = uuid.uuid4().hex
+        flow_store = {
+            'vm_name': self.new_vm_name,
+            'image': self.valid_image.id,
+            'flavor': self.valid_flavor.id,
+            'security_groups': [invalid_security_group],
+            'nics': [{
+                         'net-id': self.valid_network['id']
+                     }],
+        }
+        self.assertRaises(nova_exc.BadRequest, engines.run,
+                          self.flow, store=flow_store)
 
     def tearDown(self):
         if self.new_vm_id is not None:

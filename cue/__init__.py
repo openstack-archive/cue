@@ -24,5 +24,9 @@ cfg.CONF.register_opts([
                                                     '../')),
                help='Directory where the cue python module is installed'),
     cfg.StrOpt('state-path', default='/var/lib/cue',
-               help='Top-level directory for maintaining cue\'s state')
+               help='Top-level directory for maintaining cue\'s state'),
+    cfg.StrOpt('os_security_group',
+               default='default',
+               help='The default Security Group to use for VMs created as '
+                    'part of a cluster')
 ])

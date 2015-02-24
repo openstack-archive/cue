@@ -105,7 +105,8 @@ class NovaClient(base.BaseFixture):
     """
 
     def __init__(self, image_list=None, flavor_list=None,
-                 vm_limit=None, *args, **kwargs):
+                 vm_limit=None, security_group_list=None,
+                 *args, **kwargs):
         super(NovaClient, self).__init__(*args, **kwargs)
         self._vm_list = dict()
         self._image_list = dict()
@@ -116,6 +117,9 @@ class NovaClient(base.BaseFixture):
 
         if not flavor_list:
             flavor_list = ['m1.tiny']
+
+        if not security_group_list:
+            security_group_list = []
 
         self._vm_limit = vm_limit if vm_limit else 3
 
@@ -131,6 +135,8 @@ class NovaClient(base.BaseFixture):
                 flavor_detail.id: flavor_detail
             })
 
+        self._security_group_list = security_group_list
+
     def setUp(self):
         """Set up test fixture and apply all method overrides."""
         super(NovaClient, self).setUp()
@@ -144,7 +150,8 @@ class NovaClient(base.BaseFixture):
         v2_client.images.list = self.list_images
         v2_client.flavors.find = self.find_flavors
 
-    def create_vm(self, name, image, flavor, nics=None, **kwargs):
+    def create_vm(self, name, image, flavor, nics=None, security_groups=None,
+                  **kwargs):
         """Mock'd version of novaclient...create_vm().
 
         Create a Nova VM.
@@ -165,24 +172,29 @@ class NovaClient(base.BaseFixture):
         except AttributeError:
             image_id = image
 
-        if not self._flavor_list.get(flavor_id):
+        if flavor_id not in self._flavor_list:
             raise nova_exc.BadRequest(400)
 
-        if not self._image_list.get(image_id):
+        if image_id not in self._image_list:
             raise nova_exc.BadRequest(400)
 
         if nics is not None:
             neutron_client = client.neutron_client()
             for nic in nics:
-                if nic.get('net-id'):
+                if 'net-id' in nic:
                     network_list = neutron_client.list_networks(
                         id=nic['net-id'])
                     if (not network_list or
-                            not network_list.get('networks') or
+                            'networks' not in network_list or
                                 len(network_list['networks']) == 0):
                         raise nova_exc.BadRequest(400)
-                if nic.get('port-id'):
+                if 'port-id' in nic:
                     pass
+
+        if security_groups is not None:
+            missing = set(security_groups) - set(self._security_group_list)
+            if missing:
+                raise nova_exc.BadRequest(400)
 
         newVm = VmDetails(vm_id=uuid.uuid4(), name=name,
                           flavor=flavor, image=image,
