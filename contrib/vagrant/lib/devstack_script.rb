@@ -14,6 +14,10 @@ EOF
 
 test -d devstack || git clone https://git.openstack.org/openstack-dev/devstack
 
+test -d /home/vagrant/bin || mkdir /home/vagrant/bin
+
+cat << EOF > /home/vagrant/bin/refresh_devstack.sh
+#!/bin/bash
 rsync -av --exclude='.tox' --exclude='.venv' --exclude='.vagrant' /home/vagrant/cue /opt/stack
 
 if [ -f "/home/vagrant/python-cueclient" ]; then
@@ -30,12 +34,23 @@ if [ ! -f "/home/vagrant/devstack/local.sh" ]; then
     cp /opt/stack/cue/contrib/devstack/local.sh /home/vagrant/devstack/local.sh
 fi
 
-
+pushd /home/vagrant/cue/contrib/devstack
 for f in extras.d/* lib/*; do
-    if [ ! -f "/home/vagrant/devstack/$f" ]; then
-        ln -fs /opt/stack/cue/contrib/devstack/$f -t /home/vagrant/devstack/$(dirname $f)
+    if [ ! -f "/home/vagrant/devstack/\\$f" ]; then
+        ln -fs /opt/stack/cue/contrib/devstack/\\$f -t /home/vagrant/devstack/\\$(dirname \\$f)
     fi
 done
+popd
+EOF
+
+chmod +x /home/vagrant/bin/refresh_devstack.sh
+
+cat << EOF >> /home/vagrant/.bash_aliases
+alias refresh_devstack="/home/vagrant/bin/refresh_devstack.sh"
+
+EOF
+
+/home/vagrant/bin/refresh_devstack.sh
 
 SCRIPT
 

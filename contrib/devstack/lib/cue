@@ -48,6 +48,9 @@ CUE_SERVICE_PROTOCOL=${CUE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 CUE_SERVICE_HOST=${CUE_SERVICE_HOST:-$SERVICE_HOST}
 CUE_SERVICE_PORT=${CUE_SERVICE_PORT:-8795}
 
+CUE_MANAGEMENT_KEY='cue-mgmt-key'
+CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
+
 UBUNTU_IMAGE_NAME='ubuntu-14.04-server'
 UBUNTU_IMAGE_URL='https://cloud-images.ubuntu.com/releases/14.04/release-20150305/ubuntu-14.04-server-cloudimg-amd64-disk1.img'
 UBUNTU_IMAGE_MD5='00662c59ca52558e7a3bb9a67d194730'
@@ -189,6 +192,22 @@ function init_cue {
     UBUNTU_IMAGE_ID=$($OPENSTACK_CMD image list | grep $UBUNTU_IMAGE_NAME | tr -d ' ' | cut -f 2 -d '|')
     if [ "$UBUNTU_IMAGE_ID" ]; then
         iniset $CUE_CONF api os_image_id $UBUNTU_IMAGE_ID
+    fi
+
+    # Set os_security_group
+    if [[ -z $($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP) ]]; then
+        $OPENSTACK_CMD security group create $CUE_RABBIT_SECURITY_GROUP
+        $OPENSTACK_CMD security group rule create --src-ip 0.0.0.0/0 --proto tcp --dst-port 5672:5672 $CUE_RABBIT_SECURITY_GROUP
+    fi
+
+    CUE_RABBIT_SECURITY_GROUP_ID=$($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP | tr -d ' ' | cut -f 2 -d '|')
+    if [ $CUE_RABBIT_SECURITY_GROUP_ID ]; then
+        iniset $CUE_CONF DEFAULT os_security_group $CUE_RABBIT_SECURITY_GROUP_ID
+    fi
+
+    # Set VM management key
+    if [ $CUE_MANAGEMENT_KEY ]; then
+        iniset $CUE_CONF openstack os_key_name $CUE_MANAGEMENT_KEY
     fi
 }
 
