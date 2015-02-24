@@ -190,6 +190,18 @@ function init_cue {
     if [ "$UBUNTU_IMAGE_ID" ]; then
         iniset $CUE_CONF api os_image_id $UBUNTU_IMAGE_ID
     fi
+
+    # Set os_security_group
+    CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
+    if [[ -z $($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP) ]]; then
+        $OPENSTACK_CMD security group create $CUE_RABBIT_SECURITY_GROUP
+        $OPENSTACK_CMD security group rule create --src-ip 0.0.0.0/0 --proto tcp --dst-port 5672:5672 $CUE_RABBIT_SECURITY_GROUP
+    fi
+
+    CUE_RABBIT_SECURITY_GROUP_ID=$($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP | tr -d ' ' | cut -f 2 -d '|')
+    if [ $CUE_RABBIT_SECURITY_GROUP_ID ]; then
+        iniset $CUE_CONF DEFAULT os_security_group $CUE_RABBIT_SECURITY_GROUP_ID
+    fi
 }
 
 # install_cue - Collect source and prepare

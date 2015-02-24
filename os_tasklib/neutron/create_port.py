@@ -32,13 +32,15 @@ class CreatePort(os_tasklib.BaseTask):
     """
     default_provides = 'neutron_port_id'
 
-    def execute(self, network_id, port_name, **kwargs):
+    def execute(self, network_id, port_name, security_groups=None, **kwargs):
         """Main execute method
 
         :param network_id: Network id to connect new port to
         :type network_id: string
         :param port_name: Name for new port
         :type port_name: string
+        :param security_groups: Security groups to apply to new port
+        :type security_groups: list
         :return: Port record provided by Neutron
         :rtype: dict
         """
@@ -49,6 +51,9 @@ class CreatePort(os_tasklib.BaseTask):
                 "network_id": network_id,
             }
         }
+
+        if security_groups:
+            body_value['port']['security_groups'] = security_groups
 
         port = self.os_client.create_port(body=body_value)
 
