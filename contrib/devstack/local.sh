@@ -30,6 +30,10 @@ if [[ ! -f ~/.ssh/id_rsa ]]; then
     ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
 fi
 
+if [[ -z $CUE_MANAGEMENT_KEY ]]; then
+    CUE_MANAGEMENT_KEY='vagrant'
+fi
+
 # Add ssh keypair to admin account
 if [[ -z $(nova keypair-list | grep vagrant) ]]; then
     nova keypair-add --pub-key ~/.ssh/id_rsa.pub vagrant
@@ -44,7 +48,7 @@ neutron subnet-update --dns-nameserver 8.8.8.8 private-subnet
 
 # Add ssh keypair to demo account
 source $TOP_DIR/openrc demo demo
-if [[ -z $(nova keypair-list | grep vagrant) ]]; then
-    nova keypair-add --pub-key ~/.ssh/id_rsa.pub vagrant
+if [[ -z $(nova keypair-list | grep $CUE_MANAGEMENT_KEY) ]]; then
+    nova keypair-add --pub-key ~/.ssh/id_rsa.pub $CUE_MANAGEMENT_KEY
 fi
 
