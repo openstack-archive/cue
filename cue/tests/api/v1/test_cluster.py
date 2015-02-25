@@ -24,7 +24,7 @@ import uuid
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.tests import api
-from cue.tests.api import api_utils
+from cue.tests.api.v1 import api_utils
 from cue.tests import utils as test_utils
 
 

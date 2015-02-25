@@ -16,7 +16,7 @@
 
 from oslo.utils import timeutils
 
-from cue.api.controllers import v1
+from cue.api.controllers.v1 import cluster
 from cue.db.sqlalchemy import models
 from cue import objects
 
@@ -49,17 +49,17 @@ def create_api_test_cluster(**kw):
     :returns: Test Cluster API object.
     """
 
-    cluster = get_test_cluster(**kw)
+    test_cluster = get_test_cluster(**kw)
 
     cluster_parameters = {
-        'name': cluster['name'],
-        'network_id': cluster['network_id'],
-        'flavor': cluster['flavor'],
-        'size': str(cluster['size']),
-        'volume_size': str(cluster['volume_size']),
+        'name': test_cluster['name'],
+        'network_id': test_cluster['network_id'],
+        'flavor': test_cluster['flavor'],
+        'size': str(test_cluster['size']),
+        'volume_size': str(test_cluster['volume_size']),
     }
 
-    new_cluster = v1.ClusterDetails(**cluster_parameters)
+    new_cluster = cluster.ClusterDetails(**cluster_parameters)
 
     return new_cluster
 
@@ -73,22 +73,22 @@ def create_api_test_cluster_all(**kw):
     :returns: Test Cluster API object.
     """
 
-    cluster = get_test_cluster(**kw)
+    test_cluster = get_test_cluster(**kw)
 
     cluster_parameters = {
-        'name': cluster['name'],
-        'network_id': cluster['network_id'],
-        'flavor': cluster['flavor'],
-        'size': cluster['size'],
-        'volume_size': cluster['volume_size'],
-        'id': cluster['id'],
-        'project_id': cluster['project_id'],
-        'status': cluster['status'],
-        'created_at': cluster['created_at'],
-        'updated_at': cluster['updated_at'],
+        'name': test_cluster['name'],
+        'network_id': test_cluster['network_id'],
+        'flavor': test_cluster['flavor'],
+        'size': test_cluster['size'],
+        'volume_size': test_cluster['volume_size'],
+        'id': test_cluster['id'],
+        'project_id': test_cluster['project_id'],
+        'status': test_cluster['status'],
+        'created_at': test_cluster['created_at'],
+        'updated_at': test_cluster['updated_at'],
     }
 
-    new_cluster = v1.ClusterDetails(**cluster_parameters)
+    new_cluster = cluster.ClusterDetails(**cluster_parameters)
 
     return new_cluster
 
@@ -103,14 +103,14 @@ def create_db_test_cluster_from_objects_api(context, **kw):
     :returns: Test Cluster DB object.
 
     """
-    cluster = get_test_cluster(**kw)
+    test_cluster = get_test_cluster(**kw)
 
     cluster_parameters = {
-        'name': cluster['name'],
-        'network_id': cluster['network_id'],
-        'flavor': cluster['flavor'],
-        'size': cluster['size'],
-        'volume_size': cluster['volume_size'],
+        'name': test_cluster['name'],
+        'network_id': test_cluster['network_id'],
+        'flavor': test_cluster['flavor'],
+        'size': test_cluster['size'],
+        'volume_size': test_cluster['volume_size'],
     }
 
     new_cluster = objects.Cluster(**cluster_parameters)
@@ -141,21 +141,21 @@ def create_db_test_cluster_model_object(context, **kw):
     :returns: Test Cluster DB model object.
 
     """
-    cluster = get_test_cluster(**kw)
+    test_cluster = get_test_cluster(**kw)
 
     cluster_parameters = {
-        'name': cluster['name'],
-        'network_id': cluster['network_id'],
-        'flavor': cluster['flavor'],
-        'size': cluster['size'],
-        'volume_size': cluster['volume_size'],
-        'id': cluster['id'],
-        'project_id': cluster['project_id'],
-        'status': cluster['status'],
-        'deleted': cluster['deleted'],
-        'created_at': cluster['created_at'],
-        'updated_at': cluster['updated_at'],
-        'deleted_at': cluster['deleted_at'],
+        'name': test_cluster['name'],
+        'network_id': test_cluster['network_id'],
+        'flavor': test_cluster['flavor'],
+        'size': test_cluster['size'],
+        'volume_size': test_cluster['volume_size'],
+        'id': test_cluster['id'],
+        'project_id': test_cluster['project_id'],
+        'status': test_cluster['status'],
+        'deleted': test_cluster['deleted'],
+        'created_at': test_cluster['created_at'],
+        'updated_at': test_cluster['updated_at'],
+        'deleted_at': test_cluster['deleted_at'],
     }
 
     new_cluster = models.Cluster()
