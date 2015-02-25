@@ -31,7 +31,7 @@ class DeleteVmTests(base.TestCase):
     ]
 
     task_store = {
-        'vm_id': "0",
+        'server': "0",
     }
 
     def setUp(self):
@@ -65,7 +65,7 @@ class DeleteVmTests(base.TestCase):
                                                     flavor=self.flavor)]
 
         # delete non-existing vm (invalid id)
-        DeleteVmTests.task_store['vm_id'] = uuid.uuid4().hex
+        DeleteVmTests.task_store['server'] = str(uuid.uuid4())
 
         # start engine to run delete task
         self.assertRaises(nova_exc.NotFound, engines.run, self.flow,
@@ -99,7 +99,7 @@ class DeleteVmTests(base.TestCase):
 
         # delete one vm
         vm_to_delete = new_instances.pop()
-        DeleteVmTests.task_store['vm_id'] = vm_to_delete.id
+        DeleteVmTests.task_store['server'] = str(vm_to_delete.id)
 
         # start engine to run delete task
         engines.run(self.flow, store=DeleteVmTests.task_store)

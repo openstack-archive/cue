@@ -37,7 +37,7 @@ class GetVmTests(base.TestCase):
 
         self.nova_client = client.nova_client()
 
-        self.valid_vm_name = uuid.uuid4().hex
+        self.valid_vm_name = str(uuid.uuid4())
 
         image_list = self.nova_client.images.list()
         for image in image_list:
@@ -72,7 +72,7 @@ class GetVmTests(base.TestCase):
         self.assertEqual(self.valid_vm_name, new_vm['name'])
 
     def test_get_invalid_vm(self):
-        invalid_vm_id = uuid.uuid4().hex
+        invalid_vm_id = str(uuid.uuid4())
         flow_store = {
             'server': invalid_vm_id
         }
