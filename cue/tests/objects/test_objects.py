@@ -23,7 +23,7 @@ import mock
 from oslo.utils import timeutils
 import testtools
 
-from cue.api.controllers import v1
+from cue.api.controllers.v1 import cluster
 from cue.common import exception
 from cue.db import api as db_api
 from cue.db.sqlalchemy import models
@@ -118,7 +118,7 @@ class ClusterObjectsTests(base.TestCase):
         api_cluster = test_utils.create_api_test_cluster_all()
         object_cluster = objects.Cluster(**api_cluster.as_dict())
         self.validate_cluster_values(api_cluster, object_cluster)
-        api_cluster_2 = v1.ClusterDetails(**object_cluster.as_dict())
+        api_cluster_2 = cluster.ClusterDetails(**object_cluster.as_dict())
         self.validate_cluster_values(api_cluster, api_cluster_2)
 
     def test_cluster_db_to_object_to_db(self):
