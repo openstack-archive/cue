@@ -257,8 +257,3 @@ class ClustersController(rest.RestController):
     @pecan.expose()
     def _lookup(self, cluster_id, *remainder):
         return ClusterController(cluster_id), remainder
-
-
-class V1Controller(object):
-    """Version 1 MSGaaS API controller root."""
-    clusters = ClustersController()
