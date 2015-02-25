@@ -64,6 +64,7 @@ class Root(base.APIBase):
 
     @classmethod
     def convert(self):
+        """Builds link to v1 controller."""
         root = Root()
         root.name = "OpenStack Cue API"
         root.description = ("Cue is an OpenStack project which aims to "
