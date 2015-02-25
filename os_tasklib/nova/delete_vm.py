@@ -23,11 +23,12 @@ class DeleteVm(os_tasklib.BaseTask):
     VM ID provided to the Task.
 
     """
-    def execute(self, vm_id, **kwargs):
+    def execute(self, server, **kwargs):
         """Main execute method
 
-        :param vm_id: VM id to delete
-        :type vm_id: string
+        :param server: vm id to delete
+        :type server: string
         :return: n/a
         """
-        self.os_client.servers.delete(vm_id)
+
+        self.os_client.servers.delete(server=server)

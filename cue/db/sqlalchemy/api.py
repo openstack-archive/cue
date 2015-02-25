@@ -129,6 +129,14 @@ class Connection(api.Connection):
         cluster_query = (model_query(context, models.Cluster)
             .filter_by(id=cluster_id))
 
+        if 'status' in cluster_values:
+            if cluster_values['status'] == models.Status.DELETED:
+                cluster_values['deleted_at'] = timeutils.utcnow()
+            else:
+                cluster_values['updated_at'] = timeutils.utcnow()
+        else:
+                cluster_values['updated_at'] = timeutils.utcnow()
+
         cluster_query.update(cluster_values)
 
     def get_cluster_by_id(self, context, cluster_id):
@@ -159,6 +167,14 @@ class Connection(api.Connection):
     def update_node(self, context, node_values, node_id):
         node_query = (model_query(context, models.Node).filter_by(id=node_id))
 
+        if 'status' in node_values:
+            if node_values['status'] == models.Status.DELETED:
+                node_values['deleted_at'] = timeutils.utcnow()
+            else:
+                node_values['updated_at'] = timeutils.utcnow()
+        else:
+                node_values['updated_at'] = timeutils.utcnow()
+
         node_query.update(node_values)
 
     def get_endpoints_in_node(self, context, node_id):
@@ -182,6 +198,12 @@ class Connection(api.Connection):
     def get_endpoint_by_id(self, context, endpoint_id):
         query = model_query(context, models.Endpoint).filter_by(id=endpoint_id)
         return query.one()
+
+    def update_endpoints_by_node_id(self, context, endpoint_values, node_id):
+        endpoints_query = model_query(context, models.Endpoint).filter_by(
+            node_id=node_id)
+
+        endpoints_query.update(endpoint_values)
 
     def update_cluster_deleting(self, context, cluster_id):
         values = {'status': models.Status.DELETING,
