@@ -163,16 +163,33 @@ class ClusterController(rest.RestController):
         context = pecan.request.context
 
         # update cluster to deleting
-        objects.Cluster.update_cluster_deleting(context, self.id)
+        if objects.Cluster.update_cluster_deleting(context, self.id):
+            """Delete for this cluster was already issued.. we are done"""
+            return
+
+        # retrieve cluster nodes
+        nodes = objects.Node.get_nodes_by_cluster_id(context, self.id)
+
+        # create list with node id's for create cluster flow
+        node_ids = []
+        for node in nodes:
+            node_ids.append(node.id)
 
         # prepare and post cluster delete job to backend
-        job_args = {
-            "cluster_id": self.id,
-            "cluster_status": "deleting",
+        flow_kwargs = {
+            'cluster_id': self.id,
+            'node_ids': node_ids,
         }
+
+        job_args = {
+            "context": context.to_dict(),
+        }
+
         job_client = task_flow_client.get_client_instance()
+        #TODO(dagnello): might be better to use request_id for job_uuid
         job_uuid = uuidutils.generate_uuid()
-        job_client.post(delete_cluster, job_args, tx_uuid=job_uuid)
+        job_client.post(delete_cluster, job_args, flow_kwargs=flow_kwargs,
+                        tx_uuid=job_uuid)
 
         LOG.info(_LI('Delete Cluster Request Cluster ID %(cluster_id)s Job ID '
                      '%(job_id)s') % ({"cluster_id": self.id,

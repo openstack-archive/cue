@@ -13,5 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from create_endpoint_task import CreateEndpoint       # noqa
+from get_node import GetNode                          # noqa
 from update_cluster_task import UpdateClusterStatus   # noqa
+from update_endpoints_task import UpdateEndpoints     # noqa
 from update_node_task import UpdateNode               # noqa

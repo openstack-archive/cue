@@ -52,6 +52,17 @@ class Endpoint(base.CueObject):
         self._from_db_object(self, db_endpoint)
 
     @classmethod
+    def update_by_node_id(cls, context, node_id, endpoint_changes):
+        """Updates a database endpoint object.
+
+        :param context: The request context
+        :param node_id: The node id
+        :param endpoint_changes: dictionary of endpoint changes
+        """
+        cls.dbapi.update_endpoints_by_node_id(context, endpoint_changes,
+                                              node_id)
+
+    @classmethod
     def get_endpoints_by_node_id(cls, context, node_id):
         """Returns a list of Endpoint objects for specified node.
 

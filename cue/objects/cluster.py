@@ -18,12 +18,12 @@
 
 from cue.common import policy
 from cue.db import api as db_api
+from cue.db.sqlalchemy import models
 from cue.objects import base
 from cue.objects import utils as obj_utils
 
 
 class Cluster(base.CueObject):
-
     dbapi = db_api.get_instance()
 
     fields = {
@@ -114,9 +114,16 @@ class Cluster(base.CueObject):
         :param cluster_id: UUID of a cluster
 
         """
+        cluster_deleted = False
         db_cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
 
-        target = {'tenant_id': db_cluster.project_id}
-        policy.check("cluster:delete", context, target)
+        if (db_cluster.status == models.Status.DELETED) or (
+                    db_cluster.status == models.Status.DELETING):
+            """The Cluster has already been deleted or delete in progress"""
+            cluster_deleted = True
+        else:
+            target = {'tenant_id': db_cluster.project_id}
+            policy.check("cluster:delete", context, target)
+            cls.dbapi.update_cluster_deleting(context, cluster_id)
 
-        cls.dbapi.update_cluster_deleting(context, cluster_id)
+        return cluster_deleted

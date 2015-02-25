@@ -60,7 +60,7 @@ class FlavorDetails(object):
                  name=None, ram=None, rxtx_factor=None, swap=None, vcpus=None):
         self.disk = disk or 10
         self.ephemeral = ephemeral or 10
-        self.id = id or uuid.uuid4().hex
+        self.id = id or str(uuid.uuid4())
         self.is_public = is_public or 'N/A'
         self.name = name
         self.ram = ram or 512
@@ -188,7 +188,7 @@ class NovaClient(base.BaseFixture):
                           flavor=flavor, image=image,
                           status='BUILDING')
 
-        self._vm_list[newVm.id] = newVm
+        self._vm_list[str(newVm.id)] = newVm
 
         return newVm
 
@@ -204,7 +204,7 @@ class NovaClient(base.BaseFixture):
             server_id = server
 
         try:
-            del (self._vm_list[server_id])
+            del (self._vm_list[str(server_id)])
         except KeyError:
             raise nova_exc.NotFound("Invalid server provided")
 
@@ -220,7 +220,7 @@ class NovaClient(base.BaseFixture):
             server_id = server
 
         try:
-            server = self._vm_list[server_id]
+            server = self._vm_list[str(server_id)]
         except KeyError:
             raise nova_exc.NotFound(404)
 
