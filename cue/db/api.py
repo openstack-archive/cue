@@ -161,6 +161,16 @@ class Connection(object):
         """
 
     @abc.abstractmethod
+    def update_endpoints_by_node_id(self, context, endpoint_values, node_id):
+        """Updates values in all endpoints belonging to a specific node
+
+        :param context: request context object
+        :param endpoint_values: Dictionary of endpoint values to update
+        :param node_id: node id to query endpoints by
+        :return:
+        """
+
+    @abc.abstractmethod
     def update_cluster_deleting(self, context, cluster_id):
         """Marks specified cluster to indicate deletion.
 

@@ -14,12 +14,44 @@
 # under the License.
 
 import taskflow.patterns.linear_flow as linear_flow
+import taskflow.patterns.unordered_flow as unordered_flow
 
-import cue.taskflow.task as cue_task
+from cue.db.sqlalchemy import models
+from cue.taskflow.flow import delete_cluster_node
+import cue.taskflow.task as cue_tasks
 
 
-def delete_cluster():
-    flow = linear_flow.Flow('deleting cluster').add(
-        cue_task.UpdateClusterStatus(cue_client="cue client")
-    )
+def delete_cluster(cluster_id, node_ids):
+    """Create Cluster flow factory function
+
+    This factory function uses :func:`cue.taskflow.flow.create_cluster_node` to
+    create a multi node cluster.
+
+    :param cluster_id: A unique ID assigned to the cluster being created
+    :type cluster_id: string
+    :param node_ids: The Cue Node id's associated with each node in the cluster
+    :type node_ids: list of uuid's
+    :return: A flow instance that represents the workflow for creating a
+             cluster
+    """
+    flow = linear_flow.Flow("deleting cluster %s" % cluster_id)
+    sub_flow = unordered_flow.Flow("delete VMs")
+    start_flow_status = {'cluster_id': cluster_id,
+                         'cluster_status': models.Status.DELETING}
+    end_flow_status = {'cluster_id': cluster_id,
+                       'cluster_status': models.Status.DELETED}
+
+    #todo(dagnello): verify node_ids is a list and not a string
+    for i, node_id in enumerate(node_ids):
+        sub_flow.add(delete_cluster_node.delete_cluster_node(cluster_id, i,
+                                                             node_id))
+
+    flow.add(cue_tasks.UpdateClusterStatus(name="update cluster status start "
+                                                "%s" % cluster_id,
+                                           inject=start_flow_status))
+    flow.add(sub_flow)
+    flow.add(cue_tasks.UpdateClusterStatus(name="update cluster status end "
+                                                "%s" % cluster_id,
+                                           inject=end_flow_status))
+
     return flow

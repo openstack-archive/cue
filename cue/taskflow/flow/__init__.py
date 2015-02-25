@@ -16,3 +16,4 @@
 from create_cluster import create_cluster               # noqa
 from create_cluster_node import create_cluster_node     # noqa
 from delete_cluster import delete_cluster               # noqa
+from delete_cluster_node import delete_cluster_node     # noqa

@@ -49,7 +49,7 @@ class CreatePortTests(base.TestCase):
             os_client=neutron_client, provides='neutron_port_id'))
 
         # generate a new UUID for an 'invalid' network_id
-        CreatePortTests.task_store['network_id'] = uuid.uuid4().hex
+        CreatePortTests.task_store['network_id'] = str(uuid.uuid4())
 
         self.assertRaises(exceptions.NetworkNotFoundClient, engines.run, flow,
                           store=CreatePortTests.task_store)
@@ -63,7 +63,7 @@ class CreatePortTests(base.TestCase):
         networks = neutron_client.list_networks(name=network_name)
         network = networks['networks'][0]
         CreatePortTests.task_store['network_id'] = network['id']
-        CreatePortTests.task_store['port_name'] = "port_" + uuid.uuid4().hex
+        CreatePortTests.task_store['port_name'] = "port_" + str(uuid.uuid4())
 
         # create flow with "CreatePort" task, given neutron client
         flow = linear_flow.Flow('create port').add(neutron_task.CreatePort(

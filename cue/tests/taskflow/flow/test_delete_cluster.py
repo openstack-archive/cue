@@ -19,6 +19,7 @@ from cue import client
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.taskflow.flow import create_cluster
+from cue.taskflow.flow import delete_cluster
 from cue.tests import base
 from cue.tests.test_fixtures import neutron
 from cue.tests.test_fixtures import nova
@@ -28,7 +29,7 @@ from taskflow import engines
 import taskflow.exceptions as taskflow_exc
 
 
-class CreateClusterTests(base.TestCase):
+class DeleteClusterTests(base.TestCase):
     additional_fixtures = [
         nova.NovaClient,
         neutron.NeutronClient,
@@ -37,7 +38,7 @@ class CreateClusterTests(base.TestCase):
 
     def setUp(self):
 
-        super(CreateClusterTests, self).setUp()
+        super(DeleteClusterTests, self).setUp()
 
         flavor_name = "m1.tiny"
         network_name = "private"
@@ -61,12 +62,15 @@ class CreateClusterTests(base.TestCase):
         network_list = self.neutron_client.list_networks(name=network_name)
         self.valid_network = network_list['networks'][0]
 
-    def test_create_cluster(self):
-        flow_store = {
+    def test_delete_cluster(self):
+        flow_store_create = {
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "network_id": self.valid_network['id'],
             "port": self.port,
+            "context": self.context.to_dict(),
+        }
+        flow_store_delete = {
             "context": self.context.to_dict(),
         }
 
@@ -86,11 +90,12 @@ class CreateClusterTests(base.TestCase):
 
         node_ids = []
         for node in nodes:
-            node_ids.append(node.id)
+            node_ids.append(str(node.id))
 
-        flow = create_cluster(new_cluster.id, node_ids)
+        flow_create = create_cluster(str(new_cluster.id), node_ids)
+        flow_delete = delete_cluster(str(new_cluster.id), node_ids)
 
-        result = engines.run(flow, store=flow_store)
+        result = engines.run(flow_create, store=flow_store_create)
 
         nodes_after = objects.Node.get_nodes_by_cluster_id(self.context,
                                                            new_cluster.id)
@@ -119,40 +124,43 @@ class CreateClusterTests(base.TestCase):
             self.assertEqual(uri, endpoint.uri, "invalid endpoint uri")
             self.assertEqual('AMQP', endpoint.type, "invalid endpoint type")
 
-    def test_create_cluster_overlimit(self):
+        result = engines.run(flow_delete, store=flow_store_delete)
+
+        nodes_after = objects.Node.get_nodes_by_cluster_id(self.context,
+                                                           new_cluster.id)
+
+        cluster_after = objects.Cluster.get_cluster_by_id(self.context,
+                                                          new_cluster.id)
+
+        self.assertEqual(models.Status.DELETED, cluster_after.status,
+                         "Invalid status for cluster")
+
+        for i, node in enumerate(nodes_after):
+            self.new_vm_list.remove(result["vm_id_%d" % i])
+            self.assertEqual(models.Status.DELETED, node.status,
+                             "Invalid status for node %d" % i)
+            endpoints = objects.Endpoint.get_endpoints_by_node_id(self.context,
+                                                                  node.id)
+            self.assertEqual(0, len(endpoints), "endpoints were not deleted")
+
+    def test_delete_invalid_cluster(self):
         vm_list = self.nova_client.servers.list()
         port_list = self.neutron_client.list_ports()
 
-        flow_store = {
-            'image': self.valid_image.id,
-            'flavor': self.valid_flavor.id,
-            'network_id': self.valid_network['id'],
-            "port": self.port,
+        flow_store_delete = {
             "context": self.context.to_dict(),
         }
 
-        cluster_values = {
-            "project_id": self.context.tenant_id,
-            "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
-            "flavor": "1",
-            "size": 10,
-        }
-
-        new_cluster = objects.Cluster(**cluster_values)
-        new_cluster.create(self.context)
-
-        nodes = objects.Node.get_nodes_by_cluster_id(self.context,
-                                                     new_cluster.id)
-
+        cluster_size = 3
+        cluster_id = str(uuid.uuid4())
         node_ids = []
-        for node in nodes:
-            node_ids.append(node.id)
+        for i in range(0, cluster_size):
+            node_ids.append(str(uuid.uuid4()))
 
-        flow = create_cluster(new_cluster.id, node_ids)
+        flow_delete = delete_cluster(cluster_id, node_ids)
 
         self.assertRaises(taskflow_exc.WrappedFailure, engines.run,
-                          flow, store=flow_store)
+                          flow_delete, store=flow_store_delete)
 
         self.assertEqual(vm_list, self.nova_client.servers.list())
         self.assertEqual(port_list, self.neutron_client.list_ports())
@@ -160,4 +168,4 @@ class CreateClusterTests(base.TestCase):
     def tearDown(self):
         for vm_id in self.new_vm_list:
             self.nova_client.servers.delete(vm_id)
-        super(CreateClusterTests, self).tearDown()
+        super(DeleteClusterTests, self).tearDown()

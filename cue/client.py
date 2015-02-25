@@ -31,16 +31,16 @@ OS_OPTS = [
                default=None),
     cfg.StrOpt('os_tenant_name',
                help='Openstack Tenant Name',
-               default='demo'),
+               default=None),
     cfg.StrOpt('os_username',
                help='Openstack Username',
-               default='admin'),
+               default=None),
     cfg.StrOpt('os_password',
                help='Openstack Password',
-               default='messina'),
+               default=None),
     cfg.StrOpt('os_auth_url',
                help='Openstack Authentication (Identity) URL',
-               default='http://192.168.131.136:5000/v2.0'),
+               default=None),
 ]
 
 opt_group = cfg.OptGroup(
