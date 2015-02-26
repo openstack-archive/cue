@@ -33,6 +33,11 @@ auth_opts = [
 CONF = cfg.CONF
 CONF.register_opts(auth_opts)
 
+cfg.CONF.register_opts([
+    cfg.BoolOpt('pecan_debug', default=False,
+                help='Pecan HTML Debug Interface'),
+], group='api')
+
 
 def get_pecan_config():
     # Set up the pecan configuration
@@ -58,7 +63,7 @@ def setup_app(pecan_config=None, extra_hooks=None):
     app = pecan.make_app(
         pecan_config.app.root,
         static_root=pecan_config.app.static_root,
-        debug=CONF.debug,
+        debug=CONF.api.pecan_debug,
         force_canonical=getattr(pecan_config.app, 'force_canonical', True),
         hooks=app_hooks,
         wrap_app=middleware.ParsableErrorMiddleware,
