@@ -19,8 +19,6 @@ from cue.common import context as context_module
 from cue.db.sqlalchemy import models
 from cue import objects
 
-from oslo.utils import timeutils
-
 
 class UpdateClusterStatus(task.Task):
 
@@ -44,12 +42,6 @@ class UpdateClusterStatus(task.Task):
         cluster_update_value = {
             'status': cluster_status,
         }
-
-        if cluster_status == models.Status.DELETED:
-            cluster_update_value['deleted_at'] = timeutils.utcnow()
-            cluster_update_value['deleted'] = True
-        else:
-            cluster_update_value['updated_at'] = timeutils.utcnow()
 
         cluster = objects.Cluster(**cluster_update_value)
         cluster.update(request_context, cluster_id)
@@ -78,7 +70,6 @@ class UpdateClusterStatus(task.Task):
             new_status = models.Status.ERROR
 
         cluster_update_value = {
-            'updated_at': timeutils.utcnow(),
             'status': new_status,
         }
 

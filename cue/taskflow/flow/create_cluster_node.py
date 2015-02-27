@@ -17,6 +17,7 @@ import taskflow.patterns.linear_flow as linear_flow
 import taskflow.retry as retry
 
 import cue.client as client
+from cue.db.sqlalchemy import models
 import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
 import os_tasklib.neutron as neutron
@@ -46,7 +47,14 @@ def create_cluster_node(cluster_id, node_number, node_id):
     extract_port_ip = (lambda port_info:
                        port_info['port']['fixed_ips'][0]['ip_address'])
 
-    extract_vm_id = lambda vm_info: vm_info['id']
+    extract_vm_id = lambda vm_info: str(vm_info['id'])
+
+    new_node_values = lambda nova_vm_id: {'status': models.Status.ACTIVE,
+                                          'instance_id': nova_vm_id}
+
+    new_endpoint_values = lambda vm_ip: {'node_id': node_id,
+                                         'uri': vm_ip + ':',
+                                         'type': 'AMQP'}
 
     flow = linear_flow.Flow(flow_name)
     flow.add(
@@ -97,16 +105,28 @@ def create_cluster_node(cluster_id, node_number, node_id):
             os_common.VerifyNetwork(
                 name="get RabbitMQ status %s" % node_name,
                 rebind={'vm_ip': "vm_ip_%d" % node_number},
-                retry_delay_seconds=10),
-            ),
+                retry_delay_seconds=10
+            )),
+        os_common.Lambda(
+            new_node_values,
+            name="build new node values %s" % node_name,
+            rebind={'nova_vm_id': "vm_id_%d" % node_number},
+            provides="node_values_%d" % node_number
+        ),
         cue_tasks.UpdateNode(
             name="update node %s" % node_name,
-            rebind={'nova_vm_id': "vm_id_%d" % node_number},
+            rebind={'node_values': "node_values_%d" % node_number},
             inject={'node_id': node_id},
         ),
-        cue_tasks.UpdateEndpoint(
-            name="update endpoint for node %s" % node_name,
+        os_common.Lambda(
+            new_endpoint_values,
+            name="build new endpoint values %s" % node_name,
             rebind={'vm_ip': "vm_ip_%d" % node_number},
             inject={'node_id': node_id},
+            provides="endpoint_values_%d" % node_number
+        ),
+        cue_tasks.CreateEndpoint(
+            name="update endpoint for node %s" % node_name,
+            rebind={'endpoint_values': "endpoint_values_%d" % node_number}
         ))
     return flow
