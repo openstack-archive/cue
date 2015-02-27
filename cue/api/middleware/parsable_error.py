@@ -25,11 +25,11 @@ Based on pecan.middleware.errordocument
 import json
 from xml import etree as et
 
+from oslo_log import log
 import webob
 
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LE  # noqa
-from cue.openstack.common import log
 
 LOG = log.getLogger(__name__)
 

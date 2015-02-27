@@ -16,7 +16,8 @@
 import os_tasklib
 
 from cue.common.i18n import _LI  # noqa
-from cue.openstack.common import log as logging
+
+from oslo_log import log as logging
 
 
 LOG = logging.getLogger(__name__)

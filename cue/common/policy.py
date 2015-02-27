@@ -16,11 +16,11 @@
 """Policy Engine For Cue."""
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
-from cue.openstack.common import log as logging
 from cue.openstack.common import policy
 
 

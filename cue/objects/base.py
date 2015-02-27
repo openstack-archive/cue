@@ -18,10 +18,10 @@
 
 from cue.objects import utils as obj_utils
 from cue.openstack.common._i18n import _LE  # noqa
-from cue.openstack.common import log as logging
 
 import collections
 
+from oslo_log import log as logging
 import six
 
 LOG = logging.getLogger('object')
