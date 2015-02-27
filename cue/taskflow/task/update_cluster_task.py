@@ -19,8 +19,6 @@ from cue.common import context as context_module
 from cue.db.sqlalchemy import models
 from cue import objects
 
-from oslo.utils import timeutils
-
 
 class UpdateClusterStatus(task.Task):
 
@@ -29,7 +27,7 @@ class UpdateClusterStatus(task.Task):
         models.Status.BUILDING: models.Status.ERROR
     }
 
-    def execute(self, context, cluster_id, cluster_status, **kwargs):
+    def execute(self, context, cluster_id, cluster_values, **kwargs):
         """Main execute method which will update the cluster status in the DB
 
         :param context: The request context in dict format
@@ -40,21 +38,10 @@ class UpdateClusterStatus(task.Task):
         :type cluster_status: string
         """
         request_context = context_module.RequestContext.from_dict(context)
-
-        cluster_update_value = {
-            'status': cluster_status,
-        }
-
-        if cluster_status == models.Status.DELETED:
-            cluster_update_value['deleted_at'] = timeutils.utcnow()
-            cluster_update_value['deleted'] = True
-        else:
-            cluster_update_value['updated_at'] = timeutils.utcnow()
-
-        cluster = objects.Cluster(**cluster_update_value)
+        cluster = objects.Cluster(**cluster_values)
         cluster.update(request_context, cluster_id)
 
-    def revert(self, context, cluster_id, cluster_status, **kwargs):
+    def revert(self, context, cluster_id, cluster_values, **kwargs):
         """Revert UpdateClusterStatus
 
         This method is executed upon failure of the UpdateClusterStatus or the
@@ -72,15 +59,12 @@ class UpdateClusterStatus(task.Task):
         """
         request_context = context_module.RequestContext.from_dict(context)
 
-        if cluster_status in UpdateClusterStatus.status_revert_pairs:
-            new_status = self.status_revert_pairs[cluster_status]
+        if ('status' in cluster_values) and (cluster_values['status']) in (
+                UpdateClusterStatus.status_revert_pairs):
+            cluster_values['status'] = self.status_revert_pairs[
+                cluster_values['status']]
         else:
-            new_status = models.Status.ERROR
+            cluster_values['status'] = models.Status.ERROR
 
-        cluster_update_value = {
-            'updated_at': timeutils.utcnow(),
-            'status': new_status,
-        }
-
-        cluster = objects.Cluster(**cluster_update_value)
+        cluster = objects.Cluster(**cluster_values)
         cluster.update(request_context, cluster_id)

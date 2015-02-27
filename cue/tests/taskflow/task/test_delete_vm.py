@@ -20,7 +20,6 @@ from cue.tests import base
 from cue.tests.test_fixtures import nova
 import os_tasklib.nova.delete_vm as delete_vm
 
-import novaclient.exceptions as nova_exc
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -31,7 +30,7 @@ class DeleteVmTests(base.TestCase):
     ]
 
     task_store = {
-        'vm_id': "0",
+        'server': "0",
     }
 
     def setUp(self):
@@ -65,11 +64,10 @@ class DeleteVmTests(base.TestCase):
                                                     flavor=self.flavor)]
 
         # delete non-existing vm (invalid id)
-        DeleteVmTests.task_store['vm_id'] = uuid.uuid4().hex
+        DeleteVmTests.task_store['server'] = str(uuid.uuid4())
 
         # start engine to run delete task
-        self.assertRaises(nova_exc.NotFound, engines.run, self.flow,
-                          store=DeleteVmTests.task_store)
+        engines.run(self.flow, store=DeleteVmTests.task_store)
 
         # verify our existing vms have not been deleted
         vms = self.nova_client.servers.list()
@@ -99,7 +97,7 @@ class DeleteVmTests(base.TestCase):
 
         # delete one vm
         vm_to_delete = new_instances.pop()
-        DeleteVmTests.task_store['vm_id'] = vm_to_delete.id
+        DeleteVmTests.task_store['server'] = str(vm_to_delete.id)
 
         # start engine to run delete task
         engines.run(self.flow, store=DeleteVmTests.task_store)

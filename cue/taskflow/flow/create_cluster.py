@@ -16,6 +16,7 @@
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.patterns.unordered_flow as unordered_flow
 
+from cue.db.sqlalchemy import models
 from cue.taskflow.flow import create_cluster_node
 import cue.taskflow.task as cue_tasks
 
@@ -36,9 +37,9 @@ def create_cluster(cluster_id, node_ids):
     flow = linear_flow.Flow("creating cluster %s" % cluster_id)
     sub_flow = unordered_flow.Flow("create VMs")
     start_flow_status = {'cluster_id': cluster_id,
-                         'cluster_status': 'BUILDING'}
+                         'cluster_values': {'status': models.Status.BUILDING}}
     end_flow_status = {'cluster_id': cluster_id,
-                       'cluster_status': 'ACTIVE'}
+                       'cluster_values': {'status': models.Status.ACTIVE}}
 
     #todo(dagnello): verify node_ids is a list and not a string
     for i, node_id in enumerate(node_ids):
