@@ -71,7 +71,7 @@ class UpdateClusterStatusTest(base.TestCase):
         self.flow = linear_flow.Flow(name="update cluster status").add(
             update_cluster_status.UpdateClusterStatus(
                 name="get RabbitMQ status",
-                inject={'cluster_status': models.Status.ACTIVE}))
+                inject={'cluster_values': {'status': models.Status.ACTIVE}}))
 
         # start engine to run task
         engines.run(self.flow, store=UpdateClusterStatusTest.task_store)
@@ -119,7 +119,7 @@ class UpdateClusterStatusTest(base.TestCase):
         self.flow = linear_flow.Flow(name="update cluster status").add(
             update_cluster_status.UpdateClusterStatus(
                 name="get RabbitMQ status",
-                inject={'cluster_status': models.Status.BUILDING}),
+                inject={'cluster_values': {'status': models.Status.BUILDING}}),
             neutron_task.CreatePort(os_client=neutron_client,
                                     provides='neutron_port_id'))
 
