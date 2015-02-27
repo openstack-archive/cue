@@ -237,7 +237,7 @@ class Client(object):
             tx_uuid = uuidutils.generate_uuid()
 
         job_name = "%s[%s]" % (flow_factory.__name__, tx_uuid)
-        book = logbook.LogBook(job_name)
+        book = logbook.LogBook(job_name, uuid=tx_uuid)
 
         if flow_factory is not None:
             flow_detail = logbook.FlowDetail(job_name, str(uuid.uuid4()))
