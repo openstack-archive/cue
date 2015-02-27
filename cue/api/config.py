@@ -34,9 +34,3 @@ app = {
         '/v1',
     ],
 }
-
-# WSME Configurations
-# See https://wsme.readthedocs.org/en/latest/integrate.html#configuration
-wsme = {
-    'debug': cfg.CONF.debug,
-}

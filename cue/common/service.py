@@ -43,11 +43,9 @@ LOG = log.getLogger(__name__)
 
 def prepare_service(argv=[]):
 
-    log_levels = (cfg.CONF.default_log_levels +
-                  ['stevedore=INFO', 'keystoneclient=INFO'])
-    cfg.set_defaults(log.log_opts,
-                     default_log_levels=log_levels)
+    log.set_defaults(
+        default_log_levels=['stevedore=INFO', 'keystoneclient=INFO'])
     if argv is None:
         argv = sys.argv
     cfg.CONF(argv[1:], project='cue')
-    log.setup('cue')
+    log.setup(cfg.CONF, 'cue')

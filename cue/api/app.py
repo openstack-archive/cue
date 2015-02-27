@@ -54,6 +54,8 @@ def setup_app(pecan_config=None, extra_hooks=None):
     if not pecan_config:
         pecan_config = get_pecan_config()
 
+    pecan_config["wsme"]["debug"] = False
+
     pecan.configuration.set_config(dict(pecan_config), overwrite=True)
     app = pecan.make_app(
         pecan_config.app.root,
