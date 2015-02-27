@@ -46,7 +46,7 @@ class CreateClusterTests(base.TestCase):
         self.neutron_client = client.neutron_client()
         self.port = '5672'
 
-        self.new_vm_name = uuid.uuid4().hex
+        self.new_vm_name = str(uuid.uuid4())
         self.new_vm_list = []
 
         image_list = self.nova_client.images.list()
@@ -73,7 +73,7 @@ class CreateClusterTests(base.TestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": uuid.uuid4().hex,
+            "network_id": str(uuid.uuid4()),
             "flavor": "1",
             "size": 3,
         }
@@ -134,7 +134,7 @@ class CreateClusterTests(base.TestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": uuid.uuid4().hex,
+            "network_id": str(uuid.uuid4()),
             "flavor": "1",
             "size": 10,
         }
