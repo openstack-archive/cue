@@ -37,7 +37,7 @@ class UpdateClusterStatusTest(base.TestCase):
     task_store = {
         "context": "context",
         "cluster_id": "id",
-        "network_id": uuid.uuid4().hex,
+        "network_id": str(uuid.uuid4()),
         "port_name": "port_0",
     }
 
@@ -51,7 +51,7 @@ class UpdateClusterStatusTest(base.TestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": uuid.uuid4().hex,
+            "network_id": str(uuid.uuid4()),
             "flavor": "1",
             "size": 3,
         }
@@ -99,7 +99,7 @@ class UpdateClusterStatusTest(base.TestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": uuid.uuid4().hex,
+            "network_id": str(uuid.uuid4()),
             "flavor": "1",
             "size": 3,
         }
