@@ -58,6 +58,7 @@ UBUNTU_IMAGE_MINDISK=4
 
 CUE_FLAVOR=cue.small
 CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $UBUNTU_IMAGE_MINDISK --vcpus 1"
+CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
 
 # cleanup_cue - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
@@ -86,6 +87,10 @@ function configure_cue {
     if [ "$CUE_TF_PERSISTENCE" == "db" ]; then
         iniset $CUE_CONF taskflow persistence_connection `database_connection_url $CUE_TF_DB`
     fi
+
+    # Set cluster node check timeouts
+    iniset $CUE_CONF taskflow cluster_node_check_timeout 10
+    iniset $CUE_CONF taskflow cluster_node_check_max_count 30
 
     iniset $CUE_CONF openstack os_auth_url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
     iniset $CUE_CONF openstack os_tenant_name admin

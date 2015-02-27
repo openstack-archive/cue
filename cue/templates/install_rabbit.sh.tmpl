@@ -1,0 +1,38 @@
+#!/bin/bash
+cat > /etc/hosts << EOF
+127.0.0.1 localhost
+{%- for node_name, node_ip in rabbit_nodes.iteritems() %}
+{{node_ip}} {{node_name}}
+{%- endfor %}
+EOF
+
+if [[ ! "`grep rabbitmq /etc/passwd`" ]]; then
+  useradd -d /var/lib/rabbitmq -U -m rabbitmq
+fi
+
+mkdir -p /etc/rabbitmq /var/lib/rabbitmq
+echo {{erlang_cookie}} > /var/lib/rabbitmq/.erlang.cookie
+chmod 0400 /var/lib/rabbitmq/.erlang.cookie
+
+cat > /etc/rabbitmq/rabbitmq.config << EOF
+[
+  {rabbit, [
+        {cluster_nodes, {[
+        {%- for node_name in rabbit_nodes -%}
+            'rabbit@{{node_name}}' {%- if not loop.last -%},{%- endif -%}
+        {%- endfor -%}
+        ], disc}}
+  ]}
+].
+EOF
+
+chown -R rabbitmq:rabbitmq /var/lib/rabbitmq
+apt-get update
+apt-get install -y rabbitmq-server
+
+for i in `seq 5`; do
+    if [[ ! "`service rabbitmq-server status | grep pid`" ]]; then
+        sleep 1
+        service rabbitmq-server start
+    fi
+done
