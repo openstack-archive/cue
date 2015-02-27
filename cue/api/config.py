@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.config import cfg
+#from oslo.config import cfg
 
 # Server Specific Configurations
 # See https://pecan.readthedocs.org/en/latest/configuration.html#server-configuration # noqa
@@ -38,5 +38,5 @@ app = {
 # WSME Configurations
 # See https://wsme.readthedocs.org/en/latest/integrate.html#configuration
 wsme = {
-    'debug': cfg.CONF.debug,
+    'debug': True,
 }
