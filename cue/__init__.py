@@ -16,7 +16,9 @@
 import os.path
 
 from oslo.config import cfg
+from oslo_log import log
 
+log.register_options(cfg.CONF)
 
 cfg.CONF.register_opts([
     cfg.StrOpt('pybasedir',
