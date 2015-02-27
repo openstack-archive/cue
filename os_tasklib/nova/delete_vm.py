@@ -15,6 +15,14 @@
 
 import os_tasklib
 
+from cue.common.i18n import _LW  # noqa
+
+import novaclient.exceptions as nova_exc
+from oslo_log import log as logging
+
+
+LOG = logging.getLogger(__name__)
+
 
 class DeleteVm(os_tasklib.BaseTask):
     """DeleteVm Task
@@ -23,12 +31,14 @@ class DeleteVm(os_tasklib.BaseTask):
     VM ID provided to the Task.
 
     """
-    def execute(self, vm_id, **kwargs):
+    def execute(self, server, **kwargs):
         """Main execute method
 
-        :param vm_id: VM id to delete
-        :type vm_id: string
+        :param server: vm id to delete
+        :type server: string
         :return: n/a
         """
-
-        self.os_client.servers.delete(vm_id)
+        try:
+            self.os_client.servers.delete(server=server)
+        except nova_exc.NotFound:
+            LOG.warning(_LW("VM was not found %s") % server)
