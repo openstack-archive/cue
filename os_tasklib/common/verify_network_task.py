@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import six
 import telnetlib as telnet
 import time
 
@@ -50,8 +51,12 @@ class VerifyNetwork(taskflow.task.Task):
         :param port: host service port
         :type port: int
         """
+        if six.PY2 and isinstance(port, unicode):
+            check_port = port.encode()
+        else:
+            check_port = port
         tn = telnet.Telnet()
-        tn.open(vm_ip, port, timeout=10)
+        tn.open(vm_ip, check_port, timeout=10)
 
     def revert(self, *args, **kwargs):
         """Revert CreateVmTask
