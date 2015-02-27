@@ -38,5 +38,5 @@ app = {
 # WSME Configurations
 # See https://wsme.readthedocs.org/en/latest/integrate.html#configuration
 wsme = {
-    'debug': cfg.CONF.debug,
+    'debug': False
 }
