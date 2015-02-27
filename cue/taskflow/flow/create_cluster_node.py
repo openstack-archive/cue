@@ -24,7 +24,9 @@ import os_tasklib.neutron as neutron
 import os_tasklib.nova as nova
 
 
-def create_cluster_node(cluster_id, node_number, node_id):
+def create_cluster_node(cluster_id, node_number, node_id,
+                        graph_flow, generate_userdata,
+                        start_task, end_task):
     """Create Cluster Node factory function
 
     This factory function creates a flow for creating a node of a cluster.
@@ -38,14 +40,11 @@ def create_cluster_node(cluster_id, node_number, node_id):
     :return: A flow instance that represents the workflow for creating a
              cluster node.
     """
-    flow_name = "create cluster %s node %d" % (cluster_id, node_number)
-    node_name = "cluster[%s].node[%d]" % (cluster_id, node_number)
+    node_name = "cue[%s].node[%d]" % (cluster_id, node_number)
 
-    extract_port_id = (lambda port_info:
-                       [{'port-id': port_info['port']['id']}])
-
-    extract_port_ip = (lambda port_info:
-                       port_info['port']['fixed_ips'][0]['ip_address'])
+    extract_port_info = (lambda port_info:
+                         ([{'port-id': port_info['port']['id']}],
+                         port_info['port']['fixed_ips'][0]['ip_address']))
 
     extract_vm_id = lambda vm_info: str(vm_info['id'])
 
@@ -56,77 +55,111 @@ def create_cluster_node(cluster_id, node_number, node_id):
                                          'uri': vm_ip + ':',
                                          'type': 'AMQP'}
 
-    flow = linear_flow.Flow(flow_name)
-    flow.add(
-        neutron.CreatePort(
-            name="create port %s" % node_name,
-            os_client=client.neutron_client(),
-            inject={'port_name': node_name},
-            provides="port_info_%d" % node_number),
-        os_common.Lambda(
-            extract_port_id,
-            name="extract port id %s" % node_name,
-            rebind={'port_info': "port_info_%d" % node_number},
-            provides="port_id_%d" % node_number),
-        os_common.Lambda(
-            extract_port_ip,
-            name="extract port ip %s" % node_name,
-            rebind={'port_info': "port_info_%d" % node_number},
-            provides="vm_ip_%d" % node_number),
-        nova.CreateVm(
-            name="create vm %s" % node_name,
+    check_rabbit_retry_strategy = [
+        'restart' if (i % 31) == 0 else 'check' for i in range(1, 31 * 5 + 1)
+    ]
+
+    create_port = neutron.CreatePort(
+        name="create port %s" % node_name,
+        os_client=client.neutron_client(),
+        inject={'port_name': node_name},
+        provides="port_info_%d" % node_number)
+    graph_flow.add(create_port)
+    graph_flow.link(start_task, create_port)
+
+    extract_port_data = os_common.Lambda(
+        extract_port_info,
+        name="extract port id %s" % node_name,
+        rebind={'port_info': "port_info_%d" % node_number},
+        provides=("port_id_%d" % node_number, "vm_ip_%d" % node_number))
+    graph_flow.add(extract_port_data)
+    graph_flow.link(create_port, extract_port_data)
+
+    graph_flow.link(extract_port_data, generate_userdata)
+
+    create_vm = nova.CreateVm(name="create vm %s" % node_name,
+        os_client=client.nova_client(),
+        requires=('name', 'image', 'flavor', 'nics'),
+        inject={'name': node_name},
+        rebind={'nics': "port_id_%d" % node_number},
+        provides="vm_info_%d" % node_number)
+    graph_flow.add(create_vm)
+    graph_flow.link(generate_userdata, create_vm)
+
+    get_vm_id = os_common.Lambda(extract_vm_id,
+        name="extract vm id %s" % node_name,
+        rebind={'vm_info': "vm_info_%d" % node_number},
+        provides="vm_id_%d" % node_number)
+    graph_flow.add(get_vm_id)
+    graph_flow.link(create_vm, get_vm_id)
+
+    #todo(dagnello): make retry times configurable
+    check_vm_active = linear_flow.Flow(
+        name="wait for VM active state %s" % node_name,
+        retry=retry.Times(12))
+    check_vm_active.add(
+        nova.GetVmStatus(
             os_client=client.nova_client(),
-            requires=('name', 'image', 'flavor', 'nics'),
-            inject={'name': node_name},
-            rebind={'nics': "port_id_%d" % node_number},
-            provides="vm_info_%d" % node_number),
-        os_common.Lambda(
-            extract_vm_id,
-            name="extract vm id %s" % node_name,
-            rebind={'vm_info': "vm_info_%d" % node_number},
-            provides="vm_id_%d" % node_number),
-        #todo(dagnello): make retry times configurable
-        linear_flow.Flow(name="wait for VM active state %s" % node_name,
-                         retry=retry.Times(12)).add(
-            nova.GetVmStatus(
-                os_client=client.nova_client(),
-                name="get vm %s" % node_name,
-                rebind={'nova_vm_id': "vm_id_%d" % node_number},
-                provides="vm_status_%d" % node_number),
-            os_common.CheckFor(
-                name="check vm status %s" % node_name,
-                rebind={'check_var': "vm_status_%d" % node_number},
-                check_value='ACTIVE',
-                retry_delay_seconds=10),
-            ),
-        #todo(dagnello): make retry times configurable
-        linear_flow.Flow(name="wait for RabbitMQ ready state %s" % node_name,
-                         retry=retry.Times(30)).add(
-            os_common.VerifyNetwork(
-                name="get RabbitMQ status %s" % node_name,
-                rebind={'vm_ip': "vm_ip_%d" % node_number},
-                retry_delay_seconds=10
-            )),
-        os_common.Lambda(
-            new_node_values,
-            name="build new node values %s" % node_name,
+            name="get vm %s" % node_name,
             rebind={'nova_vm_id': "vm_id_%d" % node_number},
-            provides="node_values_%d" % node_number
-        ),
-        cue_tasks.UpdateNode(
-            name="update node %s" % node_name,
-            rebind={'node_values': "node_values_%d" % node_number},
-            inject={'node_id': node_id},
-        ),
-        os_common.Lambda(
-            new_endpoint_values,
-            name="build new endpoint values %s" % node_name,
-            rebind={'vm_ip': "vm_ip_%d" % node_number},
-            inject={'node_id': node_id},
-            provides="endpoint_values_%d" % node_number
-        ),
-        cue_tasks.CreateEndpoint(
-            name="update endpoint for node %s" % node_name,
-            rebind={'endpoint_values': "endpoint_values_%d" % node_number}
-        ))
-    return flow
+            provides="vm_status_%d" % node_number),
+        os_common.CheckFor(
+            name="check vm status %s" % node_name,
+            rebind={'check_var': "vm_status_%d" % node_number},
+            check_value='ACTIVE',
+            retry_delay_seconds=10),
+        )
+    graph_flow.add(check_vm_active)
+    graph_flow.link(get_vm_id, check_vm_active)
+
+    #todo(dagnello): make retry times configurable
+    check_rabbit_online = linear_flow.Flow(
+        name="wait for RabbitMQ ready state %s" % node_name,
+        retry=retry.ForEach(check_rabbit_retry_strategy,
+                            "retry check RabbitMQ %s" % node_name,
+                            provides="retry_strategy_%d" % node_number))
+    check_rabbit_online.add(
+        cue_tasks.CheckOrRestartRabbitMq(
+            os_client=client.nova_client(),
+            name="get RabbitMQ status %s" % node_name,
+            rebind={'action': "retry_strategy_%d" % node_number,
+                    'vm_info': "vm_info_%d" % node_number,
+                    'vm_ip': "vm_ip_%d" % node_number},
+            retry_delay_seconds=10))
+    graph_flow.add(check_rabbit_online)
+    graph_flow.link(check_vm_active, check_rabbit_online)
+
+    build_node_info = os_common.Lambda(
+        new_node_values,
+        name="build new node values %s" % node_name,
+        rebind={'nova_vm_id': "vm_id_%d" % node_number},
+        provides="node_values_%d" % node_number
+    )
+    graph_flow.add(build_node_info)
+    graph_flow.link(check_rabbit_online, build_node_info)
+
+    update_node = cue_tasks.UpdateNode(
+        name="update node %s" % node_name,
+        rebind={'node_values': "node_values_%d" % node_number},
+        inject={'node_id': node_id})
+    graph_flow.add(update_node)
+    graph_flow.link(build_node_info, update_node)
+
+    build_endpoint_info = os_common.Lambda(
+        new_endpoint_values,
+        name="build new endpoint values %s" % node_name,
+        rebind={'vm_ip': "vm_ip_%d" % node_number},
+        inject={'node_id': node_id},
+        provides="endpoint_values_%d" % node_number
+    )
+    graph_flow.add(build_endpoint_info)
+    graph_flow.link(check_rabbit_online, build_endpoint_info)
+
+    create_endpoint = cue_tasks.CreateEndpoint(
+        name="update endpoint for node %s" % node_name,
+        rebind={'endpoint_values': "endpoint_values_%d" % node_number})
+    graph_flow.add(create_endpoint)
+    graph_flow.link(check_rabbit_online, create_endpoint)
+
+    graph_flow.link(update_node, end_task)
+    graph_flow.link(create_endpoint, end_task)

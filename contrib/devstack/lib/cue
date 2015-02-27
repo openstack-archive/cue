@@ -58,6 +58,7 @@ UBUNTU_IMAGE_MINDISK=4
 
 CUE_FLAVOR=cue.small
 CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $UBUNTU_IMAGE_MINDISK --vcpus 1"
+CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
 
 # cleanup_cue - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up

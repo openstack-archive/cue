@@ -35,8 +35,8 @@ if [[ -z $CUE_MANAGEMENT_KEY ]]; then
 fi
 
 # Add ssh keypair to admin account
-if [[ -z $(nova keypair-list | grep vagrant) ]]; then
-    nova keypair-add --pub-key ~/.ssh/id_rsa.pub vagrant
+if [[ -z $(nova keypair-list | grep $CUE_MANAGEMENT_KEY) ]]; then
+    nova keypair-add --pub-key ~/.ssh/id_rsa.pub $CUE_MANAGEMENT_KEY
 fi
 
 # Add ping and ssh rules to rabbitmq security group

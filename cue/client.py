@@ -41,6 +41,12 @@ OS_OPTS = [
     cfg.StrOpt('os_auth_url',
                help='Openstack Authentication (Identity) URL',
                default=None),
+    cfg.StrOpt('os_key_name',
+               help='SSH key to be provisioned to cue VMs',
+               default=None),
+    cfg.StrOpt('os_availability_zone',
+               help='Default availability zone to provision cue VMs',
+               default=None),
 ]
 
 opt_group = cfg.OptGroup(
@@ -54,11 +60,12 @@ CONF.register_opts(OS_OPTS, group=opt_group)
 
 def nova_client():
     return NovaClient.Client(2,
-                             CONF.openstack.os_username,
-                             CONF.openstack.os_password,
-                             CONF.openstack.os_tenant_name,
-                             CONF.openstack.os_auth_url,
-                             CONF.openstack.os_region_name,
+                             username=CONF.openstack.os_username,
+                             api_key=CONF.openstack.os_password,
+                             project_id=CONF.openstack.os_tenant_name,
+                             tenant_id=CONF.openstack.os_tenant_id,
+                             auth_url=CONF.openstack.os_auth_url,
+                             region_name=CONF.openstack.os_region_name,
                             )
 
 
