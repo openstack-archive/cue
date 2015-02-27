@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from cluster_node_userdata import ClusterNodeUserData # noqa
 from create_endpoint_task import CreateEndpoint       # noqa
 from get_node import GetNode                          # noqa
 from update_cluster_task import UpdateClusterStatus   # noqa
