@@ -237,6 +237,10 @@ class ClusterController(rest.RestController):
             'node_ids': node_ids,
         }
 
+        # generate unique erlang cookie to be used by all nodes in the new
+        # cluster, erlang cookies are strings of up to 255 characters
+        erlang_cookie = uuidutils.generate_uuid()
+
         job_args = {
             'flavor': cluster.cluster.flavor,
             # TODO(sputnik13): need to remove this when image selector is done
@@ -245,11 +249,12 @@ class ClusterController(rest.RestController):
             'network_id': cluster.cluster.network_id,
             'port': '5672',
             'context': context.to_dict(),
-            'cluster_status': 'BUILDING',
             # TODO(sputnik13: this needs to come from the create request and
             # default to a configuration value rather than always using config
             # value
             'security_groups': [CONF.os_security_group],
+            'key_name': CONF.openstack.os_key_name,
+            'erlang_cookie': erlang_cookie,
         }
         job_client = task_flow_client.get_client_instance()
         #TODO(dagnello): might be better to use request_id for job_uuid

@@ -46,7 +46,19 @@
 #
 #engine_type=serial
 
+#
+# Cluster node check timeout.  The number of seconds to wait until timing out
+# status checks on a cluster node.
+# Default: 10
+#
+#cluster_node_check_timeout=10
 
+#
+# Cluster node check max count.  The maximum number of times to check a cluster
+# node for status before declaring the node FAULTED.
+# Default: 30
+#
+#cluster_node_check_max_count=30
 
 [worker]
 

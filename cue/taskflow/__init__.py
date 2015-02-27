@@ -42,6 +42,15 @@ TF_OPTS = [
     cfg.StrOpt('engine_type',
                help="Engine type.",
                default='serial'),
+
+    cfg.IntOpt('cluster_node_check_timeout',
+               help="Number of seconds to wait between checks for node status",
+               default=10),
+
+    cfg.IntOpt('cluster_node_check_max_count',
+               help="Number of times to check a node for status before "
+               "declaring it FAULTED",
+               default=30),
 ]
 
 opt_group = cfg.OptGroup(

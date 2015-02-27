@@ -28,7 +28,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('state-path', default='/var/lib/cue',
                help='Top-level directory for maintaining cue\'s state'),
     cfg.StrOpt('os_security_group',
-               default='default',
+               default=None,
                help='The default Security Group to use for VMs created as '
                     'part of a cluster')
 ])
