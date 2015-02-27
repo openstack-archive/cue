@@ -44,7 +44,7 @@ class CreateClusterTests(base.TestCase):
 
         self.nova_client = client.nova_client()
         self.neutron_client = client.neutron_client()
-        self.port = '5672'
+        self.port = u'5672'
 
         self.new_vm_name = str(uuid.uuid4())
         self.new_vm_list = []

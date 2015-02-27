@@ -5,7 +5,7 @@
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -20,8 +20,16 @@ import time
 import taskflow.task
 
 
-class VerifyNetwork(taskflow.task.Task):
+class CheckOrRestartRabbitMq(taskflow.task.Task):
+    """Check or Restart RabbitMQ VM
+
+    This task either checks that RabbitMQ is running or restarts the VM,
+    depending on the supplied action.
+
+    """
+
     def __init__(self,
+                 os_client,
                  retry_delay_seconds=None,
                  retry_delay_ms=None,
                  name=None,
@@ -34,8 +42,9 @@ class VerifyNetwork(taskflow.task.Task):
         :param retry_delay_ms: retry delay in milliseconds
         :param name: unique name for atom
         """
-        super(VerifyNetwork, self).__init__(name=name, **kwargs)
+        super(CheckOrRestartRabbitMq, self).__init__(name=name, **kwargs)
 
+        self.os_client = os_client
         self.sleep_time = 0
         if retry_delay_seconds:
             self.sleep_time = retry_delay_seconds
@@ -43,18 +52,32 @@ class VerifyNetwork(taskflow.task.Task):
         if retry_delay_ms:
             self.sleep_time += retry_delay_ms / 1000.0
 
-    def execute(self, vm_ip, port, **kwargs):
-        """Main execute method to verify network connection in a VM
+    def execute(self, action, vm_info, vm_ip, port, **kwargs):
+        """main execute method
 
-        :param vm_ip: VM ip address
-        :type vm_ip: string
-        :param port: host service port
-        :type port: int
+        :param action: The request context in dict format.
+        :type action: oslo_context.RequestContext
+        :param vm_info: Unique ID for the node.
+        :type vm_info: dict or string
+        :param vm_ip:
+        :type vm_ip:
+        :param port:
+        :type port:
         """
         if six.PY2 and isinstance(port, unicode):
             check_port = port.encode()
         else:
             check_port = port
+
+        if isinstance(vm_info, dict):
+            vm_id = vm_info['id']
+        else:
+            vm_id = vm_info
+
+        if action == 'restart':
+            self.os_client.servers.reboot(vm_id)
+            raise Exception("Restarting VM")
+
         tn = telnet.Telnet()
         tn.open(vm_ip, check_port, timeout=10)
 
