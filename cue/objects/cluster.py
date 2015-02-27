@@ -23,7 +23,6 @@ from cue.objects import utils as obj_utils
 
 
 class Cluster(base.CueObject):
-
     dbapi = db_api.get_instance()
 
     fields = {
@@ -115,8 +114,6 @@ class Cluster(base.CueObject):
 
         """
         db_cluster = cls.dbapi.get_cluster_by_id(context, cluster_id)
-
         target = {'tenant_id': db_cluster.project_id}
         policy.check("cluster:delete", context, target)
-
         cls.dbapi.update_cluster_deleting(context, cluster_id)
