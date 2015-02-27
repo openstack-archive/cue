@@ -42,7 +42,7 @@ class CreateVmTests(base.TestCase):
         self.nova_client = client.nova_client()
         self.neutron_client = client.neutron_client()
 
-        self.new_vm_name = uuid.uuid4().hex
+        self.new_vm_name = str(uuid.uuid4())
         self.new_vm_id = None
 
         image_list = self.nova_client.images.list()

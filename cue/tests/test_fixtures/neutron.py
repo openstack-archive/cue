@@ -31,9 +31,9 @@ def new_network_detail(admin_state_up=True,
                        subnets=None,
                        tenant_id=None):
     if id is None:
-        id = uuid.uuid4().hex
+        id = str(uuid.uuid4())
     if tenant_id is None:
-        tenant_id = uuid.uuid4().hex
+        tenant_id = str(uuid.uuid4())
     return {'admin_state_up': admin_state_up,
             'id': id,
             'name': name,
@@ -88,7 +88,7 @@ class NeutronClient(base.BaseFixture):
         else:
             body = {'port': {}}
 
-        port_id = uuid.uuid4().hex
+        port_id = str(uuid.uuid4())
         body['port']['id'] = port_id
         body['port']['fixed_ips'] = []
         body['port']['fixed_ips'].append({'ip_address': '0.0.0.0'})
@@ -109,7 +109,7 @@ class NeutronClient(base.BaseFixture):
         else:
             body = {'network': {}}
 
-        network_id = uuid.uuid4().hex
+        network_id = str(uuid.uuid4())
         body['network'].update({
             'id': network_id,
             'subnets': [],
