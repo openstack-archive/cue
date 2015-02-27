@@ -15,6 +15,7 @@
 
 import os_tasklib
 
+import neutronclient.common.exceptions as neutron_exc
 from oslo_log import log as logging
 
 from cue.common.i18n import _LW  # noqa
@@ -80,10 +81,13 @@ class CreatePort(os_tasklib.BaseTask):
             LOG.warning(_LW("Create Port failed %s") % kwargs['flow_failures'])
 
         port_info = kwargs.get('result')
-        if port_info and isinstance(port_info, dict):
+        if (port_info
+                and isinstance(port_info, dict)
+                and 'port' in port_info
+                and 'id' in port_info['port']):
             try:
-                port_id = port_info['port']['id']
-                if port_id:
-                    self.os_client.delete_port(port=port_id)
-            except KeyError:
+                self.os_client.delete_port(port=port_info['port']['id'])
+            except neutron_exc.PortNotFoundClient:
+                # if port is not found, it was likely attached to a VM and
+                # already deleted with the VM, so there's nothing to do
                 pass
