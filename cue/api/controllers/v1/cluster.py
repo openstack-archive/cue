@@ -245,11 +245,13 @@ class ClusterController(rest.RestController):
             'network_id': cluster.cluster.network_id,
             'port': '5672',
             'context': context.to_dict(),
-            'cluster_status': 'BUILDING',
             # TODO(sputnik13: this needs to come from the create request and
             # default to a configuration value rather than always using config
             # value
             'security_groups': [CONF.os_security_group],
+            'key_name': CONF.openstack.os_key_name,
+            # TODO(sputnik13): this should be provided in the request
+            'availability_zone': CONF.openstack.os_availability_zone,
         }
         job_client = task_flow_client.get_client_instance()
         #TODO(dagnello): might be better to use request_id for job_uuid

@@ -55,6 +55,7 @@ UBUNTU_IMAGE_MINDISK=4
 
 CUE_FLAVOR=cue.small
 CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $UBUNTU_IMAGE_MINDISK --vcpus 1"
+CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
 
 # cleanup_cue - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
@@ -192,7 +193,6 @@ function init_cue {
     fi
 
     # Set os_security_group
-    CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
     if [[ -z $($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP) ]]; then
         $OPENSTACK_CMD security group create $CUE_RABBIT_SECURITY_GROUP
         $OPENSTACK_CMD security group rule create --src-ip 0.0.0.0/0 --proto tcp --dst-port 5672:5672 $CUE_RABBIT_SECURITY_GROUP
@@ -201,6 +201,11 @@ function init_cue {
     CUE_RABBIT_SECURITY_GROUP_ID=$($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP | tr -d ' ' | cut -f 2 -d '|')
     if [ $CUE_RABBIT_SECURITY_GROUP_ID ]; then
         iniset $CUE_CONF DEFAULT os_security_group $CUE_RABBIT_SECURITY_GROUP_ID
+    fi
+
+    # Set VM management key
+    if [ $CUE_MANAGEMENT_KEY ]; then
+        iniset $CUE_CONF openstack os_key_name $CUE_MANAGEMENT_KEY
     fi
 }
 

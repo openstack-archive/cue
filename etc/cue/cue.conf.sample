@@ -733,3 +733,13 @@ os_image_id=
 # Openstack Authentication (Identity) URL
 #
 #os_auth_url=
+
+#
+# Openstack SSH keypair name
+#
+#os_key_name=
+
+#
+# Openstack Availability zone
+#
+#os_availability_zone=
