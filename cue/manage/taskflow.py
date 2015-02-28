@@ -28,6 +28,6 @@ class TaskFlowCommands(base.Commands):
         super(TaskFlowCommands, self).__init__()
 
     def upgrade(self):
-        be = client.Client.persistence()
+        be = client.create_persistence()
         with contextlib.closing(be.get_connection()) as conn:
             conn.upgrade()
