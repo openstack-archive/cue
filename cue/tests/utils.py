@@ -117,6 +117,20 @@ def create_db_test_cluster_from_objects_api(context, **kw):
 
     new_cluster.create(context)
 
+    # add some endpoints to each node in cluster
+    cluster_nodes = objects.Node.get_nodes_by_cluster_id(context,
+                                                         new_cluster.id)
+    for i, node in enumerate(cluster_nodes):
+        endpoint_value = {'node_id': node.id,
+                          'uri': '10.0.0.' + str(i) + ':5672',
+                          'type': 'AMQP'}
+        endpoint = objects.Endpoint(**endpoint_value)
+        endpoint.create(context)
+        if i % 2:
+            endpoint_value['uri'] = '10.0.' + str(i + 1) + '.0:5672'
+            endpoint = objects.Endpoint(**endpoint_value)
+            endpoint.create(context)
+
     return new_cluster
 
 
