@@ -77,11 +77,26 @@ class TestGetCluster(api.FunctionalTest,
     def test_get_cluster(self):
         """test get cluster on valid existing cluster."""
         cluster = test_utils.create_db_test_cluster_from_objects_api(
-            self.context, name=self.cluster_name)
+            self.context, name=self.cluster_name, size=3)
         data = self.get_json('/clusters/' + cluster.id,
                              headers=self.auth_headers)
 
         self.validate_cluster_values(cluster, data["cluster"])
+
+        # verify all endpoints in cluster
+        # constructs all endpoints stored in DB
+        nodes = objects.Node.get_nodes_by_cluster_id(self.context, cluster.id)
+        all_endpoints = []
+        for node in nodes:
+            endpoints = objects.Endpoint.get_endpoints_by_node_id(self.context,
+                                                                  node.id)
+            node_endpoints_dict = [obj_endpoint.as_dict()
+                                   for obj_endpoint in endpoints]
+
+            all_endpoints.extend(node_endpoints_dict)
+
+        self.valudate_endpoint_values(all_endpoints,
+                                      data["cluster"]["end_points"])
 
 
 class TestDeleteCluster(api.FunctionalTest,
