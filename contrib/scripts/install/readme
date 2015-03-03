@@ -1,0 +1,25 @@
+Install Cue in HP Public Cloud VM
+
+Assumptions:
+* You have an existing VM (cue_host) configured with
+  * Flavor: 101 (small)
+  * Security group to allow access to port 8795 (Cue API), 22 (SSH)
+  * Image: Ubuntu Server (e.g. 14.04.1 LTS)
+
+Installation:
+* Log into VM and create a file for Cue installation script
+  * vim cue-install.sh
+* Copy contents of "hp_public_cloud_single_vm.sh" to "cue-install.sh" in vm
+  * Edit scripts and fill in [openstack] fields in both cue.conf and
+    worker.conf sections of script files.
+  *
+* Add execution rights to "cue-install.sh" script
+  * chmod +x cue-install.sh
+* Execute "cue-install.sh" as root
+  * sudo ./cue-install.sh
+
+Notes:
+* The installation script will run the cue-api and cue-worker with supervisord
+* To check execution status of Cue API/Worker
+  * Start supervisorctl, type status to get current status
+* Cue API/Worker log/err files are located in /var/log
