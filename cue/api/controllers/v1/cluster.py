@@ -145,35 +145,32 @@ def get_complete_cluster(context, cluster_id):
 class ClusterController(rest.RestController):
     """Manages operations on specific Cluster of nodes."""
 
-    def __init__(self, cluster_id):
-        self.id = cluster_id
-
-    @wsme_pecan.wsexpose(Cluster, status_code=200)
-    def get(self):
+    @wsme_pecan.wsexpose(Cluster, wtypes.text, status_code=200)
+    def get_one(self, cluster_id):
         """Return this cluster."""
         context = pecan.request.context
         cluster = Cluster()
-        cluster.cluster = get_complete_cluster(context, self.id)
+        cluster.cluster = get_complete_cluster(context, cluster_id)
 
         return cluster
 
-    @wsme_pecan.wsexpose(None, status_code=202)
-    def delete(self):
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=202)
+    def delete(self, cluster_id):
         """Delete this Cluster."""
         context = pecan.request.context
 
         # update cluster to deleting
-        objects.Cluster.update_cluster_deleting(context, self.id)
+        objects.Cluster.update_cluster_deleting(context, cluster_id)
 
         # retrieve cluster nodes
-        nodes = objects.Node.get_nodes_by_cluster_id(context, self.id)
+        nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
 
         # create list with node id's for create cluster flow
         node_ids = [node.id for node in nodes]
 
         # prepare and post cluster delete job to backend
         flow_kwargs = {
-            'cluster_id': self.id,
+            'cluster_id': cluster_id,
             'node_ids': node_ids,
         }
 
@@ -188,15 +185,11 @@ class ClusterController(rest.RestController):
                         tx_uuid=job_uuid)
 
         LOG.info(_LI('Delete Cluster Request Cluster ID %(cluster_id)s Job ID '
-                     '%(job_id)s') % ({"cluster_id": self.id,
+                     '%(job_id)s') % ({"cluster_id": cluster_id,
                                        "job_id": job_uuid}))
 
-
-class ClustersController(rest.RestController):
-    """Manages operations on Clusters of nodes."""
-
     @wsme_pecan.wsexpose(ClusterCollection, status_code=200)
-    def get(self):
+    def get_all(self):
         """Return list of Clusters."""
 
         context = pecan.request.context
@@ -207,7 +200,8 @@ class ClustersController(rest.RestController):
 
         return cluster_list
 
-    @wsme_pecan.wsexpose(Cluster, body=ClusterDetails, status_code=202)
+    @wsme_pecan.wsexpose(Cluster, body=ClusterDetails,
+                         status_code=202)
     def post(self, data):
         """Create a new Cluster.
 
@@ -225,7 +219,7 @@ class ClustersController(rest.RestController):
         new_cluster.create(context)
 
         # retrieve cluster data
-        cluster = Cluster()
+        cluster = ClusterCollection()
         cluster.cluster = get_complete_cluster(context, new_cluster.id)
 
         nodes = objects.Node.get_nodes_by_cluster_id(context,
@@ -259,12 +253,9 @@ class ClustersController(rest.RestController):
         LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s Cluster'
                      ' size %(size)s network ID %(network_id)s Job ID '
                      '%(job_id)s') % ({"cluster_id": cluster.cluster.id,
-                                      "size": cluster.cluster.size,
-                                      "network_id": cluster.cluster.network_id,
-                                      "job_id": job_uuid}))
+                                       "size": cluster.cluster.size,
+                                       "network_id":
+                                           cluster.cluster.network_id,
+                                       "job_id": job_uuid}))
 
         return cluster
-
-    @pecan.expose()
-    def _lookup(self, cluster_id, *remainder):
-        return ClusterController(cluster_id), remainder
