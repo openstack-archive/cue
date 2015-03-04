@@ -60,11 +60,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "ubuntu" do |ubuntu|
     ubuntu.vm.hostname = "cuedev-ubuntu"
     ubuntu_common(ubuntu)
+    ubuntu.vm.network :private_network, ip: "192.168.27.100"
   end
 
   config.vm.define "fedora" do |fedora|
     fedora.vm.hostname = "cuedev-fedora"
     fedora_common(fedora)
+    fedora.vm.network :private_network, ip: "192.168.27.101"
   end
 
   # Common provisioning steps
