@@ -11,6 +11,17 @@ Main
    getting-involved
    getting-started
 
+
+How To Guides
+=============
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    howtos/*
+
+
 ==================
 Indices and tables
 ==================
