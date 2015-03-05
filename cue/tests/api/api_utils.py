@@ -70,3 +70,17 @@ class ClusterValidationMixin(object):
         self.assertEqual(unicode(cluster_ref.updated_at.isoformat()),
                          cluster_cmp["updated_at"],
                          "Invalid cluster updated_at value")
+
+    def validate_endpoint_values(self, endpoints_ref, endpoints_cmp):
+        self.assertEqual(len(endpoints_ref), len(endpoints_cmp),
+                         "Invalid number of endpoints")
+
+        sorted_endpoints_ref = sorted(endpoints_ref, key=lambda k: k['uri'])
+        sorted_endpoints_cmp = sorted(endpoints_cmp, key=lambda k: k['uri'])
+
+        for endpoint_ref, endpoint_cmp in zip(sorted_endpoints_ref,
+                                              sorted_endpoints_cmp):
+            self.assertEqual(endpoint_ref['uri'], endpoint_cmp['uri'],
+                             'Invalid endpoint uri')
+            self.assertEqual(endpoint_ref['type'], endpoint_cmp['type'],
+                             'Invalid endpoint type')
