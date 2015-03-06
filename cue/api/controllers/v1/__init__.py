@@ -64,7 +64,7 @@ class V1Controller(rest.RestController):
 
     _default_version = 'v1'
     "The default API version"
-    clusters = cluster.ClustersController()
+    clusters = cluster.ClusterController()
 
     @wsme_pecan.wsexpose(V1)
     def get(self):
