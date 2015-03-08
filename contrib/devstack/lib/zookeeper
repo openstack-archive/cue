@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # lib/zookeeper
 # Install and start zookeeper
 
