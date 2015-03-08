@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # lib/cue
 # Install and start **Cue** service
 
@@ -46,6 +48,14 @@ CUE_SERVICE_PROTOCOL=${CUE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 CUE_SERVICE_HOST=${CUE_SERVICE_HOST:-$SERVICE_HOST}
 CUE_SERVICE_PORT=${CUE_SERVICE_PORT:-8795}
 
+UBUNTU_IMAGE_NAME='ubuntu-14.04-server'
+UBUNTU_IMAGE_URL='https://cloud-images.ubuntu.com/releases/14.04/release-20150305/ubuntu-14.04-server-cloudimg-amd64-disk1.img'
+UBUNTU_IMAGE_MD5='00662c59ca52558e7a3bb9a67d194730'
+UBUNTU_IMAGE_MINDISK=4
+
+CUE_FLAVOR=cue.small
+CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $UBUNTU_IMAGE_MINDISK --vcpus 1"
+
 # cleanup_cue - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
 function cleanup_cue {
@@ -73,6 +83,11 @@ function configure_cue {
     if [ "$CUE_TF_PERSISTENCE" == "db" ]; then
         iniset $CUE_CONF taskflow persistence_connection `database_connection_url $CUE_TF_DB`
     fi
+
+    iniset $CUE_CONF openstack os_auth_url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
+    iniset $CUE_CONF openstack os_tenant_name admin
+    iniset $CUE_CONF openstack os_username admin
+    iniset $CUE_CONF openstack os_password $ADMIN_PASSWORD
 
     if [ "$SYSLOG" != "False" ]; then
         iniset $CUE_CONF DEFAULT use_syslog True
@@ -151,6 +166,29 @@ function init_cue {
     if [ "$CUE_TF_PERSISTENCE" == "db" ]; then
         recreate_database $CUE_TF_DB utf8
         cue-manage --config-file $CUE_CONF taskflow upgrade
+    fi
+
+    # Download ubuntu image to devstack/files
+    if [[ ! -f $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img ]]; then
+        curl -o $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img -L $UBUNTU_IMAGE_URL
+    fi
+
+    OPENSTACK_CMD="openstack --os-token $TOKEN"
+    # Load ubuntu image to glance if one does not exist
+    if [[ -z $($OPENSTACK_CMD image list | grep $UBUNTU_IMAGE_NAME) ]]; then
+        $OPENSTACK_CMD image create --disk-format qcow2 --container-format bare --min-disk $UBUNTU_IMAGE_MINDISK --file $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img --checksum $UBUNTU_IMAGE_MD5 --public $UBUNTU_IMAGE_NAME
+    fi
+
+    # Create cue specific flavor if one does not exist
+    if [[ -z $($OPENSTACK_CMD flavor list | grep $CUE_FLAVOR) ]]; then
+        $OPENSTACK_CMD flavor create $CUE_FLAVOR_PARAMS $CUE_FLAVOR
+    fi
+
+    # Set os_image_id
+    # TODO(sputnik13): this is a workaround until "image selector" is complete
+    UBUNTU_IMAGE_ID=$($OPENSTACK_CMD image list | grep $UBUNTU_IMAGE_NAME | tr -d ' ' | cut -f 2 -d '|')
+    if [ "$UBUNTU_IMAGE_ID" ]; then
+        iniset $CUE_CONF api os_image_id $UBUNTU_IMAGE_ID
     fi
 }
 
