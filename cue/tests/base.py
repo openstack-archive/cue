@@ -35,6 +35,7 @@ import mock
 from oslo.config import cfg
 from oslo.config import fixture as cfg_fixture
 from oslo.utils import timeutils
+from oslo_policy import opts
 from oslotest import base
 import six
 
@@ -123,6 +124,7 @@ class TestCase(base.BaseTestCase):
         self.context = self.get_context()
 
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        opts.set_defaults(self.CONF)
         self.flags(state_path='/tmp')
         # NOTE(vish): We need a better method for creating fixtures for tests
         #             now that we have some required db setup for the system

@@ -27,7 +27,6 @@ from cue.tests import base
 
 OPT_GROUP_NAME = 'keystone_authtoken'
 cfg.CONF.import_group(OPT_GROUP_NAME, "keystonemiddleware.auth_token")
-cfg.CONF.import_opt("policy_file", "cue.openstack.common.policy")
 
 
 class FunctionalTest(base.TestCase):
