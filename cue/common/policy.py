@@ -17,11 +17,11 @@
 
 from oslo.config import cfg
 from oslo_log import log as logging
+from oslo_policy import policy
 
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
-from cue.openstack.common import policy
 
 
 LOG = logging.getLogger(__name__)
@@ -60,9 +60,10 @@ def set_rules(data, default_rule=None, overwrite=True):
 
 def init(default_rule=None):
     if "config_dir" in cfg.CONF:
-        policy_file = cfg.CONF.find_file(cfg.CONF.policy_file)
+        policy_file = cfg.CONF.find_file(cfg.CONF.oslo_policy.policy_file)
     else:
-        policy_file = cfg.CONF.pybasedir + '/etc/cue/' + cfg.CONF.policy_file
+        policy_file = cfg.CONF.pybasedir + '/etc/cue/'
+        policy_file += cfg.CONF.oslo_policy.policy_file
 
     if len(policy_file) == 0:
         msg = 'Unable to determine appropriate policy json file'
@@ -77,7 +78,7 @@ def init(default_rule=None):
     global _ENFORCER
     if not _ENFORCER:
         LOG.debug("Enforcer is not present, recreating.")
-        _ENFORCER = policy.Enforcer()
+        _ENFORCER = policy.Enforcer(cfg.CONF)
 
     _ENFORCER.set_rules(rules)
 
