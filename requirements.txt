@@ -26,7 +26,7 @@ WSME>=0.6
 keystonemiddleware>=1.0.0
 paramiko>=1.13.0
 posix_ipc
-pystache
+jinja2
 
 taskflow>=0.6.1
 -e git+https://github.com/python-zk/kazoo.git#egg=kazoo
