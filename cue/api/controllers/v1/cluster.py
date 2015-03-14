@@ -100,6 +100,9 @@ class ClusterDetails(base.APIBase):
     end_points = wtypes.wsattr([EndPoint], default=[])
     "List of endpoints on accessing node"
 
+    additional_information = [wtypes.DictType(wtypes.text, wtypes.text)]
+    "Optional dictionary list for additional informative data"
+
 
 class Cluster(base.APIBase):
     """API representation of a cluster."""
@@ -240,6 +243,8 @@ class ClusterController(rest.RestController):
         # generate unique erlang cookie to be used by all nodes in the new
         # cluster, erlang cookies are strings of up to 255 characters
         erlang_cookie = uuidutils.generate_uuid()
+        default_rabbit_user = 'rabbitmq'
+        default_rabbit_pass = uuidutils.generate_uuid()
 
         job_args = {
             'flavor': cluster.cluster.flavor,
@@ -255,6 +260,8 @@ class ClusterController(rest.RestController):
             'security_groups': [CONF.os_security_group],
             'key_name': CONF.openstack.os_key_name,
             'erlang_cookie': erlang_cookie,
+            'default_rabbit_user': default_rabbit_user,
+            'default_rabbit_pass': default_rabbit_pass,
         }
         job_client = task_flow_client.get_client_instance()
         #TODO(dagnello): might be better to use request_id for job_uuid
@@ -270,5 +277,11 @@ class ClusterController(rest.RestController):
                                        "network_id":
                                            cluster.cluster.network_id,
                                        "job_id": job_uuid}))
+
+        cluster.cluster.additional_information = []
+        cluster.cluster.additional_information.append(
+            dict(def_rabbit_user=default_rabbit_user))
+        cluster.cluster.additional_information.append(
+            dict(def_rabbit_pass=default_rabbit_pass))
 
         return cluster
