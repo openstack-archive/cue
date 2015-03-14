@@ -131,6 +131,14 @@ class TestCreateCluster(api.FunctionalTest,
         api_cluster = test_utils.create_api_test_cluster(size=1)
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=self.auth_headers, status=202)
+
+        self.assertEqual('rabbitmq', data.json['cluster']
+        ['additional_information'][0]['def_rabbit_user'], 'Invalid default '
+                                                          'rabbitmq user')
+        self.assertEqual(True, 'def_rabbit_pass' in
+                         data.json['cluster']['additional_information'][1],
+                         'def_rabbit_pass was not found')
+
         cluster = objects.Cluster.get_cluster_by_id(self.context,
                                                     data.json["cluster"]["id"])
         self.validate_cluster_values(cluster, data.json["cluster"])
@@ -151,6 +159,14 @@ class TestCreateCluster(api.FunctionalTest,
         api_cluster = test_utils.create_api_test_cluster(size=3)
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=self.auth_headers, status=202)
+
+        self.assertEqual('rabbitmq', data.json['cluster']
+        ['additional_information'][0]['def_rabbit_user'], 'Invalid default '
+                                                          'rabbitmq user')
+        self.assertEqual(True, 'def_rabbit_pass' in
+                         data.json['cluster']['additional_information'][1],
+                         'def_rabbit_pass was not found')
+
         cluster = objects.Cluster.get_cluster_by_id(self.context,
                                                     data.json["cluster"]["id"])
         self.validate_cluster_values(cluster, data.json["cluster"])
@@ -160,6 +176,7 @@ class TestCreateCluster(api.FunctionalTest,
         data_api = self.get_json('/clusters/' + cluster.id,
                                  headers=self.auth_headers)
         self.validate_cluster_values(cluster, data_api["cluster"])
+
         self.assertEqual(models.Status.BUILDING, data_api["cluster"]['status'])
 
     def test_create_invalid_size_format(self):
