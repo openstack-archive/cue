@@ -6,6 +6,11 @@ cat > /etc/hosts << EOF
 {%- endfor %}
 EOF
 
+cat > /etc/network/interfaces.d/eth1.cfg << EOF
+auto eth1
+iface eth1 inet dhcp
+EOF
+
 if [[ ! "`grep rabbitmq /etc/passwd`" ]]; then
   useradd -d /var/lib/rabbitmq -U -m rabbitmq
 fi
