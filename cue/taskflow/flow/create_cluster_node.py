@@ -63,6 +63,14 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     graph_flow.add(create_port)
     graph_flow.link(start_task, create_port)
 
+    create_management_port = neutron.CreatePort(
+        name="create management port %s" % node_name,
+        os_client=client.neutron_client(),
+        inject={'management_port_name': node_name},
+        provides="management_port_info_%d" % node_number)
+    graph_flow.add(create_port)
+    graph_flow.link(start_task, create_management_port)
+
     extract_port_data = os_common.Lambda(
         extract_port_info,
         name="extract port id %s" % node_name,
@@ -71,15 +79,26 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     graph_flow.add(extract_port_data)
     graph_flow.link(create_port, extract_port_data)
 
+    extract_management_port_data = os_common.Lambda(
+        extract_port_info,
+        name="extract management port id %s" % node_name,
+        rebind={'port_info': "management_port_info_%d" % node_number},
+        provides=("management_port_id_%d" % node_number,
+                  "management_vm_ip_%d" % node_number))
+    graph_flow.add(extract_management_port_data)
+    graph_flow.link(create_management_port, extract_management_port_data)
+
     graph_flow.link(extract_port_data, generate_userdata)
 
     create_vm = nova.CreateVm(name="create vm %s" % node_name,
         os_client=client.nova_client(),
         requires=('name', 'image', 'flavor', 'nics'),
         inject={'name': node_name},
-        rebind={'nics': "port_id_%d" % node_number},
+        rebind={'nics': ["port_id_%d" % node_number,
+                         "management_port_id_%d" % node_number]},
         provides="vm_info_%d" % node_number)
     graph_flow.add(create_vm)
+    graph_flow.link(create_management_port, create_vm)
     graph_flow.link(generate_userdata, create_vm)
 
     get_vm_id = os_common.Lambda(extract_vm_id,
@@ -115,7 +134,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     check_rabbit_online.add(
         os_common.VerifyNetwork(
             name="get RabbitMQ status %s" % node_name,
-            rebind={'vm_ip': "vm_ip_%d" % node_number},
+            rebind={'vm_ip': "management_vm_ip_%d" % node_number},
             retry_delay_seconds=node_check_timeout))
     graph_flow.add(check_rabbit_online)
     graph_flow.link(check_vm_active, check_rabbit_online)

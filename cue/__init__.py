@@ -30,5 +30,8 @@ cfg.CONF.register_opts([
     cfg.StrOpt('os_security_group',
                default=None,
                help='The default Security Group to use for VMs created as '
-                    'part of a cluster')
+                    'part of a cluster'),
+    cfg.StrOpt('management_network_id',
+               default=None,
+               help='The id representing the management network ')
 ])

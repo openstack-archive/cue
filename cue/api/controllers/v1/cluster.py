@@ -235,6 +235,7 @@ class ClusterController(rest.RestController):
         flow_kwargs = {
             'cluster_id': cluster.cluster.id,
             'node_ids': node_ids,
+            # TODO(dagnello): API will have to accept a list of network_ids
         }
 
         # generate unique erlang cookie to be used by all nodes in the new
@@ -247,7 +248,9 @@ class ClusterController(rest.RestController):
             'image': CONF.api.os_image_id,
             'volume_size': cluster.cluster.volume_size,
             'network_id': cluster.cluster.network_id,
-            'port': '5672',
+            'management_network_id': CONF.management_network_id,
+            'rabbit_port': '5672',
+            'management_port': '22',
             'context': context.to_dict(),
             # TODO(sputnik13: this needs to come from the create request and
             # default to a configuration value rather than always using config
