@@ -239,6 +239,8 @@ class ClusterController(rest.RestController):
         flow_kwargs = {
             'cluster_id': cluster.cluster.id,
             'node_ids': node_ids,
+            'user_network_id': cluster.cluster.network_id,
+            'management_network_id': CONF.management_network_id,
         }
 
         # generate unique erlang cookie to be used by all nodes in the new
@@ -252,13 +254,12 @@ class ClusterController(rest.RestController):
             # TODO(sputnik13): need to remove this when image selector is done
             'image': CONF.api.os_image_id,
             'volume_size': cluster.cluster.volume_size,
-            'network_id': cluster.cluster.network_id,
-            'port': '5672',
             'context': context.to_dict(),
             # TODO(sputnik13: this needs to come from the create request and
             # default to a configuration value rather than always using config
             # value
             'security_groups': [CONF.os_security_group],
+            'port': CONF.rabbit_port,
             'key_name': CONF.openstack.os_key_name,
             'erlang_cookie': erlang_cookie,
             'default_rabbit_user': default_rabbit_user,

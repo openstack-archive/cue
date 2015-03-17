@@ -185,6 +185,13 @@
 #control_exchange=openstack
 
 
+#
+# Options defined in cue
+#
+
+# Management network id for access to clustered VMs
+management_network_id=
+
 
 #
 # Options defined in cue.api.app
