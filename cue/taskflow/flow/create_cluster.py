@@ -21,7 +21,8 @@ from cue.taskflow.flow import create_cluster_node
 import cue.taskflow.task as cue_tasks
 
 
-def create_cluster(cluster_id, node_ids):
+def create_cluster(cluster_id, node_ids, user_network_id,
+                   management_network_id):
     """Create Cluster flow factory function
 
     This factory function uses :func:`cue.taskflow.flow.create_cluster_node` to
@@ -30,7 +31,11 @@ def create_cluster(cluster_id, node_ids):
     :param cluster_id: A unique ID assigned to the cluster being created
     :type cluster_id: string
     :param node_ids: The Cue Node id's associated with each node in the cluster
-    :type node_ids: list of uuid's
+    :type node_ids: list of uuid strings
+    :param user_network_id: The user's network id
+    :type user_network_id: string
+    :param management_network_id: The management network id
+    :type management_network_id: string
     :return: A flow instance that represents the workflow for creating a
              cluster
     """
@@ -60,13 +65,15 @@ def create_cluster(cluster_id, node_ids):
         generate_userdata = cue_tasks.ClusterNodeUserData(
             "userdata_%d" % i,
             len(node_ids),
-            "vm_ip_",
+            "vm_management_ip_",
             inject={'node_name': "rabbit-node-%d" % i})
         flow.add(generate_userdata)
 
         create_cluster_node.create_cluster_node(cluster_id, i, node_id, flow,
                                                 generate_userdata, start_task,
                                                 end_task, node_check_timeout,
-                                                node_check_max_count)
+                                                node_check_max_count,
+                                                user_network_id,
+                                                management_network_id)
 
     return flow

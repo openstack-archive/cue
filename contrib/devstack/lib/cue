@@ -29,6 +29,7 @@ CUE_REPO=${CUE_REPO:-${GIT_BASE}/stackforge/cue.git}
 CUE_BRANCH=${CUE_BRANCH:-master}
 CUECLIENT_REPO=${CUECLIENT_REPO:-${GIT_BASE}/stackforge/python-cueclient.git}
 CUECLIENT_BRANCH=${CUECLIENT_BRANCH:-master}
+CUE_MANAGEMENT_NETWORK_SUBNET=${CUE_MANAGEMENT_NETWORK_SUBNET-"172.16.0.0/24"}
 
 # Set up default paths
 CUE_BIN_DIR=$(get_python_exec_prefix)
@@ -59,6 +60,8 @@ UBUNTU_IMAGE_MINDISK=4
 CUE_FLAVOR=cue.small
 CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $UBUNTU_IMAGE_MINDISK --vcpus 1"
 CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
+CUE_MANAGEMENT_NETWORK_NAME='cue_management_net'
+CUE_MANAGEMENT_SUBNET_NAME='cue_management_subnet'
 
 # cleanup_cue - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
@@ -181,7 +184,9 @@ function init_cue {
         curl -o $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img -L $UBUNTU_IMAGE_URL
     fi
 
+    NEUTRON_OS_URL="${Q_PROTOCOL}://$Q_HOST:$Q_PORT"
     OPENSTACK_CMD="openstack --os-token $TOKEN"
+    NEUTRON_CMD="neutron --os-token $TOKEN --os-url $NEUTRON_OS_URL"
     # Load ubuntu image to glance if one does not exist
     if [[ -z $($OPENSTACK_CMD image list | grep $UBUNTU_IMAGE_NAME) ]]; then
         $OPENSTACK_CMD image create --disk-format qcow2 --container-format bare --min-disk $UBUNTU_IMAGE_MINDISK --file $TOP_DIR/files/${UBUNTU_IMAGE_NAME}.img --checksum $UBUNTU_IMAGE_MD5 --public $UBUNTU_IMAGE_NAME
@@ -213,6 +218,29 @@ function init_cue {
     # Set VM management key
     if [ $CUE_MANAGEMENT_KEY ]; then
         iniset $CUE_CONF openstack os_key_name $CUE_MANAGEMENT_KEY
+    fi
+
+    # Create cue management-network
+    if [[ -z $($NEUTRON_CMD net-list | grep $CUE_MANAGEMENT_NETWORK_NAME) ]]; then
+        $NEUTRON_CMD net-create $CUE_MANAGEMENT_NETWORK_NAME --provider:network-type local
+        CUE_MANAGEMENT_SUBNET_ROUTER_IP="$(echo $CUE_MANAGEMENT_NETWORK_SUBNET | cut -f 1-3 -d '.').1"
+        $NEUTRON_CMD subnet-create $CUE_MANAGEMENT_NETWORK_NAME $CUE_MANAGEMENT_NETWORK_SUBNET --name $CUE_MANAGEMENT_SUBNET_NAME --host-route destination=$FLOATING_RANGE,nexthop=$CUE_MANAGEMENT_SUBNET_ROUTER_IP
+        $NEUTRON_CMD router-interface-add $Q_ROUTER_NAME $CUE_MANAGEMENT_SUBNET_NAME
+    fi
+
+    # Configure host route to management-network
+    CUE_MANAGEMENT_SUBNET_IP=$(echo $CUE_MANAGEMENT_NETWORK_SUBNET | cut -f 1 -d '/')
+    if [[ -z $(netstat -rn | grep $CUE_MANAGEMENT_SUBNET_IP ) ]]; then
+        if [[ ! -z $($NEUTRON_CMD router-show $Q_ROUTER_NAME 2>/dev/null) ]]; then
+            ROUTER_IP=$($NEUTRON_CMD router-show $Q_ROUTER_NAME | grep ip_address | cut -f 16 -d '"')
+            sudo route add -net $CUE_MANAGEMENT_NETWORK_SUBNET gw $ROUTER_IP
+        fi
+    fi
+
+    # Set management-network id
+    CUE_MANAGEMENT_NETWORK_ID=$($NEUTRON_CMD net-list | grep $CUE_MANAGEMENT_NETWORK_NAME | tr -d ' ' | cut -f 2 -d '|')
+    if [ $CUE_MANAGEMENT_NETWORK_ID ]; then
+        iniset $CUE_CONF DEFAULT management_network_id $CUE_MANAGEMENT_NETWORK_ID
     fi
 }
 
