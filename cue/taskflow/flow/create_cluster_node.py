@@ -26,7 +26,8 @@ import os_tasklib.nova as nova
 
 def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
                         generate_userdata, start_task, end_task,
-                        node_check_timeout, node_check_max_count):
+                        node_check_timeout, node_check_max_count,
+                        user_network_id, management_network_id):
     """Create Cluster Node factory function
 
     This factory function creates a flow for creating a node of a cluster.
@@ -37,14 +38,38 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     :type node_number: number
     :param node_id: Unique ID for the node.
     :type node_id: string
+    :param graph_flow: TaskFlow graph flow which contains create cluster flow
+    :type graph_flow: taskflow.patterns.graph_flow
+    :param start_task: Update cluster status start task
+    :type start_task: cue.taskflow.task.UpdateClusterStatus
+    :param end_task: Update cluster status end task
+    :type end_task: cue.taskflow.task.UpdateClusterStatus
+    :param generate_userdata: generate user data task
+    :type generate_userdata: cue.taskflow.task.ClusterNodeUserData
+    :param node_check_timeout: seconds wait between node status checks
+    :type node_check_timeout: int
+    :param node_check_max_count: times to check for updated node status
+    :type node_check_max_count: int
+    :param user_network_id: The user's network id
+    :type user_network_id: string
+    :param management_network_id: The management network id
+    :type management_network_id: string
     :return: A flow instance that represents the workflow for creating a
              cluster node.
     """
     node_name = "cue[%s].node[%d]" % (cluster_id, node_number)
 
-    extract_port_info = (lambda port_info:
-                         ([{'port-id': port_info['port']['id']}],
-                         port_info['port']['fixed_ips'][0]['ip_address']))
+    extract_port_info = (lambda user_port_info, management_port_info:
+                         (
+                         [  # nova boot requires a list of port-id's
+                            {'port-id': user_port_info['port']['id']},
+                            {'port-id': management_port_info['port']['id']}
+                         ],
+                         # user port ip
+                         user_port_info['port']['fixed_ips'][0]['ip_address'],
+                         # management port ip
+                         management_port_info['port']['fixed_ips'][0]
+                         ['ip_address']))
 
     extract_vm_id = lambda vm_info: str(vm_info['id'])
 
@@ -55,31 +80,44 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
                                          'uri': vm_ip + ':',
                                          'type': 'AMQP'}
 
-    create_port = neutron.CreatePort(
+    create_user_port = neutron.CreatePort(
         name="create port %s" % node_name,
         os_client=client.neutron_client(),
-        inject={'port_name': node_name},
-        provides="port_info_%d" % node_number)
-    graph_flow.add(create_port)
-    graph_flow.link(start_task, create_port)
+        inject={'network_id': user_network_id,
+                'port_name': 'user_' + node_name},
+        provides="user_port_info_%d" % node_number)
+    graph_flow.add(create_user_port)
+    graph_flow.link(start_task, create_user_port)
+
+    create_management_port = neutron.CreatePort(
+        name="create management port %s" % node_name,
+        os_client=client.neutron_client(),
+        inject={'network_id': management_network_id,
+                'port_name': 'management_' + node_name},
+        provides="management_port_info_%d" % node_number)
+    graph_flow.add(create_management_port)
+    graph_flow.link(start_task, create_management_port)
 
     extract_port_data = os_common.Lambda(
         extract_port_info,
         name="extract port id %s" % node_name,
-        rebind={'port_info': "port_info_%d" % node_number},
-        provides=("port_id_%d" % node_number, "vm_ip_%d" % node_number))
+        rebind={'user_port_info': "user_port_info_%d" % node_number,
+                'management_port_info': "management_port_info_%d" %
+                                        node_number},
+        provides=("port_ids_%d" % node_number,
+                  "vm_user_ip_%d" % node_number,
+                  "vm_management_ip_%d" % node_number))
     graph_flow.add(extract_port_data)
-    graph_flow.link(create_port, extract_port_data)
-
-    graph_flow.link(extract_port_data, generate_userdata)
+    graph_flow.link(create_user_port, extract_port_data)
 
     create_vm = nova.CreateVm(name="create vm %s" % node_name,
         os_client=client.nova_client(),
         requires=('name', 'image', 'flavor', 'nics'),
         inject={'name': node_name},
-        rebind={'nics': "port_id_%d" % node_number},
+        rebind={'nics': "port_ids_%d" % node_number},
         provides="vm_info_%d" % node_number)
     graph_flow.add(create_vm)
+    graph_flow.link(create_management_port, create_vm)
     graph_flow.link(generate_userdata, create_vm)
 
     get_vm_id = os_common.Lambda(extract_vm_id,
@@ -115,7 +153,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     check_rabbit_online.add(
         os_common.VerifyNetwork(
             name="get RabbitMQ status %s" % node_name,
-            rebind={'vm_ip': "vm_ip_%d" % node_number},
+            rebind={'vm_ip': "vm_management_ip_%d" % node_number},
             retry_delay_seconds=node_check_timeout))
     graph_flow.add(check_rabbit_online)
     graph_flow.link(check_vm_active, check_rabbit_online)
@@ -139,7 +177,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     build_endpoint_info = os_common.Lambda(
         new_endpoint_values,
         name="build new endpoint values %s" % node_name,
-        rebind={'vm_ip': "vm_ip_%d" % node_number},
+        rebind={'vm_ip': "vm_user_ip_%d" % node_number},
         inject={'node_id': node_id},
         provides="endpoint_values_%d" % node_number
     )
