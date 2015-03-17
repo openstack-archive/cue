@@ -27,8 +27,15 @@ cfg.CONF.register_opts([
                help='Directory where the cue python module is installed'),
     cfg.StrOpt('state-path', default='/var/lib/cue',
                help='Top-level directory for maintaining cue\'s state'),
+    cfg.StrOpt('rabbit_port',
+               default='5672',
+               help='The port to access RabbitMQ AMQP interface on a clustered'
+                    'vm'),
     cfg.StrOpt('os_security_group',
                default=None,
                help='The default Security Group to use for VMs created as '
-                    'part of a cluster')
+                    'part of a cluster'),
+    cfg.StrOpt('management_network_id',
+               default=None,
+               help='The id representing the management network ')
 ])
