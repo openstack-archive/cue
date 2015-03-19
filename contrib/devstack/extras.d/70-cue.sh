@@ -13,6 +13,9 @@ if is_service_enabled cue; then
         echo_summary "Installing Cue Client"
         install_cueclient
 
+        echo_summary "Installing Cue Dashboard"
+        install_cuedashboard
+
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Cue"
         configure_cue
