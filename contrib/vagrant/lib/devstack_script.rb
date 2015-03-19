@@ -20,8 +20,12 @@ cat << EOF > /home/vagrant/bin/refresh_devstack.sh
 #!/bin/bash
 rsync -av --exclude='.tox' --exclude='.venv' --exclude='.vagrant' /home/vagrant/cue /opt/stack
 
-if [ -f "/home/vagrant/python-cueclient" ]; then
+if [ -d "/home/vagrant/python-cueclient" ]; then
     rsync -av --exclude='.tox' --exclude='.venv' --exclude='.vagrant' --exclude='contrib/vagrant' /home/vagrant/python-cueclient /opt/stack
+fi
+
+if [ -d "/home/vagrant/cue-dashboard" ]; then
+    rsync -av --exclude='.tox' --exclude='.venv' --exclude='.vagrant' --exclude='contrib/vagrant' /home/vagrant/cue-dashboard /opt/stack
 fi
 
 # Install Vagrant local.conf sample
