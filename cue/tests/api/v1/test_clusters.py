@@ -14,6 +14,8 @@
 """
 Tests for the API /clusters/ controller methods.
 """
+
+from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.tests import api
@@ -60,6 +62,7 @@ class TestListClusters(api.FunctionalTest,
         # verify number of clusters received
         self.assertEqual(len(data), num_of_clusters,
                          "Invalid number of clusters returned")
+
         for i in range(num_of_clusters):
             # verify cluster
             self.validate_cluster_values(clusters[i], data[i])
@@ -191,6 +194,61 @@ class TestCreateCluster(api.FunctionalTest,
         self.assertIn('invalid literal for int() with base 10:',
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
+
+    def test_create_two_clusters_verify_time_stamps(self):
+        """test time stamps times at creation and delete."""
+        api_cluster_1 = test_utils.create_api_test_cluster()
+        api_cluster_2 = test_utils.create_api_test_cluster()
+
+        # Create two clusters
+        data_1 = self.post_json('/clusters', params=api_cluster_1.as_dict(),
+                              headers=self.auth_headers, status=202)
+        data_2 = self.post_json('/clusters', params=api_cluster_2.as_dict(),
+                              headers=self.auth_headers, status=202)
+
+        # retrieve cluster objects
+        cluster_1 = objects.Cluster.get_cluster_by_id(self.context,
+                                                      data_1.json["id"])
+        cluster_2 = objects.Cluster.get_cluster_by_id(self.context,
+                                                      data_2.json["id"])
+
+        # verify second cluster was created after first by created_at time
+        self.assertEqual(True, cluster_2.created_at > cluster_1.created_at,
+                         "Second cluster was not created after first")
+
+        cluster_1_created_at = cluster_1.created_at
+
+        # issue delete request cluster for cluster_1
+        self.delete('/clusters/' + data_1.json["id"],
+                    headers=self.auth_headers)
+
+        # retrieve cluster_1
+        cluster_1 = objects.Cluster.get_cluster_by_id(self.context,
+                                                      data_1.json["id"])
+
+        # verify updated_at time is after created_at
+        self.assertEqual(True, cluster_1.updated_at > cluster_1.created_at,
+                         "Cluster updated at time is invalid")
+        # verify created_at time did not change
+        self.assertEqual(cluster_1_created_at, cluster_1.created_at,
+                         "Cluster created_at time has changed")
+
+        # delete cluster_1
+        cluster = objects.Cluster(deleted=True, status=models.Status.DELETED)
+        cluster.update(self.context, data_1.json["id"])
+
+        # retrieve deleted (soft) cluster
+        cluster_query = db_api.model_query(self.context, models.Cluster,
+                                           read_deleted=True).filter_by(
+            id=data_1.json["id"])
+        cluster_1 = cluster_query.one()
+
+        # verify deleted_at time is after created_at
+        self.assertEqual(True, cluster_1.deleted_at > cluster_1.created_at,
+                         "Cluster deleted_at time is invalid")
+        # verify updated_at time is after deleted_at
+        self.assertEqual(True, cluster_1.updated_at > cluster_1.deleted_at,
+                         "Cluster deleted_at time is invalid")
 
     def test_create_invalid_volume_size(self):
         """test with invalid volume_size parameter."""

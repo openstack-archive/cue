@@ -87,24 +87,10 @@ def model_query(context, model, *args, **kwargs):
     return query
 
 
-def capture_timestamp(record_values):
-    """Captures required timestamp in for provided record dictionary.
-
-    This helper function should be used when a cluster/node record is being
-    updated or deleted.  In either case it will update the appropriate
-    timestamp based on the value of the status key.  If the status key/value
-    pair is not provided, the 'updated_at' timestamp is added/updated.
-
-    :param record_values: dictionary with record values for update or save
-    :return: record_values dict with appropriate timestamp captured.
-    """
-    if ('status' in record_values) and (
-                record_values['status'] == models.Status.DELETED):
+def soft_delete(record_values):
+        """Mark this object as deleted."""
+        record_values['deleted'] = True
         record_values['deleted_at'] = timeutils.utcnow()
-    else:
-        record_values['updated_at'] = timeutils.utcnow()
-
-    return record_values
 
 
 class Connection(api.Connection):
@@ -149,7 +135,10 @@ class Connection(api.Connection):
         cluster_query = (model_query(context, models.Cluster)
             .filter_by(id=cluster_id))
 
-        cluster_values = capture_timestamp(cluster_values)
+        # if status is set to deleted, soft delete this cluster record
+        if ('status' in cluster_values) and (
+                    cluster_values['status'] == models.Status.DELETED):
+            soft_delete(cluster_values)
 
         cluster_query.update(cluster_values)
 
@@ -181,7 +170,10 @@ class Connection(api.Connection):
     def update_node(self, context, node_values, node_id):
         node_query = (model_query(context, models.Node).filter_by(id=node_id))
 
-        node_values = capture_timestamp(node_values)
+        # if status is set to deleted, soft delete this node record
+        if ('status' in node_values) and (
+            node_values['status'] == models.Status.DELETED):
+            soft_delete(node_values)
 
         node_query.update(node_values)
 
@@ -219,8 +211,6 @@ class Connection(api.Connection):
 
     def update_cluster_deleting(self, context, cluster_id):
         values = {'status': models.Status.DELETING}
-
-        values = capture_timestamp(values)
 
         cluster_query = (model_query(context, models.Cluster)
             .filter_by(id=cluster_id))
