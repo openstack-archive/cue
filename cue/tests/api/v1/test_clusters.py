@@ -35,38 +35,35 @@ class TestListClusters(api.FunctionalTest,
             self.context,
             name=self.cluster_name)
         data = self.get_json('/clusters', headers=self.auth_headers)
-
+        # verify number of clusters received
         self.assertEqual(len(data), 1, "Invalid number of clusters returned")
-
+        # verify cluster
         self.validate_cluster_values(cluster, data["clusters"][0])
+        # verify endpoints in cluster
+        all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
+                                                            cluster.id)
+        self.validate_endpoint_values(all_endpoints,
+                                      data["clusters"][0]["end_points"])
 
     def test_multiple(self):
-        cluster_0 = test_utils.create_db_test_cluster_from_objects_api(
+        num_of_clusters = 5
+        clusters = [test_utils.create_db_test_cluster_from_objects_api(
             self.context,
-            name=self.cluster_name + '_0')
-        cluster_1 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_1')
-        cluster_2 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_2')
-        cluster_3 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_3')
-        cluster_4 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_4')
+            name=self.cluster_name + '_' + str(i), size=i + 1) for i in
+                    range(num_of_clusters)]
 
         data = self.get_json('/clusters', headers=self.auth_headers)
-
-        self.assertEqual(len(data["clusters"]), 5,
+        # verify number of clusters received
+        self.assertEqual(len(data["clusters"]), num_of_clusters,
                          "Invalid number of clusters returned")
-
-        self.validate_cluster_values(cluster_0, data["clusters"][0])
-        self.validate_cluster_values(cluster_1, data["clusters"][1])
-        self.validate_cluster_values(cluster_2, data["clusters"][2])
-        self.validate_cluster_values(cluster_3, data["clusters"][3])
-        self.validate_cluster_values(cluster_4, data["clusters"][4])
+        for i in range(num_of_clusters):
+            # verify cluster
+            self.validate_cluster_values(clusters[i], data["clusters"][i])
+            # verify endpoints in cluster
+            all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
+                                                                clusters[i].id)
+            self.validate_endpoint_values(all_endpoints,
+                                          data["clusters"][i]["end_points"])
 
 
 class TestCreateCluster(api.FunctionalTest,
