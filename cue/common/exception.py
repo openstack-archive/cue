@@ -119,6 +119,11 @@ class Conflict(CueException):
     code = 409
 
 
+class RequestEntityTooLarge(CueException):
+    message = _('Request too large for server.')
+    code = 413
+
+
 class TemporaryFailure(CueException):
     message = _("Resource temporarily unavailable, please retry.")
     code = 503
