@@ -18,7 +18,6 @@ from cue.db.sqlalchemy import types
 import uuid
 
 from oslo.db.sqlalchemy import models
-from oslo.utils import timeutils
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
 
@@ -48,13 +47,9 @@ class ProjectMixin(object):
     """Project mixin, add to subclasses that have a project."""
     project_id = sa.Column(sa.String(36))
 
-
-class TimeMixin(object):
-    created_at = sa.Column('created_at', sa.DateTime(),
-                           default=timeutils.utcnow(), nullable=False)
-    updated_at = sa.Column('updated_at', sa.DateTime(),
-                           default=timeutils.utcnow(), nullable=False)
-    deleted_at = sa.Column('deleted_at', sa.DateTime(),
-                           nullable=True)
-
 BASE = declarative.declarative_base(cls=CueBase)
+
+
+class SoftDeleteMixin(object):
+    deleted_at = sa.Column(sa.DateTime)
+    deleted = sa.Column(sa.Boolean, default=0)

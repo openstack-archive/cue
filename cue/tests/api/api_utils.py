@@ -67,9 +67,10 @@ class ClusterValidationMixin(object):
         self.assertEqual(unicode(cluster_ref.created_at.isoformat()),
                          cluster_cmp["created_at"],
                          "Invalid cluster created_at value")
-        self.assertEqual(unicode(cluster_ref.updated_at.isoformat()),
-                         cluster_cmp["updated_at"],
-                         "Invalid cluster updated_at value")
+        if cluster_ref.updated_at:
+            self.assertEqual(unicode(cluster_ref.updated_at.isoformat()),
+                             cluster_cmp["updated_at"],
+                             "Invalid cluster updated_at value")
 
     def validate_endpoint_values(self, endpoints_ref, endpoints_cmp):
         self.assertEqual(len(endpoints_ref), len(endpoints_cmp),
