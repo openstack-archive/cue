@@ -74,7 +74,10 @@ class Cluster(base.APIBase):
             # only add fields we expose in the api
             if hasattr(self, k):
                 self.fields.append(k)
-                setattr(self, k, kwargs.get(k, wtypes.Unset))
+                if kwargs.get(k) is None:
+                    setattr(self, k, wtypes.Unset)
+                else:
+                    setattr(self, k, kwargs.get(k))
 
     id = wtypes.text
     "UUID of cluster"
@@ -135,6 +138,7 @@ class ClusterController(rest.RestController):
         context = pecan.request.context
         cluster = get_complete_cluster(context, cluster_id)
 
+        cluster.unset_empty_fields()
         return cluster
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=202)
@@ -265,5 +269,7 @@ class ClusterController(rest.RestController):
             dict(def_rabbit_user=default_rabbit_user))
         cluster.additional_information.append(
             dict(def_rabbit_pass=default_rabbit_pass))
+
+        cluster.unset_empty_fields()
 
         return cluster
