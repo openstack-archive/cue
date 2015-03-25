@@ -364,6 +364,9 @@ port=8795
 # from a collection resource. (integer value)
 max_limit=1000
 
+# The maximum number of nodes in a Cue cluster
+#max_cluster_size=10
+
 
 #
 # Openstack Image ID

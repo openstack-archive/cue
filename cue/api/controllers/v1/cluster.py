@@ -214,6 +214,9 @@ class ClusterController(rest.RestController):
 
         if data.size <= 0:
             raise exception.Invalid(_("Invalid cluster size provided"))
+        elif data.size > CONF.api.max_cluster_size:
+            raise exception.Invalid(_("Invalid cluster size, max size is: %d")
+            % CONF.api.max_cluster_size)
 
         # create new cluster object with required data from user
         new_cluster = objects.Cluster(**data.as_dict())
