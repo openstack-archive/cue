@@ -14,6 +14,7 @@
 """
 Tests for the API /clusters/ controller methods.
 """
+
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.tests import api
@@ -60,6 +61,7 @@ class TestListClusters(api.FunctionalTest,
         # verify number of clusters received
         self.assertEqual(len(data), num_of_clusters,
                          "Invalid number of clusters returned")
+
         for i in range(num_of_clusters):
             # verify cluster
             self.validate_cluster_values(clusters[i], data[i])
@@ -191,6 +193,24 @@ class TestCreateCluster(api.FunctionalTest,
         self.assertIn('invalid literal for int() with base 10:',
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
+
+    def test_create_two_clusters_verify_created_time(self):
+        """test creation time of second cluster happens after first."""
+        api_cluster_1 = test_utils.create_api_test_cluster()
+        api_cluster_2 = test_utils.create_api_test_cluster()
+
+        data_1 = self.post_json('/clusters', params=api_cluster_1.as_dict(),
+                              headers=self.auth_headers, status=202)
+        data_2 = self.post_json('/clusters', params=api_cluster_2.as_dict(),
+                              headers=self.auth_headers, status=202)
+
+        cluster_1 = objects.Cluster.get_cluster_by_id(self.context,
+                                                      data_1.json["id"])
+        cluster_2 = objects.Cluster.get_cluster_by_id(self.context,
+                                                      data_2.json["id"])
+
+        self.assertEqual(True, cluster_2.created_at > cluster_1.created_at,
+                         "Second cluster was not created after first")
 
     def test_create_invalid_volume_size(self):
         """test with invalid volume_size parameter."""
