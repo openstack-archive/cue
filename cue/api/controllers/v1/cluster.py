@@ -74,7 +74,10 @@ class Cluster(base.APIBase):
             # only add fields we expose in the api
             if hasattr(self, k):
                 self.fields.append(k)
-                setattr(self, k, kwargs.get(k, wtypes.Unset))
+                if kwargs.get(k) is None:
+                    setattr(self, k, wtypes.Unset)
+                else:
+                    setattr(self, k, kwargs.get(k))
 
     id = wtypes.text
     "UUID of cluster"
