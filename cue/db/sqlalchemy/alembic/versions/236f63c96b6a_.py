@@ -45,7 +45,7 @@ def upgrade():
     sa.Column('volume_size', sa.Integer(), nullable=True),
     sa.Column('deleted', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -57,7 +57,7 @@ def upgrade():
     sa.Column('status', sa.String(length=50), nullable=False),
     sa.Column('deleted', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['cluster_id'], ['clusters.id'], ),
     sa.PrimaryKeyConstraint('id')
