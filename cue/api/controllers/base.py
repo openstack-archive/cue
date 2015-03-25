@@ -49,3 +49,9 @@ class APIBase(wtypes.Base):
         for k in self.as_dict():
             if k not in except_list:
                 setattr(self, k, wsme.Unset)
+
+    def unset_empty_fields(self):
+        """Unset empty fields so they don't appear in message body."""
+        for k in self.fields:
+            if hasattr(self, k) and getattr(self, k) is None:
+                setattr(self, k, wsme.Unset)

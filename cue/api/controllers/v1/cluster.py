@@ -59,7 +59,7 @@ class EndPoint(base.APIBase):
     "URL to endpoint"
 
 
-class ClusterDetails(base.APIBase):
+class Cluster(base.APIBase):
     """Representation of a cluster's details."""
     # todo(dagnello): WSME attribute verification sometimes triggers 500 server
     # error when user input was actually invalid (400).  Example: if 'size' was
@@ -101,32 +101,13 @@ class ClusterDetails(base.APIBase):
     "List of endpoints on accessing node"
 
 
-class Cluster(base.APIBase):
-    """API representation of a cluster."""
-
-    cluster = ClusterDetails
-
-    def __init__(self, **kwargs):
-        self._type = 'cluster'
-
-
-class ClusterCollection(base.APIBase):
-    """API representation of a collection of clusters."""
-
-    clusters = [ClusterDetails]
-    """A list containing Cluster objects"""
-
-    def __init__(self, **kwargs):
-        self._type = 'clusters'
-
-
 def get_complete_cluster(context, cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
 
     cluster_obj = objects.Cluster.get_cluster_by_id(context, cluster_id)
 
     # construct api cluster object
-    cluster = ClusterDetails(**cluster_obj.as_dict())
+    cluster = Cluster(**cluster_obj.as_dict())
     cluster.end_points = []
 
     cluster_nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
@@ -152,9 +133,9 @@ class ClusterController(rest.RestController):
     def get_one(self, cluster_id):
         """Return this cluster."""
         context = pecan.request.context
-        cluster = Cluster()
-        cluster.cluster = get_complete_cluster(context, cluster_id)
+        cluster = get_complete_cluster(context, cluster_id)
 
+        cluster.unset_empty_fields()
         return cluster
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=202)
@@ -191,19 +172,19 @@ class ClusterController(rest.RestController):
                      '%(job_id)s') % ({"cluster_id": cluster_id,
                                        "job_id": job_uuid}))
 
-    @wsme_pecan.wsexpose(ClusterCollection, status_code=200)
+    @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get_all(self):
         """Return list of Clusters."""
 
         context = pecan.request.context
         clusters = objects.Cluster.get_clusters(context)
-        cluster_list = ClusterCollection()
-        cluster_list.clusters = [get_complete_cluster(context, obj_cluster.id)
-                                 for obj_cluster in clusters]
+        cluster_list = [get_complete_cluster(context, obj_cluster.id)
+                        for obj_cluster in clusters]
 
+        [obj_cluster.unset_empty_fields() for obj_cluster in cluster_list]
         return cluster_list
 
-    @wsme_pecan.wsexpose(Cluster, body=ClusterDetails,
+    @wsme_pecan.wsexpose(Cluster, body=Cluster,
                          status_code=202)
     def post(self, data):
         """Create a new Cluster.
@@ -226,20 +207,19 @@ class ClusterController(rest.RestController):
         new_cluster.create(context)
 
         # retrieve cluster data
-        cluster = Cluster()
-        cluster.cluster = get_complete_cluster(context, new_cluster.id)
+        cluster = get_complete_cluster(context, new_cluster.id)
 
         nodes = objects.Node.get_nodes_by_cluster_id(context,
-                                                     cluster.cluster.id)
+                                                     cluster.id)
 
         # create list with node id's for create cluster flow
         node_ids = [node.id for node in nodes]
 
         # prepare and post cluster create job to backend
         flow_kwargs = {
-            'cluster_id': cluster.cluster.id,
+            'cluster_id': cluster.id,
             'node_ids': node_ids,
-            'user_network_id': cluster.cluster.network_id,
+            'user_network_id': cluster.network_id,
             'management_network_id': CONF.management_network_id,
         }
 
@@ -247,13 +227,15 @@ class ClusterController(rest.RestController):
         # cluster, erlang cookies are strings of up to 255 characters
         erlang_cookie = uuidutils.generate_uuid()
         default_rabbit_user = 'rabbitmq'
-        default_rabbit_pass = cluster.cluster.id
+        default_rabbit_pass = cluster.id
 
         job_args = {
-            'flavor': cluster.cluster.flavor,
+            'flavor': cluster.flavor,
             # TODO(sputnik13): need to remove this when image selector is done
             'image': CONF.api.os_image_id,
-            'volume_size': cluster.cluster.volume_size,
+            'volume_size': cluster.volume_size,
+            'network_id': cluster.network_id,
+            'port': '5672',
             'context': context.to_dict(),
             # TODO(sputnik13: this needs to come from the create request and
             # default to a configuration value rather than always using config
@@ -274,16 +256,18 @@ class ClusterController(rest.RestController):
 
         LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s Cluster'
                      ' size %(size)s network ID %(network_id)s Job ID '
-                     '%(job_id)s') % ({"cluster_id": cluster.cluster.id,
-                                       "size": cluster.cluster.size,
+                     '%(job_id)s') % ({"cluster_id": cluster.id,
+                                       "size": cluster.size,
                                        "network_id":
-                                           cluster.cluster.network_id,
+                                           cluster.network_id,
                                        "job_id": job_uuid}))
 
-        cluster.cluster.additional_information = []
-        cluster.cluster.additional_information.append(
+        cluster.additional_information = []
+        cluster.additional_information.append(
             dict(def_rabbit_user=default_rabbit_user))
-        cluster.cluster.additional_information.append(
+        cluster.additional_information.append(
             dict(def_rabbit_pass=default_rabbit_pass))
+
+        cluster.unset_empty_fields()
 
         return cluster

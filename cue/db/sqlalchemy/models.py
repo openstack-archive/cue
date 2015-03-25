@@ -17,6 +17,7 @@
 from cue.db.sqlalchemy import base
 from cue.db.sqlalchemy import types
 
+from oslo.db.sqlalchemy import models
 import sqlalchemy as sa
 
 
@@ -40,7 +41,8 @@ class Endpoint(base.BASE, base.IdMixin):
     sa.Index("endpoints_nodes_id_idx", "node_id", unique=False)
 
 
-class Node(base.BASE, base.IdMixin, base.TimeMixin):
+class Node(base.BASE, base.IdMixin, models.TimestampMixin,
+           base.SoftDeleteMixin):
     __tablename__ = 'nodes'
 
     cluster_id = sa.Column(
@@ -49,12 +51,12 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
     flavor = sa.Column(sa.String(36), nullable=False)
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), nullable=False)
-    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
     sa.Index("nodes_id_idx", "id", unique=True)
     sa.Index("nodes_cluster_id_idx", "cluster_id", unique=False)
 
 
-class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
+class Cluster(base.BASE, base.IdMixin, models.TimestampMixin,
+              base.SoftDeleteMixin):
     __tablename__ = 'clusters'
 
     project_id = sa.Column(sa.String(36), nullable=False)
@@ -64,5 +66,4 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
     flavor = sa.Column(sa.String(50), nullable=False)
     size = sa.Column(sa.Integer(), default=1, nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=True)
-    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
     sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
