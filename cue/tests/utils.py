@@ -59,7 +59,7 @@ def create_api_test_cluster(**kw):
         'volume_size': str(test_cluster['volume_size']),
     }
 
-    new_cluster = cluster.ClusterDetails(**cluster_parameters)
+    new_cluster = cluster.Cluster(**cluster_parameters)
 
     return new_cluster
 
@@ -88,7 +88,7 @@ def create_api_test_cluster_all(**kw):
         'updated_at': test_cluster['updated_at'],
     }
 
-    new_cluster = cluster.ClusterDetails(**cluster_parameters)
+    new_cluster = cluster.Cluster(**cluster_parameters)
 
     return new_cluster
 

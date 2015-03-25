@@ -14,6 +14,7 @@
 """
 Tests for the API /clusters/ controller methods.
 """
+
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.tests import api
@@ -32,7 +33,7 @@ class TestListClusters(api.FunctionalTest,
 
     def test_empty(self):
         data = self.get_json('/clusters')
-        self.assertEqual([], data["clusters"])
+        self.assertEqual([], data)
 
     def test_one(self):
         cluster = test_utils.create_db_test_cluster_from_objects_api(
@@ -42,12 +43,12 @@ class TestListClusters(api.FunctionalTest,
         # verify number of clusters received
         self.assertEqual(len(data), 1, "Invalid number of clusters returned")
         # verify cluster
-        self.validate_cluster_values(cluster, data["clusters"][0])
+        self.validate_cluster_values(cluster, data[0])
         # verify endpoints in cluster
         all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
                                                             cluster.id)
         self.validate_endpoint_values(all_endpoints,
-                                      data["clusters"][0]["end_points"])
+                                      data[0]["end_points"])
 
     def test_multiple(self):
         num_of_clusters = 5
@@ -58,16 +59,17 @@ class TestListClusters(api.FunctionalTest,
 
         data = self.get_json('/clusters', headers=self.auth_headers)
         # verify number of clusters received
-        self.assertEqual(len(data["clusters"]), num_of_clusters,
+        self.assertEqual(len(data), num_of_clusters,
                          "Invalid number of clusters returned")
+
         for i in range(num_of_clusters):
             # verify cluster
-            self.validate_cluster_values(clusters[i], data["clusters"][i])
+            self.validate_cluster_values(clusters[i], data[i])
             # verify endpoints in cluster
             all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
                                                                 clusters[i].id)
             self.validate_endpoint_values(all_endpoints,
-                                          data["clusters"][i]["end_points"])
+                                          data[i]["end_points"])
 
 
 class TestCreateCluster(api.FunctionalTest,
@@ -148,15 +150,15 @@ class TestCreateCluster(api.FunctionalTest,
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=self.auth_headers, status=202)
         cluster = objects.Cluster.get_cluster_by_id(self.context,
-                                                    data.json["cluster"]["id"])
-        self.validate_cluster_values(cluster, data.json["cluster"])
+                                                    data.json["id"])
+        self.validate_cluster_values(cluster, data.json)
         self.assertEqual(models.Status.BUILDING,
-                         data.json["cluster"]['status'])
+                         data.json['status'])
 
         data_api = self.get_json('/clusters/' + cluster.id,
                                  headers=self.auth_headers)
-        self.validate_cluster_values(cluster, data_api["cluster"])
-        self.assertEqual(models.Status.BUILDING, data_api["cluster"]['status'])
+        self.validate_cluster_values(cluster, data_api)
+        self.assertEqual(models.Status.BUILDING, data_api['status'])
 
     def test_create_size_three(self):
         """test create a cluster with three nodes.
@@ -168,15 +170,15 @@ class TestCreateCluster(api.FunctionalTest,
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=self.auth_headers, status=202)
         cluster = objects.Cluster.get_cluster_by_id(self.context,
-                                                    data.json["cluster"]["id"])
-        self.validate_cluster_values(cluster, data.json["cluster"])
+                                                    data.json["id"])
+        self.validate_cluster_values(cluster, data.json)
         self.assertEqual(models.Status.BUILDING,
-                         data.json["cluster"]['status'])
+                         data.json['status'])
 
         data_api = self.get_json('/clusters/' + cluster.id,
                                  headers=self.auth_headers)
-        self.validate_cluster_values(cluster, data_api["cluster"])
-        self.assertEqual(models.Status.BUILDING, data_api["cluster"]['status'])
+        self.validate_cluster_values(cluster, data_api)
+        self.assertEqual(models.Status.BUILDING, data_api['status'])
 
     def test_create_invalid_size_format(self):
         """test with invalid formatted size parameter."""
@@ -191,6 +193,24 @@ class TestCreateCluster(api.FunctionalTest,
         self.assertIn('invalid literal for int() with base 10:',
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
+
+    def test_create_two_clusters_verify_created_time(self):
+        """test creation time of second cluster happens after first."""
+        api_cluster_1 = test_utils.create_api_test_cluster()
+        api_cluster_2 = test_utils.create_api_test_cluster()
+
+        data_1 = self.post_json('/clusters', params=api_cluster_1.as_dict(),
+                              headers=self.auth_headers, status=202)
+        data_2 = self.post_json('/clusters', params=api_cluster_2.as_dict(),
+                              headers=self.auth_headers, status=202)
+
+        cluster_1 = objects.Cluster.get_cluster_by_id(self.context,
+                                                      data_1.json["id"])
+        cluster_2 = objects.Cluster.get_cluster_by_id(self.context,
+                                                      data_2.json["id"])
+
+        self.assertEqual(True, cluster_2.created_at > cluster_1.created_at,
+                         "Second cluster was not created after first")
 
     def test_create_invalid_volume_size(self):
         """test with invalid volume_size parameter."""
