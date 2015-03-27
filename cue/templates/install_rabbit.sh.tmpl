@@ -21,7 +21,9 @@ cat > /etc/rabbitmq/rabbitmq.config << EOF
         {%- for node_name in rabbit_nodes -%}
             'rabbit@{{node_name}}' {%- if not loop.last -%},{%- endif -%}
         {%- endfor -%}
-        ], disc}}
+        ], disc}},
+        {default_user, <<"{{default_rabbit_user}}">>},
+        {default_pass, <<"{{default_rabbit_pass}}">>}
   ]}
 ].
 EOF
