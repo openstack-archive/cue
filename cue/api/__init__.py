@@ -31,7 +31,10 @@ API_SERVICE_OPTS = [
     # TODO(sputnik13): this needs to be removed when image selection is done
     cfg.StrOpt('os_image_id',
                help='The Image ID to use for VMs created as part of a '
-                    'cluster')
+                    'cluster'),
+    cfg.IntOpt('max_cluster_size',
+               default=10,
+               help='Maximum number of nodes in a cluster.'),
     ]
 
 CONF = cfg.CONF
