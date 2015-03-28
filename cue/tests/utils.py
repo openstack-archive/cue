@@ -162,3 +162,17 @@ def create_db_test_cluster_model_object(context, **kw):
     new_cluster.update(cluster_parameters)
 
     return new_cluster
+
+
+def get_endpoints_in_cluster(context, cluster_id):
+    nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
+    all_endpoints = []
+    for node in nodes:
+        endpoints = objects.Endpoint.get_endpoints_by_node_id(context,
+                                                              node.id)
+        node_endpoints_dict = [obj_endpoint.as_dict()
+                               for obj_endpoint in endpoints]
+
+        all_endpoints.extend(node_endpoints_dict)
+
+    return all_endpoints

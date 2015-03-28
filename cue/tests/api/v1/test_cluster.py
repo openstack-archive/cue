@@ -84,17 +84,8 @@ class TestGetCluster(api.FunctionalTest,
         self.validate_cluster_values(cluster, data["cluster"])
 
         # verify all endpoints in cluster
-        # constructs all endpoints stored in DB
-        nodes = objects.Node.get_nodes_by_cluster_id(self.context, cluster.id)
-        all_endpoints = []
-        for node in nodes:
-            endpoints = objects.Endpoint.get_endpoints_by_node_id(self.context,
-                                                                  node.id)
-            node_endpoints_dict = [obj_endpoint.as_dict()
-                                   for obj_endpoint in endpoints]
-
-            all_endpoints.extend(node_endpoints_dict)
-
+        all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
+                                                            cluster.id)
         self.validate_endpoint_values(all_endpoints,
                                       data["cluster"]["end_points"])
 
