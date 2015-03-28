@@ -29,11 +29,14 @@ CUE_REPO=${CUE_REPO:-${GIT_BASE}/stackforge/cue.git}
 CUE_BRANCH=${CUE_BRANCH:-master}
 CUECLIENT_REPO=${CUECLIENT_REPO:-${GIT_BASE}/stackforge/python-cueclient.git}
 CUECLIENT_BRANCH=${CUECLIENT_BRANCH:-master}
+CUEDASHBOARD_REPO=${CUECLIENT_REPO:-${GIT_BASE}/stackforge/cue-dashboard.git}
+CUEDASHBOARD_BRANCH=${CUECLIENT_BRANCH:-master}
 
 # Set up default paths
 CUE_BIN_DIR=$(get_python_exec_prefix)
 CUE_DIR=$DEST/cue
 CUECLIENT_DIR=$DEST/python-cueclient
+CUEDASHBOARD_DIR=$DEST/cue-dashboard
 CUE_CONF_DIR=/etc/cue
 CUE_STATE_PATH=${CUE_STATE_PATH:=$DATA_DIR/cue}
 CUE_CONF=$CUE_CONF_DIR/cue.conf
@@ -220,16 +223,28 @@ function init_cue {
 function install_cue {
     git_clone $CUE_REPO $CUE_DIR $CUE_BRANCH
     setup_develop $CUE_DIR
-
-    if is_service_enabled horizon; then
-        echo "Not implemented yet..."
-    fi
 }
 
 # install_cueclient - Collect source and prepare
 function install_cueclient {
     git_clone $CUECLIENT_REPO $CUECLIENT_DIR $CUECLIENT_BRANCH
     setup_develop $CUECLIENT_DIR
+}
+
+# install_cuedashboard - Collect source and prepare
+function install_cuedashboard {
+
+    if is_service_enabled horizon; then
+        git_clone $CUEDASHBOARD_REPO $CUEDASHBOARD_DIR $CUEDASHBOARD_BRANCH
+        setup_develop $CUEDASHBOARD_DIR
+
+        if ! [ -f $DEST/horizon/openstack_dashboard/local/enabled/_70_0_cue_panel_group.py ]; then
+            ln -s $DEST/cue-dashboard/_70_0_cue_panel_group.py $DEST/horizon/openstack_dashboard/local/enabled/_70_0_cue_panel_group.py
+        fi
+        if ! [ -f $DEST/horizon/openstack_dashboard/local/enabled/_70_cue_panel.py ]; then
+            ln -s $DEST/cue-dashboard/_70_cue_panel.py $DEST/horizon/openstack_dashboard/local/enabled/_70_cue_panel.py
+        fi
+    fi
 }
 
 # start_cue - Start running processes, including screen
