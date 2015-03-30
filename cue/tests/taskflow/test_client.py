@@ -12,10 +12,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import uuid
 
 from oslo.utils import uuidutils
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.task
+
 
 import cue.taskflow.client as tf_client
 from cue.tests import api
@@ -88,7 +90,8 @@ class ApiTaskFlowClientTest(api.FunctionalTest):
 
     def test_create_cluster_api(self):
         """This test verifies create cluster job is posted from REST API."""
-        api_cluster = test_utils.create_api_test_cluster(size=1)
+        api_cluster = test_utils.create_api_test_cluster(size=1,
+            network_id=[{"uuid": str(uuid.uuid4())}])
         pre_count = self.tf_client.jobboard.job_count
         self.post_json('/clusters', params=api_cluster.as_dict(),
                        headers=self.auth_headers, status=202)
