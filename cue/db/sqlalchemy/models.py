@@ -45,7 +45,7 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
 
     cluster_id = sa.Column(
         'cluster_id', types.UUID(),
-        sa.ForeignKey('clusters.id'), nullable=False)
+        sa.ForeignKey('clusters.id'), nullable=True)
     flavor = sa.Column(sa.String(36), nullable=False)
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), nullable=False)
