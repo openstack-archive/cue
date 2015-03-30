@@ -219,11 +219,19 @@ class ClusterController(rest.RestController):
 
         if data.size <= 0:
             raise exception.Invalid(_("Invalid cluster size provided"))
-
         elif data.size > CONF.api.max_cluster_size:
             raise exception.RequestEntityTooLarge(
                 _("Invalid cluster size, max size is: %d")
                 % CONF.api.max_cluster_size)
+
+        if len(data.network_id) > 1:
+            raise exception.Invalid(_("Invalid network_id list size provided"))
+
+        data = data.as_dict()
+
+        # convert 'network_id' from list to string type for objects/cluster
+        # compatibility
+        data['network_id'] = data['network_id'][0]
 
         # create new cluster object with required data from user
         new_cluster = objects.Cluster(**data)
