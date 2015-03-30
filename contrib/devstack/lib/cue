@@ -204,7 +204,7 @@ function init_cue {
 
     # Set os_security_group
     if [[ -z $($OPENSTACK_CMD security group list | grep $CUE_RABBIT_SECURITY_GROUP) ]]; then
-        $OPENSTACK_CMD security group create $CUE_RABBIT_SECURITY_GROUP
+        $OPENSTACK_CMD security group create --description "Cue RabbitMQ broker security group" $CUE_RABBIT_SECURITY_GROUP
         $OPENSTACK_CMD security group rule create --src-ip 0.0.0.0/0 --proto tcp --dst-port 5672:5672 $CUE_RABBIT_SECURITY_GROUP
     fi
 
