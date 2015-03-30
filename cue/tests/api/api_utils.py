@@ -25,17 +25,10 @@ class ClusterValidationMixin(object):
 
     def validate_cluster_values(self, cluster_ref, cluster_cmp):
         self.assertEqual(cluster_ref.id if hasattr(cluster_ref, "id") else
-                         cluster_ref["id"],
-                         cluster_cmp.id if hasattr(cluster_cmp, "id") else
-                         cluster_cmp["id"],
-                         "Invalid cluster id value")
-        self.assertEqual(cluster_ref.network_id if hasattr(cluster_ref,
-                                                           "network_id")
-                         else cluster_ref["network_id"],
-                         cluster_cmp.network_id if hasattr(cluster_cmp,
-                                                           "network_id")
-                         else cluster_cmp["network_id"],
-                         "Invalid cluster network_id value")
+                 cluster_ref["id"],
+                 cluster_cmp.id if hasattr(cluster_cmp, "id") else
+                 cluster_cmp["id"],
+                 "Invalid cluster id value")
         self.assertEqual(cluster_ref.name if hasattr(cluster_ref, "name")
                          else cluster_ref["name"],
                          cluster_cmp.name if hasattr(cluster_cmp, "name")
@@ -63,13 +56,37 @@ class ClusterValidationMixin(object):
                                                             "volume_size")
                          else cluster_cmp["volume_size"],
                          "Invalid cluster volume_size value")
-
-        self.assertEqual(unicode(cluster_ref.created_at.isoformat()),
+        self.assertEqual(unicode(cluster_ref["created_at"].isoformat()),
                          cluster_cmp["created_at"],
                          "Invalid cluster created_at value")
-        self.assertEqual(unicode(cluster_ref.updated_at.isoformat()),
+        self.assertEqual(unicode(cluster_ref["updated_at"].isoformat()),
                          cluster_cmp["updated_at"],
                          "Invalid cluster updated_at value")
+
+        # Compare network_id attribute
+        if isinstance((cluster_ref.network_id if hasattr(cluster_ref,
+                                                           "network_id")
+                         else cluster_ref["network_id"]), (str, unicode)):
+            cluster_ref['network_id'] = [{"uuid": cluster_ref['network_id']}]
+
+        if isinstance((cluster_cmp.network_id if hasattr(cluster_cmp,
+                                                           "network_id")
+                         else cluster_cmp["network_id"]), (str, unicode)):
+            cluster_cmp['network_id'] = [{"uuid": cluster_cmp['network_id']}]
+
+        self.assertEqual(len(cluster_ref.network_id if hasattr(cluster_ref,
+                                                           "network_id")
+                         else cluster_ref["network_id"]),
+                         len(cluster_cmp.network_id if hasattr(cluster_cmp,
+                                                           "network_id")
+                         else cluster_cmp["network_id"]),
+                         "Unequal number of cluster network_id")
+
+        for i, network_id in enumerate(cluster_ref.network_id if hasattr(
+                cluster_ref, "network_id") else cluster_ref["network_id"]):
+            self.assertEqual(network_id, cluster_cmp.network_id[i] if hasattr(
+                cluster_cmp, "network_id") else cluster_cmp["network_id"][i],
+                             "Invalid cluster network_id value")
 
     def validate_endpoint_values(self, endpoints_ref, endpoints_cmp):
         self.assertEqual(len(endpoints_ref), len(endpoints_cmp),

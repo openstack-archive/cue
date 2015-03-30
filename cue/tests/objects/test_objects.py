@@ -49,13 +49,6 @@ class ClusterObjectsTests(base.TestCase):
                          cluster_cmp.id if hasattr(cluster_cmp, "id") else
                          cluster_cmp["id"],
                          "Invalid cluster id value")
-        self.assertEqual(cluster_ref.network_id if hasattr(cluster_ref,
-                                                           "network_id")
-                         else cluster_ref["network_id"],
-                         cluster_cmp.network_id if hasattr(cluster_cmp,
-                                                           "network_id")
-                         else cluster_cmp["network_id"],
-                         "Invalid cluster network_id value")
         self.assertEqual(cluster_ref.name if hasattr(cluster_ref, "name")
                          else cluster_ref["name"],
                          cluster_cmp.name if hasattr(cluster_cmp, "name")
@@ -98,6 +91,24 @@ class ClusterObjectsTests(base.TestCase):
                                                              "updated_at")
                            else cluster_cmp["updated_at"])
 
+        if not isinstance((cluster_ref.network_id if hasattr(cluster_ref,
+                                                           "network_id")
+                         else cluster_ref["network_id"]), (str, unicode)):
+            cluster_ref['network_id'] = cluster_ref['network_id'][0]['uuid']
+
+        if not isinstance((cluster_cmp.network_id if hasattr(cluster_cmp,
+                                                           "network_id")
+                         else cluster_cmp["network_id"]), (str, unicode)):
+            cluster_cmp['network_id'] = cluster_cmp['network_id'][0]['uuid']
+
+        self.assertEqual(cluster_ref.network_id if hasattr(cluster_ref,
+                                                           "network_id")
+                         else cluster_ref["network_id"],
+                         cluster_cmp.network_id if hasattr(cluster_cmp,
+                                                           "network_id")
+                         else cluster_cmp["network_id"],
+                         "Invalid cluster network_id value")
+
     def test_cluster_object_generation(self):
         """Test Cluster Object generation from a cluster dictionary object."""
         cluster_dict = test_utils.get_test_cluster()
@@ -115,11 +126,23 @@ class ClusterObjectsTests(base.TestCase):
 
         to api object.
         """
-        api_cluster = test_utils.create_api_test_cluster_all()
-        object_cluster = objects.Cluster(**api_cluster.as_dict())
+        # create cluster api object
+        api_cluster_1 = test_utils.create_api_test_cluster_all().as_dict()
+        # copy to make changes to network_id
+        api_cluster = api_cluster_1.copy()
+        # adjust network_id from list to single value
+        api_cluster['network_id'] = api_cluster['network_id'][0]['uuid']
+        # create cue cluster object from api cluster object
+        object_cluster = objects.Cluster(**api_cluster).as_dict()
+        # verify fields match
         self.validate_cluster_values(api_cluster, object_cluster)
-        api_cluster_2 = cluster.Cluster(**object_cluster.as_dict())
-        self.validate_cluster_values(api_cluster, api_cluster_2)
+
+        # adjust network_id from single value back to list
+        object_cluster['network_id'] = [{"uuid": object_cluster['network_id']}]
+        # create cluster api object from cue cluster object
+        api_cluster_2 = cluster.Cluster(**object_cluster).as_dict()
+        # verify fields match to initial api cluster object
+        self.validate_cluster_values(api_cluster_1, api_cluster_2)
 
     def test_cluster_db_to_object_to_db(self):
         """Tests Cluster db object conversion to Cluster object and back

@@ -79,7 +79,8 @@ class Cluster(base.APIBase):
     id = wtypes.text
     "UUID of cluster"
 
-    network_id = wtypes.wsattr(wtypes.text, mandatory=True)
+    network_id = wtypes.wsattr([wtypes.DictType(wtypes.text,
+                                wtypes.UuidType())], mandatory=True)
     "NIC of Neutron network"
 
     name = wsme.wsattr(wtypes.text, mandatory=True)
@@ -106,8 +107,14 @@ def get_complete_cluster(context, cluster_id):
 
     cluster_obj = objects.Cluster.get_cluster_by_id(context, cluster_id)
 
+    cluster_as_dict = cluster_obj.as_dict()
+
+    # convert 'network_id' to list of key-value pair for ClusterDetails
+    # compatibility
+    cluster_as_dict['network_id'] = [{"uuid": cluster_as_dict['network_id']}]
+
     # construct api cluster object
-    cluster = Cluster(**cluster_obj.as_dict())
+    cluster = Cluster(**cluster_as_dict)
     cluster.end_points = []
 
     cluster_nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
@@ -198,8 +205,18 @@ class ClusterController(rest.RestController):
                 _("Invalid cluster size, max size is: %d")
                 % CONF.api.max_cluster_size)
 
+        if len(data.network_id) > 1:
+            raise exception.Invalid(_("Invalid number of network_id's provided"
+                                      ))
+
+        data = data.as_dict()
+
+        # convert 'network_id' from list to string type for objects/cluster
+        # compatibility
+        data['network_id'] = data['network_id'][0]['uuid']
+
         # create new cluster object with required data from user
-        new_cluster = objects.Cluster(**data.as_dict())
+        new_cluster = objects.Cluster(**data)
 
         # create new cluster with node related data from user
         new_cluster.create(context)
@@ -217,7 +234,7 @@ class ClusterController(rest.RestController):
         flow_kwargs = {
             'cluster_id': cluster.id,
             'node_ids': node_ids,
-            'user_network_id': cluster.network_id,
+            'user_network_id': cluster.network_id[0]['uuid'],
             'management_network_id': CONF.management_network_id,
         }
 
