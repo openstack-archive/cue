@@ -79,7 +79,7 @@ class ClusterDetails(base.APIBase):
     id = wtypes.text
     "UUID of cluster"
 
-    network_id = wtypes.wsattr(wtypes.text, mandatory=True)
+    network_id = wtypes.wsattr([wtypes.text], mandatory=True)
     "NIC of Neutron network"
 
     name = wsme.wsattr(wtypes.text, mandatory=True)
@@ -125,8 +125,13 @@ def get_complete_cluster(context, cluster_id):
 
     cluster_obj = objects.Cluster.get_cluster_by_id(context, cluster_id)
 
+    cluster_as_dict = cluster_obj.as_dict()
+
+    # convert 'network_id' to list for ClusterDetails compatibility
+    cluster_as_dict['network_id'] = [cluster_as_dict['network_id']]
+
     # construct api cluster object
-    cluster = ClusterDetails(**cluster_obj.as_dict())
+    cluster = ClusterDetails(**cluster_as_dict)
     cluster.end_points = []
 
     cluster_nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
@@ -214,13 +219,14 @@ class ClusterController(rest.RestController):
 
         if data.size <= 0:
             raise exception.Invalid(_("Invalid cluster size provided"))
+
         elif data.size > CONF.api.max_cluster_size:
             raise exception.RequestEntityTooLarge(
                 _("Invalid cluster size, max size is: %d")
                 % CONF.api.max_cluster_size)
 
         # create new cluster object with required data from user
-        new_cluster = objects.Cluster(**data.as_dict())
+        new_cluster = objects.Cluster(**data)
 
         # create new cluster with node related data from user
         new_cluster.create(context)
@@ -252,7 +258,7 @@ class ClusterController(rest.RestController):
             # TODO(sputnik13): need to remove this when image selector is done
             'image': CONF.api.os_image_id,
             'volume_size': cluster.cluster.volume_size,
-            'network_id': cluster.cluster.network_id,
+            'network_id': cluster.cluster.network_id[0],
             'port': '5672',
             'context': context.to_dict(),
             # TODO(sputnik13: this needs to come from the create request and

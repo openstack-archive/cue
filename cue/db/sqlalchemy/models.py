@@ -16,6 +16,7 @@
 
 from cue.db.sqlalchemy import base
 from cue.db.sqlalchemy import types
+from oslo.utils import timeutils
 
 import sqlalchemy as sa
 
@@ -26,6 +27,11 @@ class Status():
     DELETING = 'DELETING'
     DELETED = 'DELETED'
     ERROR = 'ERROR'
+
+
+class MetadataKey():
+    IMAGE = 'IMAGE'
+    SEC_GROUP = 'SEC_GROUP'
 
 
 class Endpoint(base.BASE, base.IdMixin):
@@ -45,7 +51,7 @@ class Node(base.BASE, base.IdMixin, base.TimeMixin):
 
     cluster_id = sa.Column(
         'cluster_id', types.UUID(),
-        sa.ForeignKey('clusters.id'), nullable=False)
+        sa.ForeignKey('clusters.id'), nullable=True)
     flavor = sa.Column(sa.String(36), nullable=False)
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), nullable=False)
@@ -66,3 +72,25 @@ class Cluster(base.BASE, base.IdMixin, base.TimeMixin):
     volume_size = sa.Column(sa.Integer(), nullable=True)
     deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
     sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
+
+
+class Broker(base.BASE, base.IdMixin):
+    __tablename__ = 'brokers'
+
+    type = sa.Column(sa.String(255), nullable=False)
+    active_status = sa.Column(sa.Boolean(), default=False, nullable=False)
+    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
+    sa.Index("brokers_id_idx", "id", unique=True)
+
+
+class BrokerMetadata(base.BASE, base.IdMixin):
+    __tablename__ = 'broker_metadata'
+
+    broker_id = sa.Column(
+        'broker_id', types.UUID(),
+        sa.ForeignKey('brokers.id'), nullable=False)
+    key = sa.Column(sa.String(255), nullable=False)
+    value = sa.Column(sa.String(255), nullable=False)
+    deleted = sa.Column(sa.Boolean(), default=False, nullable=False)
+    sa.Index("brokerMetadata_id_idx", "id", unique=True)
+    sa.Index("brokerMetadata_broker_id_idx", "broker_id", unique=False)

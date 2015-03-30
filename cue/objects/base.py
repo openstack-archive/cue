@@ -119,8 +119,8 @@ class CueObject(object):
 
     def as_dict(self):
         return dict((k, getattr(self, k))
-                for k in self.fields
-                if hasattr(self, k))
+                    for k in self.fields
+                    if hasattr(self, k))
 
     def obj_get_changes(self):
         """Returns dict of changed fields and their new values."""

@@ -183,6 +183,7 @@ class FunctionalTest(base.TestCase):
                                 extra_environ=extra_environ,
                                 expect_errors=expect_errors,
                                 status=status)
+        print "json: ",response.json
         if not expect_errors:
             response = response.json
         return response

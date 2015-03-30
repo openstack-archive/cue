@@ -149,12 +149,17 @@ class TestCreateCluster(api.FunctionalTest,
                               headers=self.auth_headers, status=202)
         cluster = objects.Cluster.get_cluster_by_id(self.context,
                                                     data.json["cluster"]["id"])
-        self.validate_cluster_values(cluster, data.json["cluster"])
+
+        request_data = data.json["cluster"]
+        request_data['network_id'] = request_data['network_id'][0]
+
+        self.validate_cluster_values(cluster, request_data)
         self.assertEqual(models.Status.BUILDING,
                          data.json["cluster"]['status'])
 
         data_api = self.get_json('/clusters/' + cluster.id,
                                  headers=self.auth_headers)
+        data_api["cluster"]['network_id'] = data_api["cluster"]['network_id'][0]
         self.validate_cluster_values(cluster, data_api["cluster"])
         self.assertEqual(models.Status.BUILDING, data_api["cluster"]['status'])
 
@@ -167,14 +172,19 @@ class TestCreateCluster(api.FunctionalTest,
         api_cluster = test_utils.create_api_test_cluster(size=3)
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=self.auth_headers, status=202)
+
         cluster = objects.Cluster.get_cluster_by_id(self.context,
                                                     data.json["cluster"]["id"])
-        self.validate_cluster_values(cluster, data.json["cluster"])
+        request_data = data.json["cluster"]
+        request_data['network_id'] = request_data['network_id'][0]
+
+        self.validate_cluster_values(cluster, request_data)
         self.assertEqual(models.Status.BUILDING,
                          data.json["cluster"]['status'])
 
         data_api = self.get_json('/clusters/' + cluster.id,
                                  headers=self.auth_headers)
+        data_api["cluster"]['network_id'] = data_api["cluster"]['network_id'][0]
         self.validate_cluster_values(cluster, data_api["cluster"])
         self.assertEqual(models.Status.BUILDING, data_api["cluster"]['status'])
 

@@ -130,3 +130,6 @@ def main():
 
     fn_args = fetch_func_args(fn)
     fn(*fn_args)
+
+if __name__ == "__main__":
+    sys.exit(main())

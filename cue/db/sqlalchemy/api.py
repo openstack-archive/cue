@@ -241,3 +241,61 @@ class Connection(api.Connection):
             nodes_query = model_query(context, models.Node).filter_by(
                 cluster_id=cluster_id)
             nodes_query.update(values)
+
+    # Functions for broker table
+    def create_broker(self, broker_values, context):
+
+        broker = models.Broker()
+        broker.update(broker_values)
+
+        db_session = get_session()
+        broker.save(db_session)
+        return broker
+
+    def get_brokers(self, context):
+        query = model_query(context, models.Broker)
+        return query.all()
+
+    def delete_broker(self, broker_id, context):
+
+        broker_query = (model_query(context, models.Broker)
+                        .filter_by(id=broker_id))
+
+        broker_value = {
+            'deleted': True,
+        }
+
+        broker_query.update(broker_value)
+
+    def update_broker(self, broker_id, broker_value, context):
+
+        broker_query = (model_query(context, models.Broker)
+                        .filter_by(id=broker_id))
+
+        broker_query.update(broker_value)
+
+    # Functions for Broker metadata
+    def create_broker_metadata(self, metadata_values, context):
+
+        broker = models.BrokerMetadata()
+        broker.update(metadata_values)
+
+        db_session = get_session()
+        broker.save(db_session)
+        return broker
+
+    def get_broker_by_id(self, broker_id, context):
+
+        query = model_query(context, models.BrokerMetadata).filter_by(
+            broker_id=broker_id)
+        return query.all()
+
+    def delete_broker_metadata(self, broker_metadata_id, context):
+
+        query = (model_query(context, models.BrokerMetadata)
+                        .filter_by(id=broker_metadata_id))
+
+        broker_value = {
+            'deleted': True,
+        }
+        query.update(broker_value)

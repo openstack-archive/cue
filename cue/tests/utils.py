@@ -27,7 +27,7 @@ def get_test_cluster(**kw):
         'project_id': kw.get('project_id', '1234567890'),
         'name': kw.get('name', 'sample_cluster'),
         'network_id': kw.get('network_id',
-                             '3dc26c0b-03f2-4d2e-ae87-c02d7f33c788'),
+                             ['3dc26c0b-03f2-4d2e-ae87-c02d7f33c788']),
         'status': kw.get('status', 'BUILDING'),
         'flavor': kw.get('flavor', 'flavor1'),
         'size': kw.get('size', 1),
@@ -107,7 +107,7 @@ def create_db_test_cluster_from_objects_api(context, **kw):
 
     cluster_parameters = {
         'name': test_cluster['name'],
-        'network_id': test_cluster['network_id'],
+        'network_id': test_cluster['network_id'][0],
         'flavor': test_cluster['flavor'],
         'size': test_cluster['size'],
         'volume_size': test_cluster['volume_size'],
@@ -145,7 +145,7 @@ def create_db_test_cluster_model_object(context, **kw):
 
     cluster_parameters = {
         'name': test_cluster['name'],
-        'network_id': test_cluster['network_id'],
+        'network_id': test_cluster['network_id'][0],
         'flavor': test_cluster['flavor'],
         'size': test_cluster['size'],
         'volume_size': test_cluster['volume_size'],

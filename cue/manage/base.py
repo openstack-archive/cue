@@ -22,6 +22,7 @@ from cue.common import context
 def args(*args, **kwargs):
     def _decorator(func):
         func.__dict__.setdefault('args', []).insert(0, (args, kwargs))
+        #print func.__name__, ":", func.__dict__
         return func
     return _decorator
 

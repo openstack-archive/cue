@@ -19,11 +19,17 @@
 from cue.objects import cluster
 from cue.objects import endpoint
 from cue.objects import node
+from cue.objects import broker
+from cue.objects import brokerMetadata
 
 Cluster = cluster.Cluster
 Node = node.Node
 Endpoint = endpoint.Endpoint
+Broker = broker.Broker
+Broker_Metadata = brokerMetadata.brokerMetadata
 
 __all__ = (Cluster,
            Endpoint,
-           Node)
+           Node,
+           Broker,
+           brokerMetadata)
