@@ -18,10 +18,13 @@
 """
 Tests for cue objects classes.
 """
+import uuid
+
 import iso8601
 import mock
 from oslo.utils import timeutils
 import testtools
+
 
 from cue.api.controllers.v1 import cluster
 from cue.common import exception
@@ -115,10 +118,16 @@ class ClusterObjectsTests(base.TestCase):
 
         to api object.
         """
-        api_cluster = test_utils.create_api_test_cluster_all()
-        object_cluster = objects.Cluster(**api_cluster.as_dict())
-        self.validate_cluster_values(api_cluster, object_cluster)
-        api_cluster_2 = cluster.ClusterDetails(**object_cluster.as_dict())
+        api_cluster = test_utils.create_api_test_cluster_all(
+                      network_id=[str(uuid.uuid4())])
+        data = api_cluster.as_dict()
+        data['network_id'] = data['network_id'][0]
+        object_cluster = objects.Cluster(**data)
+
+        self.validate_cluster_values(data, object_cluster)
+        api_cluster_1 = object_cluster.as_dict()
+        api_cluster_1['network_id'] = [api_cluster_1['network_id']]
+        api_cluster_2 = cluster.ClusterDetails(**api_cluster_1)
         self.validate_cluster_values(api_cluster, api_cluster_2)
 
     def test_cluster_db_to_object_to_db(self):

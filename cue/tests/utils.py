@@ -107,7 +107,7 @@ def create_db_test_cluster_from_objects_api(context, **kw):
 
     cluster_parameters = {
         'name': test_cluster['name'],
-        'network_id': test_cluster['network_id'],
+        'network_id': test_cluster['network_id'][0],
         'flavor': test_cluster['flavor'],
         'size': test_cluster['size'],
         'volume_size': test_cluster['volume_size'],
@@ -145,7 +145,7 @@ def create_db_test_cluster_model_object(context, **kw):
 
     cluster_parameters = {
         'name': test_cluster['name'],
-        'network_id': test_cluster['network_id'],
+        'network_id': test_cluster['network_id'][0],
         'flavor': test_cluster['flavor'],
         'size': test_cluster['size'],
         'volume_size': test_cluster['volume_size'],
