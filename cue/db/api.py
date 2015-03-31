@@ -178,3 +178,78 @@ class Connection(object):
         :param cluster_id: UUID of a cluster
 
         """
+
+    @abc.abstractmethod
+    def create_broker(self, broker_values, context):
+        """Creates a new broker.
+
+       :param context: request context object
+       :param broker_values: Dictionary of several required items
+               ::
+
+               {
+                'type': obj_utils.str_or_none,
+                'active_status': obj_utils.bool_or_none
+               }
+         """
+
+    @abc.abstractmethod
+    def get_brokers(self, context):
+        """Returns a list of Broker objects.
+
+        :param context: request context object
+        :returns: a list of :class:'Broker' object
+
+        """
+
+    @abc.abstractmethod
+    def delete_broker(self, broker_id, context):
+        """Deletes a Broker object for specified broker_id.
+
+        :param broker_id: UUID of a broker
+        :param context: request context object
+
+        """
+
+    @abc.abstractmethod
+    def update_broker(self, broker_id, broker_value, context):
+        """Updates a Broker type/status for specified broker_id.
+
+        :param broker_id: UUID of a broker
+        :param broker_value: Dictionary of attribute values to be updated
+        :param context: request context object
+
+        """
+
+    @abc.abstractmethod
+    def create_broker_metadata(self, metadata_values, context):
+        """Creates a new broker metadata.
+
+       :param context: request context object
+       :param metadata_values: Dictionary of several required items
+               ::
+
+               {
+                'broker_id': UUID of a broker,
+                'key': obj_utils.str_or_none,
+                'value': obj_utils.str_or_none
+               }
+         """
+
+    @abc.abstractmethod
+    def get_broker_by_id(self, broker_id, context):
+        """Returns a list of BrokerMetadata objects for specified broker_id.
+
+        :param broker_id: UUID of a broker
+        :param context: request context object
+        :returns: a list of :class:'BrokerMetadata' object
+
+        """
+    @abc.abstractmethod
+    def delete_broker_metadata(self, broker_metadata_id, context):
+        """Deletes a BrokerMetadata object for specified broker_id.
+
+        :param broker_metadata_id: UUID of a broker metadata
+        :param context: request context object
+
+        """
