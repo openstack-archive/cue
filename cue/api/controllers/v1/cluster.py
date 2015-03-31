@@ -229,6 +229,9 @@ class ClusterController(rest.RestController):
         default_rabbit_user = 'rabbitmq'
         default_rabbit_pass = cluster.id
 
+        # get the image id of active broker from the broker metadata table
+        # image_id = objects.brokerMetadata.get_image_id(context)
+
         job_args = {
             'flavor': cluster.flavor,
             # TODO(sputnik13): need to remove this when image selector is done
@@ -261,8 +264,6 @@ class ClusterController(rest.RestController):
                                        "network_id":
                                            cluster.network_id,
                                        "job_id": job_uuid}))
-
-
         cluster.additional_information = []
         cluster.additional_information.append(
             dict(def_rabbit_user=default_rabbit_user))

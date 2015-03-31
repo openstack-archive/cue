@@ -236,3 +236,96 @@ class Connection(api.Connection):
             nodes_query = model_query(context, models.Node).filter_by(
                 cluster_id=cluster_id)
             nodes_query.update(values)
+
+    def create_broker(self, broker_values, context):
+
+        broker = models.Broker()
+        broker.update(broker_values)
+
+        db_session = get_session()
+        broker.save(db_session)
+        return broker
+
+    def get_brokers(self, context):
+        query = model_query(context, models.Broker)
+        return query.all()
+
+    def delete_broker(self, broker_id, context):
+
+        broker_query = (model_query(context, models.Broker)
+                        .filter_by(id=broker_id))
+
+        broker_value = {
+            'deleted': True,
+        }
+
+        broker_query.update(broker_value)
+
+    def update_broker(self, broker_id, broker_value, context):
+
+        broker_query = (model_query(context, models.Broker)
+                        .filter_by(id=broker_id))
+
+        broker_query.update(broker_value)
+
+    # Functions for Broker metadata
+    def create_broker_metadata(self, metadata_values, context):
+
+        broker = models.BrokerMetadata()
+        broker_query = (model_query(context, models.Broker)
+                        .filter_by(id=metadata_values['broker_id']))
+        try:
+            # check to see if the broker_id exists
+            broker_query.one()
+            broker.update(metadata_values)
+            db_session = get_session()
+            broker.save(db_session)
+        except db_exception.DBError:
+            raise exception.Invalid(_("badly formed broker_id UUID string"))
+        except sql_exception.NoResultFound:
+            raise exception.NotFound(_("Broker was not found"))
+
+        return broker
+
+    def get_broker_by_id(self, broker_id, context):
+
+        query = model_query(context, models.BrokerMetadata).filter_by(
+            broker_id=broker_id)
+        broker_metadata = query.all()
+
+        return broker_metadata
+
+    def delete_broker_metadata(self, broker_metadata_id, context):
+
+        query = (model_query(context, models.BrokerMetadata)
+                            .filter_by(id=broker_metadata_id))
+
+        broker_value = {
+            'deleted': True,
+        }
+        query.update(broker_value)
+
+    # get latest image id for API
+    def get_image_id(self, context):
+
+        selected_image = []
+        # Sort ACTIVE brokers by created_at time
+        broker_query = (model_query(context, models.Broker).filter_by(
+            active_status=1).order_by((models.Broker.created_at.desc())))
+
+        all_brokers = broker_query.all()
+
+        # iterate the active brokers until it has the image metadata
+        for i in range(len(all_brokers)):
+            selected_broker_id = all_brokers[i].id
+            metadata_query = (model_query(context, models.BrokerMetadata)
+                .filter_by(key='IMAGE').filter_by(broker_id=selected_broker_id)
+                .order_by((models.BrokerMetadata.created_at.desc())).limit(1))
+
+            selected_image = metadata_query.all()
+            if len(selected_image) is 1:
+                break
+        if len(selected_image) is not 1:
+            raise exception.NotFound(_("NO Image found"))
+
+        return selected_image
