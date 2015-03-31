@@ -280,10 +280,4 @@ class ClusterController(rest.RestController):
                                            cluster.cluster.network_id,
                                        "job_id": job_uuid}))
 
-        cluster.cluster.additional_information = []
-        cluster.cluster.additional_information.append(
-            dict(def_rabbit_user=default_rabbit_user))
-        cluster.cluster.additional_information.append(
-            dict(def_rabbit_pass=default_rabbit_pass))
-
         return cluster
