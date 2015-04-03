@@ -57,6 +57,8 @@ CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
 
 CUE_RABBIT_IMAGE_MINDISK=4
 
+CUE_DEFAULT_BROKER_NAME='rabbitmq'
+
 CUE_FLAVOR=cue.small
 CUE_FLAVOR_PARAMS="--id 8795 --ram 512 --disk $CUE_RABBIT_IMAGE_MINDISK --vcpus 1"
 CUE_RABBIT_SECURITY_GROUP='cue-rabbitmq'
@@ -234,6 +236,8 @@ function init_cue {
         iniset $CUE_CONF DEFAULT management_network_id $CUE_MANAGEMENT_NETWORK_ID
     fi
 
+    set_broker
+
     build_cue_rabbit_test_image
 }
 
@@ -296,12 +300,12 @@ function build_cue_rabbit_test_image {
 
         disk_image_create_upload "$image_name" "$CUE_RABBIT_IMAGE_ELEMENTS" "$elements_path"
 
-        # Set os_image_id
-        # TODO(sputnik13): this is a workaround until "image selector" is complete
+        # Set image_id
         RABBIT_IMAGE_ID=$($OPENSTACK_CMD image list | grep $image_name | tr -d ' ' | cut -f 2 -d '|')
         if [ "$RABBIT_IMAGE_ID" ]; then
-            iniset $CUE_CONF api os_image_id $RABBIT_IMAGE_ID
+            cue-manage --config-file $CUE_CONF broker add_metadata --id $BROKER_ID --image $RABBIT_IMAGE_ID
         fi
+
     else
         echo "Error, Builing RabbitMQ Image requires dib" >&2
         echo "Add \"enable_service dib\" to your localrc" >&2
@@ -309,6 +313,11 @@ function build_cue_rabbit_test_image {
     fi
 }
 
+# set_broker - Set default broker
+function set_broker {
+    cue-manage --config-file $CUE_CONF broker add --name $CUE_DEFAULT_BROKER_NAME --active true
+    BROKER_ID=$(cue-manage --config-file $CUE_CONF broker list | grep $CUE_DEFAULT_BROKER_NAME | tr -d ' ' | cut -f 2 -d '|')
+}
 
 # Restore xtrace
 $XTRACE
