@@ -25,6 +25,7 @@ from cue.common import context as cue_context
 from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import base as db_base
 from cue.manage import database
+from cue import objects
 from cue.tests import fixture as cue_fixtures
 
 import os
@@ -164,6 +165,27 @@ class TestCase(base.BaseTestCase):
                 fixture = fixture_cls()
                 self.useFixture(fixture)
                 self._additional_fixtures.append(fixture)
+
+        self.set_broker()
+
+    def set_broker(self):
+        # Loading default broker and image to broker and brokerMetadata table
+        broker_values = {
+            'name': 'rabbitmq',
+            'active': '1',
+        }
+        broker = objects.Broker(**broker_values)
+        broker.create_broker(None)
+        broker_list = broker.get_brokers(None)
+        broker_id = broker_list[0]['id']
+
+        metadata_value = {
+            'key': 'IMAGE',
+            'value': 'f7e8c49b-7d1e-472f-a78b-7c46a39c85be',
+            'broker_id': broker_id
+        }
+        metadata = objects.BrokerMetadata(**metadata_value)
+        metadata.create_broker_metadata(None)
 
     def get_context(self, **kwargs):
         auth_token = kwargs.get('auth_token', "auth_xxx")
