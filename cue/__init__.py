@@ -37,5 +37,8 @@ cfg.CONF.register_opts([
                     'part of a cluster'),
     cfg.StrOpt('management_network_id',
                default=None,
-               help='The id representing the management network ')
+               help='The id representing the management network '),
+    cfg.StrOpt('default_broker_name',
+               default='rabbitmq',
+               help='The name of broker image ')
 ])

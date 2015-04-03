@@ -29,6 +29,11 @@ class Status():
     ERROR = 'ERROR'
 
 
+class MetadataKey():
+    IMAGE = 'IMAGE'
+    SEC_GROUP = 'SEC_GROUP'
+
+
 class Endpoint(base.BASE, base.IdMixin):
     __tablename__ = 'endpoints'
 
@@ -67,3 +72,25 @@ class Cluster(base.BASE, base.IdMixin, models.TimestampMixin,
     size = sa.Column(sa.Integer(), default=1, nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=True)
     sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
+
+
+class Broker(base.BASE, base.IdMixin, models.TimestampMixin,
+             base.SoftDeleteMixin):
+    __tablename__ = 'broker'
+
+    name = sa.Column(sa.String(255), nullable=False)
+    active = sa.Column(sa.Boolean(), default=False, nullable=False)
+    sa.Index("broker_id_idx", "id", unique=True)
+
+
+class BrokerMetadata(base.BASE, base.IdMixin, models.TimestampMixin,
+                     base.SoftDeleteMixin):
+    __tablename__ = 'broker_metadata'
+
+    broker_id = sa.Column(
+        'broker_id', types.UUID(),
+        sa.ForeignKey('broker.id'), nullable=False)
+    key = sa.Column(sa.String(255), nullable=False)
+    value = sa.Column(sa.String(255), nullable=False)
+    sa.Index("brokerMetadata_id_idx", "id", unique=True)
+    sa.Index("brokerMetadata_broker_id_idx", "broker_id", unique=False)

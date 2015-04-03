@@ -228,11 +228,14 @@ class ClusterController(rest.RestController):
         erlang_cookie = uuidutils.generate_uuid()
         default_rabbit_user = 'rabbitmq'
         default_rabbit_pass = cluster.id
+        broker_name = CONF.default_broker_name
+
+        # get the image id of default broker
+        image_id = objects.BrokerMetadata.get_image_id(broker_name, context)
 
         job_args = {
             'flavor': cluster.flavor,
-            # TODO(sputnik13): need to remove this when image selector is done
-            'image': CONF.api.os_image_id,
+            'image': image_id,
             'volume_size': cluster.volume_size,
             'network_id': cluster.network_id,
             'port': '5672',
