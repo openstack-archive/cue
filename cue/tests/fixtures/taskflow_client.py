@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import cue.tests.test_fixtures.base as base
+import cue.tests.fixtures.base as base
 
 
 class TaskFlowClient(base.BaseFixture):

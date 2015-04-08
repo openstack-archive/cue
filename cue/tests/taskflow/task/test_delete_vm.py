@@ -17,7 +17,7 @@ import uuid
 
 from cue import client
 from cue.tests import base
-from cue.tests.test_fixtures import nova
+from cue.tests.fixtures import nova
 import os_tasklib.nova.delete_vm as delete_vm
 
 from taskflow import engines

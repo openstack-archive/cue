@@ -18,7 +18,7 @@ import uuid
 from neutronclient.common import exceptions
 import neutronclient.neutron.client
 
-import cue.tests.test_fixtures.base as base
+import cue.tests.fixtures.base as base
 
 
 def new_network_detail(admin_state_up=True,

@@ -17,7 +17,7 @@ import uuid
 
 from cue import client
 from cue.tests import base
-import cue.tests.test_fixtures.neutron
+import cue.tests.fixtures.neutron
 import os_tasklib.neutron as neutron_task
 
 import neutronclient.common.exceptions as neutron_exc
@@ -38,7 +38,7 @@ def _find_port(port_id, port_list):
 class DeletePortTests(base.TestCase):
 
     additional_fixtures = [
-        cue.tests.test_fixtures.neutron.NeutronClient
+        cue.tests.fixtures.neutron.NeutronClient
     ]
 
     def setUp(self):

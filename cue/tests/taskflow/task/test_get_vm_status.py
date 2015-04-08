@@ -17,7 +17,7 @@ import taskflow.retry as retry
 
 from cue import client
 from cue.tests import base
-from cue.tests.test_fixtures import nova
+from cue.tests.fixtures import nova
 import os_tasklib.common as common_task
 import os_tasklib.nova.get_vm_status as get_vm_status
 

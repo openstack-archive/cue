@@ -16,8 +16,8 @@
 import cue.client as client
 import cue.taskflow.task as cue_task
 from cue.tests import base
-from cue.tests.test_fixtures import nova
-from cue.tests.test_fixtures import telnet
+from cue.tests.fixtures import nova
+from cue.tests.fixtures import telnet
 
 from taskflow import engines
 from taskflow.patterns import linear_flow

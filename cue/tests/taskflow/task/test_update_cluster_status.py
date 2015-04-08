@@ -20,7 +20,7 @@ from cue.db.sqlalchemy import models
 from cue import objects
 import cue.taskflow.task.update_cluster_task as update_cluster_status
 from cue.tests import base
-from cue.tests.test_fixtures import neutron
+from cue.tests.fixtures import neutron
 import os_tasklib.neutron as neutron_task
 
 from neutronclient.common import exceptions

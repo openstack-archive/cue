@@ -20,9 +20,9 @@ from cue.db.sqlalchemy import models
 from cue import objects
 from cue.taskflow.flow import create_cluster
 from cue.tests import base
-from cue.tests.test_fixtures import neutron
-from cue.tests.test_fixtures import nova
-from cue.tests.test_fixtures import telnet
+from cue.tests.fixtures import neutron
+from cue.tests.fixtures import nova
+from cue.tests.fixtures import telnet
 
 from taskflow import engines
 import taskflow.exceptions as taskflow_exc

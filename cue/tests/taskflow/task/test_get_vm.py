@@ -17,7 +17,7 @@ import uuid
 
 from cue import client
 from cue.tests import base
-from cue.tests.test_fixtures import nova
+from cue.tests.fixtures import nova
 import os_tasklib.nova.get_vm as get_vm
 
 import novaclient.exceptions as nova_exc

@@ -47,7 +47,7 @@ class BaseFixture(fixtures.Fixture):
 
             mocked_class.method1 = self.method1
 
-        See :meth:`cue.tests.test_fixtures.neutron.NeutronClient.setUp` for an
+        See :meth:`cue.tests.fixtures.neutron.NeutronClient.setUp` for an
         example.
 
         :param cls: Class to be mock'd.  Pass in the string path to the class.

@@ -15,7 +15,7 @@
 
 import telnetlib as telnet
 
-import cue.tests.test_fixtures.base as base
+import cue.tests.fixtures.base as base
 
 
 class TelnetStatusDetails(object):
