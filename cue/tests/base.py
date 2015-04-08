@@ -21,23 +21,23 @@ inline callbacks.
 
 """
 
-from cue.common import context as cue_context
-from cue.db.sqlalchemy import api as db_api
-from cue.db.sqlalchemy import base as db_base
-from cue.manage import database
-from cue.tests import fixture as cue_fixtures
-
 import os
-import shutil
 
 import fixtures
 import mock
+import six
+
+from cue.common import context as cue_context
+from cue.db.sqlalchemy import api as db_api
+from cue.manage import database
+from cue.tests.test_fixtures import database as database_fixture
+from cue.tests.test_fixtures import policy
+
 from oslo.config import cfg
 from oslo.config import fixture as cfg_fixture
 from oslo.utils import timeutils
 from oslo_policy import opts
 from oslotest import base
-import six
 
 
 test_opts = [
@@ -50,53 +50,7 @@ test_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(test_opts)
-
 _DB_CACHE = None
-
-
-class Database(fixtures.Fixture):
-
-    def __init__(self, db_session, db_migrate, sql_connection, sqlite_db,
-                 sqlite_clean_db):
-        self.sql_connection = sql_connection
-        self.sqlite_db = sqlite_db
-        self.sqlite_clean_db = sqlite_clean_db
-        self.engine = db_session.get_engine()
-        self.engine.dispose()
-        conn = self.engine.connect()
-
-        if sql_connection == "sqlite://":
-            self.setup_sqlite(db_migrate)
-        else:
-            testdb = os.path.join(CONF.state_path, sqlite_db)
-            db_migrate.upgrade('head')
-            if os.path.exists(testdb):
-                return
-        if sql_connection == "sqlite://":
-            conn = self.engine.connect()
-            self._DB = "".join(line for line in conn.connection.iterdump())
-            self.engine.dispose()
-        else:
-            cleandb = os.path.join(CONF.state_path, sqlite_clean_db)
-            shutil.copyfile(testdb, cleandb)
-
-    def setUp(self):
-        super(Database, self).setUp()
-        if self.sql_connection == "sqlite://":
-            conn = self.engine.connect()
-            conn.connection.executescript(self._DB)
-            self.addCleanup(self.engine.dispose)  # pylint: disable=E1101
-        else:
-            shutil.copyfile(
-                os.path.join(CONF.state_path, self.sqlite_clean_db),
-                os.path.join(CONF.state_path, self.sqlite_db),
-            )
-
-    def setup_sqlite(self, db_migrate):
-        if db_migrate.version():
-            return
-        db_base.BASE.metadata.create_all(self.engine)
-        db_migrate.stamp('head')
 
 
 class StubOutForTesting(object):
@@ -139,7 +93,7 @@ class TestCase(base.BaseTestCase):
 
         global _DB_CACHE
         if not _DB_CACHE:
-            _DB_CACHE = Database(
+            _DB_CACHE = database_fixture.Database(
                 db_api,
                 database.get_manager(),
                 sql_connection=CONF.database.connection,
@@ -152,7 +106,7 @@ class TestCase(base.BaseTestCase):
         self.injected = []
         # This will be cleaned up by the NestedTempfile fixture
         # CONF.set_override('lock_path', tempfile.mkdtemp())
-        self.policy = self.useFixture(cue_fixtures.PolicyFixture())
+        self.policy = self.useFixture(policy.PolicyFixture())
 
         # self.CONF.register_opt('config_dir')
 
