@@ -19,7 +19,7 @@ import novaclient.exceptions as nova_exc
 import novaclient.v2.client as nova_client
 
 import cue.client as client
-import cue.tests.test_fixtures.base as base
+import cue.tests.fixtures.base as base
 
 
 class VmDetails(object):

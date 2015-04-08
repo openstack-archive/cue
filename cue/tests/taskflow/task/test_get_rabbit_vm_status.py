@@ -14,7 +14,7 @@
 # under the License.
 
 from cue.tests import base
-from cue.tests.test_fixtures import telnet
+from cue.tests.fixtures import telnet
 import os_tasklib.common.verify_network_task as verify_network_task
 
 from taskflow import engines

@@ -17,7 +17,7 @@ import uuid
 
 from cue import client
 from cue.tests import base
-import cue.tests.test_fixtures.neutron
+import cue.tests.fixtures.neutron
 import os_tasklib.neutron as neutron_task
 
 from neutronclient.common import exceptions
@@ -32,7 +32,7 @@ SHARED_CONF = {
 class CreatePortTests(base.TestCase):
 
     additional_fixtures = [
-        cue.tests.test_fixtures.neutron.NeutronClient
+        cue.tests.fixtures.neutron.NeutronClient
     ]
 
     task_store = {
