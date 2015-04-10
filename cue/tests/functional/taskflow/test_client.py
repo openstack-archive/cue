@@ -93,7 +93,7 @@ class ApiTaskFlowClientTest(api.APITest):
         api_cluster = test_utils.create_api_test_cluster(size=1,
                                                 network_id=[str(uuid.uuid4())])
         pre_count = self.tf_client.jobboard.job_count
-        self.post_json('/clusters', params=api_cluster.as_dict(),
+        self.post_json('/clusters', params=api_cluster,
                        headers=self.auth_headers, status=202)
         post_count = self.tf_client.jobboard.job_count
         expected = pre_count + 1

@@ -18,6 +18,8 @@
 
 """Version 1 of the Cue API
 """
+import sys
+
 from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
@@ -76,7 +78,7 @@ class Cluster(base.APIBase):
                 self.fields.append(k)
                 setattr(self, k, kwargs.get(k, wtypes.Unset))
 
-    id = wtypes.text
+    id = wsme.wsattr(wtypes.text, readonly=True)
     "UUID of cluster"
 
     network_id = wtypes.wsattr([wtypes.text], mandatory=True)
@@ -85,16 +87,17 @@ class Cluster(base.APIBase):
     name = wsme.wsattr(wtypes.text, mandatory=True)
     "Name of cluster"
 
-    status = wtypes.text
+    status = wsme.wsattr(wtypes.text, readonly=True)
     "Current status of cluster"
 
     flavor = wsme.wsattr(wtypes.text, mandatory=True)
     "Flavor of cluster"
 
-    size = wsme.wsattr(wtypes.IntegerType(), mandatory=True)
+    size = wsme.wsattr(wtypes.IntegerType(minimum=0, maximum=sys.maxint),
+                       mandatory=True)
     "Number of nodes in cluster"
 
-    volume_size = wtypes.IntegerType()
+    volume_size = wtypes.IntegerType(minimum=0, maximum=sys.maxint)
     "Volume size for nodes in cluster"
 
     end_points = wtypes.wsattr([EndPoint], default=[])

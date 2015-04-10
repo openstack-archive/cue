@@ -58,13 +58,11 @@ def create_api_test_cluster(**kw):
         'name': test_cluster['name'],
         'network_id': test_cluster['network_id'],
         'flavor': test_cluster['flavor'],
-        'size': str(test_cluster['size']),
-        'volume_size': str(test_cluster['volume_size']),
+        'size': test_cluster['size'],
+        'volume_size': test_cluster['volume_size'],
     }
 
-    new_cluster = cluster.Cluster(**cluster_parameters)
-
-    return new_cluster
+    return cluster_parameters
 
 
 def create_api_test_cluster_all(**kw):
