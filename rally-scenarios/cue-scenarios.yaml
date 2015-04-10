@@ -1,0 +1,18 @@
+---
+  CueClusters.create_and_verify_cluster:
+    -
+      args:
+        name:
+        flavor:
+        size: 1
+        network_id: {{network_id}}
+      runner:
+        type: "serial"
+        times: 1
+      context:
+        users:
+          tenants: 1
+          users_per_tenant: 1
+      sla:
+        failure_rate:
+          max: 0
