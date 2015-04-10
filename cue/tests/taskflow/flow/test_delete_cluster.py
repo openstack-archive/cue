@@ -16,6 +16,7 @@
 import uuid
 
 from cue import client
+from cue.common import exception
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.taskflow.flow import create_cluster
@@ -42,6 +43,7 @@ class DeleteClusterTests(base.TestCase):
 
         flavor_name = "m1.tiny"
         network_name = "private"
+        management_network_name = "cue_management_net"
 
         self.nova_client = client.nova_client()
         self.neutron_client = client.neutron_client()
@@ -62,13 +64,19 @@ class DeleteClusterTests(base.TestCase):
         network_list = self.neutron_client.list_networks(name=network_name)
         self.valid_network = network_list['networks'][0]
 
+        network_list = self.neutron_client.list_networks(
+            name=management_network_name)
+        self.management_network = network_list['networks'][0]
+
     def test_delete_cluster(self):
         flow_store_create = {
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
-            "network_id": self.valid_network['id'],
             "port": self.port,
             "context": self.context.to_dict(),
+            "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
         }
         flow_store_delete = {
             "context": self.context.to_dict(),
@@ -92,7 +100,10 @@ class DeleteClusterTests(base.TestCase):
         for node in nodes:
             node_ids.append(str(node.id))
 
-        flow_create = create_cluster(str(new_cluster.id), node_ids)
+        flow_create = create_cluster(new_cluster.id,
+                              node_ids,
+                              self.valid_network['id'],
+                              self.management_network['id'])
         flow_delete = delete_cluster(str(new_cluster.id), node_ids)
 
         result = engines.run(flow_create, store=flow_store_create)
@@ -119,7 +130,7 @@ class DeleteClusterTests(base.TestCase):
             self.assertEqual(node.id, endpoint.node_id, "invalid endpoint node"
                                                         " id reference")
 
-            uri = result['vm_ip_' + str(i)]
+            uri = result['vm_user_ip_' + str(i)]
             uri += ':' + self.port
             self.assertEqual(uri, endpoint.uri, "invalid endpoint uri")
             self.assertEqual('AMQP', endpoint.type, "invalid endpoint type")
@@ -129,11 +140,10 @@ class DeleteClusterTests(base.TestCase):
         nodes_after = objects.Node.get_nodes_by_cluster_id(self.context,
                                                            new_cluster.id)
 
-        cluster_after = objects.Cluster.get_cluster_by_id(self.context,
-                                                          new_cluster.id)
-
-        self.assertEqual(models.Status.DELETED, cluster_after.status,
-                         "Invalid status for cluster")
+        self.assertRaises(exception.NotFound,
+                          objects.Cluster.get_cluster_by_id,
+                          self.context,
+                          new_cluster.id)
 
         for i, node in enumerate(nodes_after):
             self.new_vm_list.remove(result["vm_id_%d" % i])

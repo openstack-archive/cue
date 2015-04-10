@@ -55,9 +55,13 @@ class NeutronClient(base.BaseFixture):
     def __init__(self, *args, **kwargs):
         super(NeutronClient, self).__init__(*args, **kwargs)
 
-        network_detail = new_network_detail(name="private")
-        self._network_list = {network_detail['id']: network_detail}
+        self._network_list = {}
         self._port_list = {}
+
+        initial_networks = ["private", "cue_management_net"]
+        for network in initial_networks:
+            network_detail = new_network_detail(name=network)
+            self._network_list.update({network_detail['id']: network_detail})
 
     def setUp(self):
         """Set up test fixture and apply all method overrides."""

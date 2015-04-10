@@ -41,6 +41,7 @@ class CreateClusterTests(base.TestCase):
 
         flavor_name = "m1.tiny"
         network_name = "private"
+        management_network_name = "cue_management_net"
 
         self.nova_client = client.nova_client()
         self.neutron_client = client.neutron_client()
@@ -61,14 +62,19 @@ class CreateClusterTests(base.TestCase):
         network_list = self.neutron_client.list_networks(name=network_name)
         self.valid_network = network_list['networks'][0]
 
+        network_list = self.neutron_client.list_networks(
+            name=management_network_name)
+        self.management_network = network_list['networks'][0]
+
     def test_create_cluster(self):
         flow_store = {
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
-            "network_id": self.valid_network['id'],
             "port": self.port,
             "context": self.context.to_dict(),
             "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
         }
 
         cluster_values = {
@@ -89,7 +95,10 @@ class CreateClusterTests(base.TestCase):
         for node in nodes:
             node_ids.append(node.id)
 
-        flow = create_cluster(new_cluster.id, node_ids)
+        flow = create_cluster(new_cluster.id,
+                              node_ids,
+                              self.valid_network['id'],
+                              self.management_network['id'])
 
         result = engines.run(flow, store=flow_store)
 
@@ -115,7 +124,7 @@ class CreateClusterTests(base.TestCase):
             self.assertEqual(node.id, endpoint.node_id, "invalid endpoint node"
                                                         " id reference")
 
-            uri = result['vm_ip_' + str(i)]
+            uri = result['vm_user_ip_' + str(i)]
             uri += ':' + self.port
             self.assertEqual(uri, endpoint.uri, "invalid endpoint uri")
             self.assertEqual('AMQP', endpoint.type, "invalid endpoint type")
@@ -127,10 +136,11 @@ class CreateClusterTests(base.TestCase):
         flow_store = {
             'image': self.valid_image.id,
             'flavor': self.valid_flavor.id,
-            'network_id': self.valid_network['id'],
             "port": self.port,
             "context": self.context.to_dict(),
             "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
         }
 
         cluster_values = {
@@ -151,7 +161,10 @@ class CreateClusterTests(base.TestCase):
         for node in nodes:
             node_ids.append(node.id)
 
-        flow = create_cluster(new_cluster.id, node_ids)
+        flow = create_cluster(new_cluster.id,
+                              node_ids,
+                              self.valid_network['id'],
+                              self.management_network['id'])
 
         self.assertRaises(taskflow_exc.WrappedFailure, engines.run,
                           flow, store=flow_store)

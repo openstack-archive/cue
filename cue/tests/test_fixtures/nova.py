@@ -218,7 +218,8 @@ class NovaClient(base.BaseFixture):
         try:
             del (self._vm_list[str(server_id)])
         except KeyError:
-            raise nova_exc.NotFound("Invalid server provided")
+            #raise nova_exc.NotFound("Invalid server provided")
+            pass
 
     def get_vm(self, server, **kwargs):
         """Mock'd version of novaclient...get()
