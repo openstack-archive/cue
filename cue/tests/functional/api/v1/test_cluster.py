@@ -220,7 +220,7 @@ class TestCreateCluster(api.APITest,
     def test_create_size_missing(self):
         """test create an empty cluster."""
         api_cluster = test_utils.create_api_test_cluster(size=0)
-        request_body = api_cluster.as_dict()
+        request_body = api_cluster
 
         # remove size field
         del request_body['size']
@@ -241,7 +241,7 @@ class TestCreateCluster(api.APITest,
         api_cluster = test_utils.create_api_test_cluster(size=0)
 
         data = self.post_json('/clusters', headers=self.auth_headers,
-                              params=api_cluster.as_dict(),
+                              params=api_cluster,
                             expect_errors=True)
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
@@ -258,7 +258,7 @@ class TestCreateCluster(api.APITest,
         returns the same cluster from the API.
         """
         api_cluster = test_utils.create_api_test_cluster(size=1)
-        data = self.post_json('/clusters', params=api_cluster.as_dict(),
+        data = self.post_json('/clusters', params=api_cluster,
                               headers=self.auth_headers, status=202)
         cluster = objects.Cluster.get_cluster_by_id(self.context,
                                                     data.json["id"])
@@ -278,7 +278,7 @@ class TestCreateCluster(api.APITest,
         returns the same cluster from the API.
         """
         api_cluster = test_utils.create_api_test_cluster(size=3)
-        data = self.post_json('/clusters', params=api_cluster.as_dict(),
+        data = self.post_json('/clusters', params=api_cluster,
                               headers=self.auth_headers, status=202)
         cluster = objects.Cluster.get_cluster_by_id(self.context,
                                                     data.json["id"])
@@ -295,7 +295,7 @@ class TestCreateCluster(api.APITest,
         """test with invalid formatted size parameter."""
         api_cluster = test_utils.create_api_test_cluster(size="a")
 
-        data = self.post_json('/clusters', params=api_cluster.as_dict(),
+        data = self.post_json('/clusters', params=api_cluster,
                               headers=self.auth_headers, expect_errors=True)
         self.assertEqual(500, data.status_code,
                          'Invalid status code value received.')
