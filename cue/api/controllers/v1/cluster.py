@@ -18,6 +18,8 @@
 
 """Version 1 of the Cue API
 """
+import sys
+
 from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
@@ -35,6 +37,7 @@ from pecan import rest
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
+
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -91,10 +94,11 @@ class Cluster(base.APIBase):
     flavor = wsme.wsattr(wtypes.text, mandatory=True)
     "Flavor of cluster"
 
-    size = wsme.wsattr(wtypes.IntegerType(), mandatory=True)
+    size = wsme.wsattr(wtypes.IntegerType(minimum=0, maximum=sys.maxint),
+                       mandatory=True)
     "Number of nodes in cluster"
 
-    volume_size = wtypes.IntegerType()
+    volume_size = wtypes.IntegerType(minimum=0, maximum=sys.maxint)
     "Volume size for nodes in cluster"
 
     end_points = wtypes.wsattr([EndPoint], default=[])
