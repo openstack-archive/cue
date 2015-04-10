@@ -9,6 +9,7 @@ CONFIG = File.join(File.dirname(__FILE__), "vagrant_config.rb")
 UBUNTU_COMMON = File.join(File.dirname(__FILE__), "lib/ubuntu.rb")
 FEDORA_COMMON = File.join(File.dirname(__FILE__), "lib/fedora.rb")
 DEVSTACK_SCRIPT = File.join(File.dirname(__FILE__), "lib/devstack_script.rb")
+RALLY_SCRIPT = File.join(File.dirname(__FILE__), "lib/rally_script.rb")
 
 GITCONFIG = `cat $HOME/.gitconfig`
 
@@ -20,6 +21,7 @@ $forwarded_port = {}
 $install_devstack = false
 $install_build_deps = true
 $install_tmate = false
+$install_rally = true
 $ubuntu_box = "sputnik13/trusty64"
 $vm_memory = 4096 
 $vm_cpus = 2
@@ -31,6 +33,7 @@ end
 require UBUNTU_COMMON
 require FEDORA_COMMON
 require DEVSTACK_SCRIPT
+require RALLY_SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   $forwarded_port.each do |guest_port, host_port|
@@ -78,6 +81,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     :inline => "chown vagrant /opt/stack"
   config.vm.provision :shell, :privileged => false,
     :inline => $devstack_script
+
+  if $install_rally
+    config.vm.provision :shell, :privileged => false,
+    :inline => $rally_script
+  end
 
   if $install_devstack
     config.vm.provision :shell, :privileged => false,
