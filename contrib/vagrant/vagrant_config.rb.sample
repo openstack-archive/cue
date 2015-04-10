@@ -34,3 +34,6 @@ $vm_memory = 4096
 
 # Set the number of CPU cores configured for the VM
 $vm_cpus = 2
+
+# Install rally in the vm
+$install_rally = true
