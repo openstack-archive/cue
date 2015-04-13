@@ -27,9 +27,12 @@ from cue.tests import api
 from cue.tests.api import api_utils
 from cue.tests import utils as test_utils
 
+from oslo.config import cfg
 
-class TestGetCluster(api.FunctionalTest,
-                     api_utils.ClusterValidationMixin):
+CONF = cfg.CONF
+
+
+class TestGetCluster(api.FunctionalTest, api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestGetCluster, self).setUp()
 
@@ -76,23 +79,21 @@ class TestGetCluster(api.FunctionalTest,
 
     def test_get_cluster(self):
         """test get cluster on valid existing cluster."""
+        # create record for a new cluster in db
         cluster = test_utils.create_db_test_cluster_from_objects_api(
-            self.context, name=self.cluster_name, size=3)
-        data = self.get_json('/clusters/' + cluster.id,
+            self.context, name=self.cluster_name, size=3).as_dict()
+        data = self.get_json('/clusters/' + cluster['id'],
                              headers=self.auth_headers)
 
         self.validate_cluster_values(cluster, data)
 
         # verify all endpoints in cluster
         all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
-                                                            cluster.id)
-        self.validate_endpoint_values(all_endpoints,
-                                      data["end_points"])
+                                                            cluster['id'])
+        self.validate_endpoint_values(all_endpoints, data["end_points"])
 
 
-class TestDeleteCluster(api.FunctionalTest,
-                        api_utils.ClusterValidationMixin):
-
+class TestDeleteCluster(api.FunctionalTest, api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestDeleteCluster, self).setUp()
 
@@ -137,21 +138,21 @@ class TestDeleteCluster(api.FunctionalTest,
                                                           cluster.id)
         self.assertEqual(models.Status.BUILDING, cluster_in_db.status,
                          "Invalid cluster status value")
-        self.delete('/clusters/' + cluster.id, headers=self.auth_headers)
 
+        self.delete('/clusters/' + cluster.id, headers=self.auth_headers)
         cluster_in_db = objects.Cluster.get_cluster_by_id(self.context,
                                                           cluster.id)
         cluster.status = models.Status.DELETING
         cluster.updated_at = cluster_in_db.created_at
         cluster.updated_at = cluster_in_db.updated_at
 
-        data = self.get_json('/clusters/' + cluster.id,
+        data = self.get_json('/clusters/' + cluster['id'],
                              headers=self.auth_headers)
-        self.validate_cluster_values(cluster, data)
+
+        self.validate_cluster_values(cluster.as_dict(), data)
 
 
-class TestListClusters(api.FunctionalTest,
-                       api_utils.ClusterValidationMixin):
+class TestListClusters(api.FunctionalTest, api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestListClusters, self).setUp()
 
@@ -161,46 +162,41 @@ class TestListClusters(api.FunctionalTest,
 
     def test_one(self):
         cluster = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name)
+            self.context, name=self.cluster_name)
         data = self.get_json('/clusters', headers=self.auth_headers)
 
+        # verify number of clusters received
         self.assertEqual(len(data), 1, "Invalid number of clusters returned")
-
-        self.validate_cluster_values(cluster, data[0])
+        # verify cluster
+        self.validate_cluster_values(cluster.as_dict(), data[0])
+        # verify endpoints in cluster
+        all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
+                                                            cluster.id)
+        self.validate_endpoint_values(all_endpoints,
+                                            data[0]["end_points"])
 
     def test_multiple(self):
-        cluster_0 = test_utils.create_db_test_cluster_from_objects_api(
+        num_of_clusters = 5
+        clusters = [test_utils.create_db_test_cluster_from_objects_api(
             self.context,
-            name=self.cluster_name + '_0')
-        cluster_1 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_1')
-        cluster_2 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_2')
-        cluster_3 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_3')
-        cluster_4 = test_utils.create_db_test_cluster_from_objects_api(
-            self.context,
-            name=self.cluster_name + '_4')
+            name=self.cluster_name + '_' + str(i), size=i + 1) for i in
+                     range(num_of_clusters)]
 
         data = self.get_json('/clusters', headers=self.auth_headers)
-
-        self.assertEqual(len(data), 5,
+        # verify number of clusters received
+        self.assertEqual(len(data), num_of_clusters,
                          "Invalid number of clusters returned")
+        for i in range(num_of_clusters):
+            # verify cluster
+            self.validate_cluster_values(clusters[i].as_dict(), data[i])
+            # verify endpoints in cluster
+            all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
+                                                                clusters[i].id)
+            self.validate_endpoint_values(all_endpoints,
+                                                data[i]["end_points"])
 
-        self.validate_cluster_values(cluster_0, data[0])
-        self.validate_cluster_values(cluster_1, data[1])
-        self.validate_cluster_values(cluster_2, data[2])
-        self.validate_cluster_values(cluster_3, data[3])
-        self.validate_cluster_values(cluster_4, data[4])
 
-
-class TestCreateCluster(api.FunctionalTest,
-                        api_utils.ClusterValidationMixin):
-
+class TestCreateCluster(api.FunctionalTest, api_utils.ClusterValidationMixin):
     def setUp(self):
         super(TestCreateCluster, self).setUp()
 
@@ -251,6 +247,21 @@ class TestCreateCluster(api.FunctionalTest,
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
+    def test_create_too_large(self):
+        """test create cluster with size larger than limit."""
+        api_cluster = test_utils.create_api_test_cluster(
+            size=(CONF.api.max_cluster_size + 1))
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster.as_dict(),
+                            expect_errors=True)
+        self.assertEqual(413, data.status_code,
+                         'Invalid status code value received.')
+        self.assertIn('Invalid cluster size, max size is: ' +
+                      str(CONF.api.max_cluster_size),
+                      data.namespace["faultstring"],
+                      'Invalid faultstring received.')
+
     def test_create_size_one(self):
         """test create a cluster with one node.
 
@@ -260,13 +271,13 @@ class TestCreateCluster(api.FunctionalTest,
         api_cluster = test_utils.create_api_test_cluster(size=1)
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=self.auth_headers, status=202)
-        cluster = objects.Cluster.get_cluster_by_id(self.context,
-                                                    data.json["id"])
-        self.validate_cluster_values(cluster, data.json)
-        self.assertEqual(models.Status.BUILDING,
-                         data.json['status'])
 
-        data_api = self.get_json('/clusters/' + cluster.id,
+        cluster = objects.Cluster.get_cluster_by_id(self.context,
+                                                    data.json["id"]).as_dict()
+        self.validate_cluster_values(cluster, data.json)
+        self.assertEqual(models.Status.BUILDING, data.json['status'])
+
+        data_api = self.get_json('/clusters/' + cluster['id'],
                                  headers=self.auth_headers)
         self.validate_cluster_values(cluster, data_api)
         self.assertEqual(models.Status.BUILDING, data_api['status'])
@@ -280,13 +291,13 @@ class TestCreateCluster(api.FunctionalTest,
         api_cluster = test_utils.create_api_test_cluster(size=3)
         data = self.post_json('/clusters', params=api_cluster.as_dict(),
                               headers=self.auth_headers, status=202)
-        cluster = objects.Cluster.get_cluster_by_id(self.context,
-                                                    data.json["id"])
-        self.validate_cluster_values(cluster, data.json)
-        self.assertEqual(models.Status.BUILDING,
-                         data.json['status'])
 
-        data_api = self.get_json('/clusters/' + cluster.id,
+        cluster = objects.Cluster.get_cluster_by_id(self.context,
+                                                    data.json["id"]).as_dict()
+        self.validate_cluster_values(cluster, data.json)
+        self.assertEqual(models.Status.BUILDING, data.json['status'])
+
+        data_api = self.get_json('/clusters/' + cluster['id'],
                                  headers=self.auth_headers)
         self.validate_cluster_values(cluster, data_api)
         self.assertEqual(models.Status.BUILDING, data_api['status'])
@@ -302,6 +313,20 @@ class TestCreateCluster(api.FunctionalTest,
         self.assertEqual('500 Internal Server Error', data.status,
                          'Invalid status value received.')
         self.assertIn('invalid literal for int() with base 10:',
+                      data.namespace["faultstring"],
+                      'Invalid faultstring received.')
+
+    def test_create_network_id_size_not_one(self):
+        """test create a cluster with size of network_id more than one."""
+        api_cluster = test_utils.create_api_test_cluster(network_id=(
+                        [str(uuid.uuid4()), str(uuid.uuid4())]))
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster.as_dict(),
+                            expect_errors=True)
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+        self.assertIn("Invalid number of network_id's",
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
