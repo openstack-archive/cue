@@ -12,8 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import contextlib
-import logging as std_logging
+
 import signal
 import threading
 import time
@@ -22,7 +21,6 @@ from oslo.config import cfg
 from oslo_log import log as logging
 from taskflow.conductors import single_threaded
 
-from cue.common import policy
 import cue.taskflow.client as tf_client
 import cue.version as version
 
@@ -43,16 +41,19 @@ class ConductorService(object):
     This wrapper is compatible with both single process and multi-process
     launchers.
     """
-    def __init__(self, host=None, jobboard_name=None, jobboard_conf=None,
-                 persistence_conf=None, engine_conf=None, wait_timeout=None,
-                 *args, **kwargs):
+    def __init__(self, host=None, jobboard=None, jobboard_name=None,
+                 jobboard_conf=None, persistence=None, persistence_conf=None,
+                 engine_conf=None, wait_timeout=None, *args, **kwargs):
         """Constructor for ConductorService
 
         :param host: Name to be used to identify the host running the conductor
+        :param jobboard: Jobboard instance to be used by conductor service
         :param jobboard_name: Name of the jobboard
         :param jobboard_conf: Configuration parameters for the jobboard
                               backend.  This configuration is passed forward to
                               :meth:`cue.taskflow.client.Client.jobboard`.
+        :param persistence: Persistence instance to be used by conductor
+                            service
         :param persistence_conf: Configuration parameters for the persistence
                                  backend.  This configuration is passed forward
                                  to
@@ -75,8 +76,10 @@ class ConductorService(object):
 
         self._host = host
 
+        self._jobboard = jobboard
         self._jobboard_name = jobboard_name
         self._jobboard_conf = jobboard_conf
+        self._persistence = persistence
         self._persistence_conf = persistence_conf
         self._engine_conf = engine_conf
         self._wait_timeout = wait_timeout
@@ -87,16 +90,19 @@ class ConductorService(object):
         self._signal_list = None
 
     @classmethod
-    def create(cls, host=None, jobboard_name=None, jobboard_conf=None,
-               persistence_conf=None, engine_conf=None, wait_timeout=1,
-               *args, **kwargs):
+    def create(cls, host=None, jobboard=None, jobboard_name=None,
+               jobboard_conf=None, persistence=None, persistence_conf=None,
+               engine_conf=None, wait_timeout=1, *args, **kwargs):
         """Factory method for creating a ConductorService instance
 
         :param host: Name to be used to identify the host running the conductor
+        :param jobboard: Jobboard instance to be used by conductor service
         :param jobboard_name: Name of the jobboard
         :param jobboard_conf: Configuration parameters for the jobboard
                               backend.  This configuration is passed forward to
                               :meth:`cue.taskflow.client.Client.jobboard`.
+        :param persistence: Persistence instance to be used by conductor
+                            service
         :param persistence_conf: Configuration parameters for the persistence
                                  backend.  This configuration is passed forward
                                  to
@@ -117,55 +123,63 @@ class ConductorService(object):
         engine_conf = engine_conf or {}
         engine_conf.setdefault('engine', CONF.taskflow.engine_type)
 
-        return cls(host, jobboard_name, jobboard_conf, persistence_conf,
-                   engine_conf, wait_timeout, *args, **kwargs)
+        return cls(host, jobboard, jobboard_name, jobboard_conf, persistence,
+                   persistence_conf, engine_conf, wait_timeout, *args,
+                   **kwargs)
 
     def start(self):
         """Interface to start the ConductorService."""
-        CONF.log_opt_values(LOG, std_logging.INFO)
-
-        policy.init()
-
         version_string = version.version_info.version_string()
         LOG.debug("Starting runner %s on board %s",
                   version_string, self._jobboard_name)
 
-        with contextlib.closing(
-                tf_client.create_persistence(conf=self._persistence_conf)
-        ) as persistence:
-            with contextlib.closing(
-                    tf_client.create_jobboard(
-                        board_name=self._jobboard_name,
-                        conf=self._jobboard_conf,
-                        persistence=persistence,
-                    )
-            ) as jobboard:
-                self._conductor = single_threaded.SingleThreadedConductor(
-                    name=self._host,
-                    jobboard=jobboard,
-                    persistence=persistence,
-                    engine=self._engine_conf['engine'],
-                    wait_timeout=self._wait_timeout)
+        persistence = self._persistence
+        jobboard = self._jobboard
+        try:
+            # Create persistence and/or jobboard if they weren't passed in
+            if persistence is None:
+                persistence = tf_client.create_persistence(
+                    conf=self._persistence_conf)
 
-                time.sleep(0.5)
-                if threading.current_thread().name == 'MainThread':
-                    t = threading.Thread(target=self._conductor.run)
-                    t.start()
-                    signal.pause()
-                else:
-                    self._conductor.run()
+            if jobboard is None:
+                jobboard = tf_client.create_jobboard(
+                    board_name=self._jobboard_name,
+                    conf=self._jobboard_conf,
+                    persistence=persistence,
+                )
+
+            self._conductor = single_threaded.SingleThreadedConductor(
+                name=self._host,
+                jobboard=jobboard,
+                persistence=persistence,
+                engine=self._engine_conf['engine'],
+                wait_timeout=self._wait_timeout)
+
+            time.sleep(0.5)
+            if threading.current_thread().name == 'MainThread':
+                t = threading.Thread(target=self._conductor.run)
+                t.start()
+                signal.pause()
+            else:
+                self._conductor.run()
+
+        finally:
+            # Close persistence and jobboard if they were created by us
+            if self._persistence is None:
+                persistence.close()
+
+            if self._jobboard is None:
+                jobboard.close()
 
         self._shutdown_event.set()
 
     def stop(self):
         """Interface to stop the ConductorService."""
-        self._shutdown = True
         self._conductor.stop()
 
     def wait(self):
         """Interface to wait for ConductorService to complete."""
         self._shutdown_event.wait()
-        super(ConductorService, self).wait()
 
     def handle_signals(self, signals=None, handler=None):
         """Set signal handlers
