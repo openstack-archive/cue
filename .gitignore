@@ -27,6 +27,8 @@ var/
 *.manifest
 *.spec
 
+.DS_Store
+
 # IDE
 .idea/
 
