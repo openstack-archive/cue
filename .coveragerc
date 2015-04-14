@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = cue, os_tasklib
+omit = cue/tests/*,cue/openstack/*
+
+[report]
+ignore-errors = True
