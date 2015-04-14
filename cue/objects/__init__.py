@@ -16,14 +16,21 @@
 # Copyright [2014] Hewlett-Packard Development Company, L.P.
 # limitations under the License.
 
+from cue.objects import broker
+from cue.objects import broker_metadata
 from cue.objects import cluster
 from cue.objects import endpoint
 from cue.objects import node
 
+
 Cluster = cluster.Cluster
 Node = node.Node
 Endpoint = endpoint.Endpoint
+Broker = broker.Broker
+BrokerMetadata = broker_metadata.BrokerMetadata
 
 __all__ = (Cluster,
            Endpoint,
-           Node)
+           Node,
+           Broker,
+           BrokerMetadata)
