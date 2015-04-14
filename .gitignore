@@ -64,6 +64,12 @@ target/
 # Rope
 .ropeproject
 
-#Virtualenv
+# Virtualenv
 .virtualenv
 .venv
+
+# OSX Finder
+.DS_Store
+
+# Testr coverage
+.coverage.*
