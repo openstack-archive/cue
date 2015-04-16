@@ -12,8 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""Cue test utilities."""
-
+"""Cue functional test utilities."""
 from oslo.utils import timeutils
 
 from cue.api.controllers.v1 import cluster
@@ -182,3 +181,39 @@ def get_endpoints_in_cluster(context, cluster_id):
         all_endpoints.extend(node_endpoints_dict)
 
     return all_endpoints
+
+
+def get_test_endpoint(**kw):
+    return {
+        'id': kw.get('id', '4ddedb63-ac35-48b7-84ef-f929fb6b065e'),
+        'node_id': kw.get('node_id', '1be26c0b-03f2-4d2e-ae87-c02d7f33c781'),
+        'uri': kw.get('uri', '10.0.0.1:5672'),
+        'type': kw.get('type', 'AMQP')
+    }
+
+
+def get_test_node(**kw):
+    return {
+        'id': kw.get('id', '60abae56-b947-4401-99ad-29e4643c6249'),
+        'cluster_id': kw.get('cluster_id',
+                             '1be26c0b-03f2-4d2e-ae87-c02d7f33c781'
+                             ),
+        'instance_id': kw.get('instance_id',
+                              'b7cf7433-60f7-4d09-a759-cee12d8a3cb3'),
+        'flavor': kw.get('flavor', 'flavor1'),
+        'status': kw.get('status', 'BUILDING'),
+        'created_at': kw.get('created_at', timeutils.utcnow()),
+        'updated_at': kw.get('updated_at', timeutils.utcnow()),
+        'deleted_at': kw.get('deleted_at', None)
+    }
+
+
+def create_object_cluster(context, **kw):
+    """Create test Cluster entry in DB from objects API and return Cluster
+
+    object.
+    """
+    test_cluster_dict = get_test_cluster(**kw)
+    new_cluster = objects.Cluster(**test_cluster_dict)
+    new_cluster.create(context)
+    return new_cluster
