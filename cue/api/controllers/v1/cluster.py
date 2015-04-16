@@ -135,6 +135,7 @@ class ClusterController(rest.RestController):
         context = pecan.request.context
         cluster = get_complete_cluster(context, cluster_id)
 
+        cluster.unset_empty_fields()
         return cluster
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=202)
@@ -179,6 +180,9 @@ class ClusterController(rest.RestController):
         clusters = objects.Cluster.get_clusters(context)
         cluster_list = [get_complete_cluster(context, obj_cluster.id)
                         for obj_cluster in clusters]
+
+        for obj_cluster in cluster_list:
+            obj_cluster.unset_empty_fields()
 
         return cluster_list
 
@@ -266,4 +270,5 @@ class ClusterController(rest.RestController):
         cluster.additional_information.append(
             dict(def_rabbit_pass=default_rabbit_pass))
 
+        cluster.unset_empty_fields()
         return cluster
