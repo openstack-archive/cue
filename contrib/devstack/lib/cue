@@ -303,7 +303,7 @@ function build_cue_rabbit_test_image {
         # Set image_id
         RABBIT_IMAGE_ID=$($OPENSTACK_CMD image list | grep $image_name | tr -d ' ' | cut -f 2 -d '|')
         if [ "$RABBIT_IMAGE_ID" ]; then
-            cue-manage --config-file $CUE_CONF broker add_metadata --id $BROKER_ID --image $RABBIT_IMAGE_ID
+            cue-manage --config-file $CUE_CONF broker add_metadata $BROKER_ID --image $RABBIT_IMAGE_ID
         fi
 
     else
@@ -315,7 +315,7 @@ function build_cue_rabbit_test_image {
 
 # set_broker - Set default broker
 function set_broker {
-    cue-manage --config-file $CUE_CONF broker add --name $CUE_DEFAULT_BROKER_NAME --active true
+    cue-manage --config-file $CUE_CONF broker add $CUE_DEFAULT_BROKER_NAME true
     BROKER_ID=$(cue-manage --config-file $CUE_CONF broker list | grep $CUE_DEFAULT_BROKER_NAME | tr -d ' ' | cut -f 2 -d '|')
 }
 
