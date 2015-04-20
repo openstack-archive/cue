@@ -16,10 +16,10 @@ import re
 
 from keystonemiddleware import auth_token
 from oslo_log import log
+import six
 
 from cue.common import exception
 from cue.common.i18n import _  # noqa
-from cue.common import utils
 
 LOG = log.getLogger(__name__)
 
@@ -46,7 +46,9 @@ class AuthTokenMiddleware(auth_token.AuthProtocol):
         super(AuthTokenMiddleware, self).__init__(app, conf)
 
     def __call__(self, env, start_response):
-        path = utils.safe_rstrip(env.get('PATH_INFO'), '/')
+        path = env.get('PATH_INFO')
+        if isinstance(path, six.string_types):
+            path = path.rstrip('/') or path
 
         # The information whether the API call is being performed against the
         # public API is required for some other components. Saving it to the
