@@ -41,7 +41,7 @@ cfg.CONF.register_opts(service_opts)
 LOG = log.getLogger(__name__)
 
 
-def prepare_service(argv=[]):
+def prepare_service(argv=None):
 
     log_levels = (cfg.CONF.default_log_levels +
                   ['stevedore=INFO', 'keystoneclient=INFO'])
