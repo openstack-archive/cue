@@ -66,7 +66,7 @@ class CueException(Exception):
         if 'code' not in self.kwargs:
             try:
                 self.kwargs['code'] = self.code
-            except AttributeError:
+            except AttributeError: # pragma: no cover
                 pass
 
         if not message:
