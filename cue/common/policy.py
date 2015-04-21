@@ -38,27 +38,6 @@ def reset():
     _ENFORCER = None
 
 
-def set_rules(data, default_rule=None, overwrite=True):
-    default_rule = default_rule or cfg.CONF.policy_default_rule
-    if not _ENFORCER:
-        LOG.debug("Enforcer not present, recreating at rules stage.")
-        init()
-
-    if default_rule:
-        _ENFORCER.default_rule = default_rule
-
-    msg = "Loading rules %s, default: %s, overwrite: %s"
-    LOG.debug(msg, data, default_rule, overwrite)
-
-    if isinstance(data, dict):
-        rules = dict((k, policy.parse_rule(v)) for k, v in data.items())
-        rules = policy.Rules(rules, default_rule)
-    else:
-        rules = policy.Rules.load_json(data, default_rule)
-
-    _ENFORCER.set_rules(rules, overwrite=overwrite)
-
-
 def init(default_rule=None):
     oslo_policy.opts.set_defaults(cfg.CONF)
     if "config_dir" in cfg.CONF:
