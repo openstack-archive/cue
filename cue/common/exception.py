@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# Copyright 2014-2015 Hewlett-Packard Development Company, L.P.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -66,7 +68,7 @@ class CueException(Exception):
         if 'code' not in self.kwargs:
             try:
                 self.kwargs['code'] = self.code
-            except AttributeError:
+            except AttributeError:  # pragma: no cover
                 pass
 
         if not message:
