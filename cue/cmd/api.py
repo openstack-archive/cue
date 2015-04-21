@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright 2014 Hewlett-Packard Development Company, L.P.
+# Copyright 2014-2015 Hewlett-Packard Development Company, L.P.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -58,9 +58,9 @@ def main():
 
     try:
         wsgi.serve_forever()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt:  # pragma: no cover
         pass
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
