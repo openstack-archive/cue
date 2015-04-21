@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+# Copyright 2014-2015 Hewlett-Packard Development Company, L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -11,6 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from oslo_context import context
 
 
@@ -24,23 +26,28 @@ class RequestContext(context.RequestContext):
                  is_public_api=False, domain_id=None, domain_name=None):
         """Stores several additional request parameters:
 
+        :param roles:
         :param domain_id: The ID of the domain.
         :param domain_name: The name of the domain.
         :param is_public_api: Specifies whether the request should be processed
                               without authentication.
 
         """
+        super(RequestContext, self).__init__(auth_token=auth_token, user=user,
+                                             tenant=tenant, domain=domain,
+                                             user_domain=user_domain,
+                                             project_domain=project_domain,
+                                             is_admin=is_admin,
+                                             read_only=read_only,
+                                             show_deleted=show_deleted,
+                                             request_id=request_id,
+                                             resource_uuid=resource_uuid,
+                                             overwrite=overwrite)
+
         self.roles = roles or []
         self.is_public_api = is_public_api
         self.domain_id = domain_id
         self.domain_name = domain_name
-
-        super(RequestContext, self).__init__(auth_token=auth_token,
-                                             user=user, tenant=tenant,
-                                             is_admin=is_admin,
-                                             read_only=read_only,
-                                             show_deleted=show_deleted,
-                                             request_id=request_id)
 
     @property
     def project_id(self):
