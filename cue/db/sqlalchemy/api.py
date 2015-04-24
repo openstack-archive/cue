@@ -301,9 +301,9 @@ class Connection(api.Connection):
         broker_query = model_query(context, models.Broker).filter_by(
             active=True).filter_by(name=broker_name)
 
-        selected_broker_id = broker_query.one().id
-
         try:
+            selected_broker_id = broker_query.one().id
+
             # select the recently created image id
             metadata_query = (model_query(context, models.BrokerMetadata)
                               .filter_by(key='IMAGE')
