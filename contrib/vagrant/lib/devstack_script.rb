@@ -51,7 +51,8 @@ chmod +x /home/vagrant/bin/refresh_devstack.sh
 
 cat << EOF >> /home/vagrant/.bash_aliases
 alias refresh_devstack="/home/vagrant/bin/refresh_devstack.sh"
-
+alias delete_ports="neutron port-list | egrep '.+_cue\[.+\]\.node\[.+\]' | tr -d ' ' | cut -f 2 -d '|' | xargs -n1 neutron port-delete"
+alias delete_clusters="openstack cue cluster list | grep rally | tr -d ' ' | cut -f 2 -d '|' | xargs -n1 openstack cue cluster delete"
 EOF
 
 /home/vagrant/bin/refresh_devstack.sh
