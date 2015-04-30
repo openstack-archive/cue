@@ -1,15 +1,40 @@
 #!/bin/bash
 set -x #echo on
+
+cat > /etc/network/interfaces << EOF
+auto lo
+iface lo inet loopback
+source interfaces.d/*
+EOF
+
+cat > /etc/network/interfaces.d/eth0 << EOF
+auto eth0
+iface eth0 inet dhcp
+metric 0
+EOF
+
+cat > /etc/network/interfaces.d/eth1 << EOF
+auto eth1
+iface eth1 inet dhcp
+metric 1
+EOF
+
+ifup eth1
+
 # Script configuration parameters ***start
 os_region_name={{OS_REGION_NAME}}
 os_tenant_name={{OS_TENANT_NAME}}
 os_username={{OS_USERNAME}}
 os_password={{OS_PASSWORD}}
 os_auth_url={{OS_AUTH_URL}}
+os_key_name={{OS_KEY_NAME}}
+os_security_group={{CUE_SECURITY_GROUP}}
 cue_image_id={{CUE_IMAGE_ID}}
+cue_management_network_id={{CUE_MANAGEMENT_NIC}}
 mysql_root_password={{MYSQL_ROOT_PASSWORD}}
 mysql_cue_api_password={{MYSQL_CUEAPI_PASSWORD}}
 mysql_cue_worker_password={{MYSQL_CUEWORKER_PASSWORD}}
+floating_ip={{FLOATING_IP}}
 # Script configuration parameters ***end
 
 # Determinate is the given option present in the INI file
@@ -66,6 +91,60 @@ apt-get -o Dpkg::Options::="--force-confnew" --force-yes -fuy dist-upgrade
 # Install required pacakges
 apt-get install -y python-pip python-dev git build-essential zookeeper zookeeperd python-mysqldb supervisor
 
+# Install keystone
+cd /home/ubuntu/
+sudo -u ubuntu -g ubuntu git clone https://git.openstack.org/openstack-dev/devstack
+mkdir -p /opt/stack
+chown ubuntu:ubuntu /opt/stack
+sudo -u ubuntu -g ubuntu git clone https://github.com/openstack/requirements /opt/stack/requirements
+cat > devstack/local.conf<< EOF
+[[local|localrc]]
+HOST_IP=127.0.0.1
+SERVICE_HOST=$floating_ip
+REQUIREMENTS_MODE=soft
+ADMIN_PASSWORD=password
+MYSQL_PASSWORD=$mysql_root_password
+RABBIT_PASSWORD=password
+SERVICE_PASSWORD=password
+SERVICE_TOKEN=password
+LOGFILE=/opt/stack/logs/stack.sh.log
+VERBOSE=True
+LOG_COLOR=True
+SCREEN_LOGDIR=/opt/stack/logs
+disable_service g-api
+disable_service g-reg
+disable_service n-api
+disable_service n-crt
+disable_service n-obj
+disable_service n-cpu
+disable_service n-net
+disable_service n-cond
+disable_service n-sch
+disable_service n-novnc
+disable_service n-xvnc
+disable_service n-cauth
+disable_service c-sch
+disable_service c-api
+disable_service c-vol
+disable_service h-eng
+disable_service h-api
+disable_service h-api-cfn
+disable_service h-api-cw
+disable_service horizon
+disable_service tempest
+EOF
+pushd /home/ubuntu/devstack
+sudo -u ubuntu -g ubuntu ./stack.sh
+popd
+
+# Setup keystone user, service, and endpoint
+CUE_URL="http://${floating_ip}:8795/"
+source ./devstack/openrc admin admin
+keystone user-create --name cue --tenant service --pass password
+keystone user-role-add --user cue --role admin --tenant service
+keystone service-create --name cue --type "message_queue" --description "Cue MQ Provisioning Service"
+keystone endpoint-create --region $OS_REGION_NAME --service cue --publicurl $CUE_URL --adminurl $CUE_URL --internalurl $CUE_URL
+
 # Install MySQL DB
 debconf-set-selections <<< "mysql-server mysql-server/root_password password ${mysql_root_password}"
 debconf-set-selections <<< "mysql-server mysql-server/root_password_again password ${mysql_root_password}"
@@ -96,34 +175,46 @@ mkdir -p /etc/cue
 
 # Copy Cue's default configuration files and policy file to /etc/cue/
 CUE_CONF="/etc/cue/cue.conf"
-WORKER_CONF="/etc/cue/worker.conf"
 cp etc/cue/cue.conf.sample ${CUE_CONF}
-cp etc/cue/worker.conf.sample ${WORKER_CONF}
 cp etc/cue/policy.json /etc/cue/policy.json
 
 # Set required cue configuration settings
 db_connection_api=mysql://cue_api:${mysql_cue_api_password}@127.0.0.1/cue
 db_connection_worker=mysql://cue_worker:${mysql_cue_worker_password}@127.0.0.1/cue
 iniset ${CUE_CONF} DEFAULT rabbit_port 5672
-iniset ${CUE_CONF} DEFAULT auth_strategy noauth
 iniset ${CUE_CONF} DEFAULT debug True
+iniset ${CUE_CONF} DEFAULT os_security_group ${os_security_group}
+iniset ${CUE_CONF} DEFAULT management_network_id ${cue_management_network_id}
+iniset ${CUE_CONF} DEFAULT auth_strategy keystone
 iniset ${CUE_CONF} api host_ip '0.0.0.0'
 iniset ${CUE_CONF} api port 8795
 iniset ${CUE_CONF} api max_limit 1000
-iniset ${CUE_CONF} api os_image_id ${cue_image_id}
 iniset ${CUE_CONF} database connection ${db_connection_api}
-iniset ${WORKER_CONF} openstack os_region_name ${os_region_name}
-iniset ${WORKER_CONF} openstack os_tenant_name ${os_tenant_name}
-iniset ${WORKER_CONF} openstack os_username ${os_username}
-iniset ${WORKER_CONF} openstack os_password ${os_password}
-iniset ${WORKER_CONF} openstack os_auth_url ${os_auth_url}
-iniset ${WORKER_CONF} database connection ${db_connection_worker}
+iniset ${CUE_CONF} openstack os_key_name ${os_key_name}
+iniset ${CUE_CONF} openstack os_region_name ${os_region_name}
+iniset ${CUE_CONF} openstack os_tenant_name ${os_tenant_name}
+iniset ${CUE_CONF} openstack os_username ${os_username}
+iniset ${CUE_CONF} openstack os_password ${os_password}
+iniset ${CUE_CONF} openstack os_auth_url ${os_auth_url}
+iniset ${CUE_CONF} database connection ${db_connection_worker}
+iniset ${CUE_CONF} keystone_authtoken project_domain_id default
+iniset ${CUE_CONF} keystone_authtoken project_name service
+iniset ${CUE_CONF} keystone_authtoken user_domain_id default
+iniset ${CUE_CONF} keystone_authtoken password password
+iniset ${CUE_CONF} keystone_authtoken username cue
+iniset ${CUE_CONF} keystone_authtoken auth_url http://${floating_ip}:35357
+iniset ${CUE_CONF} keystone_authtoken auth_plugin password
 
 # Execute Cue's database upgrade scripts
 cue-manage --config-file /etc/cue/cue.conf database upgrade
 
 # Execute Cue's taskflow upgrade scripts
-cue-manage --config-file /etc/cue/worker.conf taskflow upgrade
+cue-manage --config-file /etc/cue/cue.conf taskflow upgrade
+
+# set default broker and cue image
+cue-manage --config-file ${CUE_CONF} broker add rabbitmq true
+BROKER_ID=$(cue-manage --config-file ${CUE_CONF} broker list | grep rabbitmq | tr -d ' ' | cut -f 2 -d '|')
+cue-manage --config-file ${CUE_CONF} broker add_metadata ${BROKER_ID} --image ${cue_image_id}
 
 # Create supervisord execution configuration for Cue API
 cat > /etc/supervisor/conf.d/cueapi.conf<< EOF
@@ -143,7 +234,7 @@ EOF
 # Create supervisord execution configuration for Cue Worker
 cat > /etc/supervisor/conf.d/cueworker.conf<< EOF
 [program:cue-worker]
-command=cue-worker --debug --config-file /etc/cue/worker.conf
+command=cue-worker --debug --config-file /etc/cue/cue.conf
 process_name=%(program_name)s
 stdout_logfile=/var/log/cue-worker.log
 stdout_logfile_maxbytes=1MB
