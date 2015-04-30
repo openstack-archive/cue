@@ -9,6 +9,7 @@ while test $# -gt 0; do
                         echo "Required parameters:"
                         echo "--image IMAGE_ID   specify Nova image id to use"
                         echo "--flavor FLAVOR_ID  specify a Nova flavor id to use"
+                        echo "--cue-management-nic CUE_MANAGEMENT_NIC  specify management network interface for cue"
                         echo "--cue-image CUE_IMAGE_ID  specify a Nova image id for Cue cluster VMs"
                         echo "Optional parameters:"
                         echo "--security-groups SECURITY_GROUPS   specify security group"
@@ -30,6 +31,13 @@ while test $# -gt 0; do
                         shift
                         if test $# -gt 0; then
                                 export FLAVOR_ID=$1
+                        fi
+                        shift
+                        ;;
+                --cue-management-nic)
+                        shift
+                        if test $# -gt 0; then
+                                export CUE_MANAGEMENT_NIC=$1
                         fi
                         shift
                         ;;
@@ -89,8 +97,8 @@ while test $# -gt 0; do
 done
 
 # verify required and optional input arguments
-if [ -z ${IMAGE_ID} ] || [ -z ${FLAVOR_ID} ] || [ -z ${CUE_IMAGE_ID} ]; then
-    echo "IMAGE_ID, FLAVOR_ID AND CUE_IMAGE_ID must be provided"
+if [ -z ${IMAGE_ID} ] || [ -z ${FLAVOR_ID} ] || [ -z ${CUE_IMAGE_ID} ] || [ -z ${CUE_MANAGEMENT_NIC} ]; then
+    echo "IMAGE_ID, FLAVOR_ID, CUE_IMAGE_ID AND CUE_MANAGEMENT_NIC must be provided"
     exit 1
 fi
 
@@ -137,7 +145,7 @@ if [ ! -z ${KEY_NAME} ]; then
 fi
 
 if [ ! -z ${KEY_NAME} ]; then
-    NOVA_BOOT_COMMAND="${NOVA_BOOT_COMMAND} --nic ${NIC}"
+    NOVA_BOOT_COMMAND="${NOVA_BOOT_COMMAND} --nic net-id=${NIC}"
 fi
 
 NOVA_BOOT_COMMAND="${NOVA_BOOT_COMMAND} --user-data ${USERDATA_FILE} ${VM_NAME}"

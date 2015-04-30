@@ -7,6 +7,7 @@ os_username={{OS_USERNAME}}
 os_password={{OS_PASSWORD}}
 os_auth_url={{OS_AUTH_URL}}
 cue_image_id={{CUE_IMAGE_ID}}
+cue_management_network_id={{CUE_MANAGEMENT_NIC}}
 mysql_root_password={{MYSQL_ROOT_PASSWORD}}
 mysql_cue_api_password={{MYSQL_CUEAPI_PASSWORD}}
 mysql_cue_worker_password={{MYSQL_CUEWORKER_PASSWORD}}
@@ -96,34 +97,37 @@ mkdir -p /etc/cue
 
 # Copy Cue's default configuration files and policy file to /etc/cue/
 CUE_CONF="/etc/cue/cue.conf"
-WORKER_CONF="/etc/cue/worker.conf"
 cp etc/cue/cue.conf.sample ${CUE_CONF}
-cp etc/cue/worker.conf.sample ${WORKER_CONF}
 cp etc/cue/policy.json /etc/cue/policy.json
 
 # Set required cue configuration settings
 db_connection_api=mysql://cue_api:${mysql_cue_api_password}@127.0.0.1/cue
 db_connection_worker=mysql://cue_worker:${mysql_cue_worker_password}@127.0.0.1/cue
 iniset ${CUE_CONF} DEFAULT rabbit_port 5672
-iniset ${CUE_CONF} DEFAULT auth_strategy noauth
 iniset ${CUE_CONF} DEFAULT debug True
+iniset ${CUE_CONF} DEFAULT management_network_id ${cue_management_network_id}
+iniset ${CUE_CONF} service:api auth_strategy keystone
 iniset ${CUE_CONF} api host_ip '0.0.0.0'
 iniset ${CUE_CONF} api port 8795
 iniset ${CUE_CONF} api max_limit 1000
-iniset ${CUE_CONF} api os_image_id ${cue_image_id}
 iniset ${CUE_CONF} database connection ${db_connection_api}
-iniset ${WORKER_CONF} openstack os_region_name ${os_region_name}
-iniset ${WORKER_CONF} openstack os_tenant_name ${os_tenant_name}
-iniset ${WORKER_CONF} openstack os_username ${os_username}
-iniset ${WORKER_CONF} openstack os_password ${os_password}
-iniset ${WORKER_CONF} openstack os_auth_url ${os_auth_url}
-iniset ${WORKER_CONF} database connection ${db_connection_worker}
+iniset ${CUE_CONF} openstack os_region_name ${os_region_name}
+iniset ${CUE_CONF} openstack os_tenant_name ${os_tenant_name}
+iniset ${CUE_CONF} openstack os_username ${os_username}
+iniset ${CUE_CONF} openstack os_password ${os_password}
+iniset ${CUE_CONF} openstack os_auth_url ${os_auth_url}
+iniset ${CUE_CONF} database connection ${db_connection_worker}
 
 # Execute Cue's database upgrade scripts
 cue-manage --config-file /etc/cue/cue.conf database upgrade
 
 # Execute Cue's taskflow upgrade scripts
-cue-manage --config-file /etc/cue/worker.conf taskflow upgrade
+cue-manage --config-file /etc/cue/cue.conf taskflow upgrade
+
+# set default broker and cue image
+cue-manage --config-file ${CUE_CONF} broker add rabbitmq true
+BROKER_ID=$(cue-manage --config-file ${CUE_CONF} broker list | grep rabbitmq | tr -d ' ' | cut -f 2 -d '|')
+cue-manage --config-file ${CUE_CONF} broker add_metadata ${BROKER_ID} --image ${CUE_IMAGE_ID}
 
 # Create supervisord execution configuration for Cue API
 cat > /etc/supervisor/conf.d/cueapi.conf<< EOF
@@ -143,7 +147,7 @@ EOF
 # Create supervisord execution configuration for Cue Worker
 cat > /etc/supervisor/conf.d/cueworker.conf<< EOF
 [program:cue-worker]
-command=cue-worker --debug --config-file /etc/cue/worker.conf
+command=cue-worker --debug --config-file /etc/cue/cue.conf
 process_name=%(program_name)s
 stdout_logfile=/var/log/cue-worker.log
 stdout_logfile_maxbytes=1MB
