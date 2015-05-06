@@ -24,8 +24,9 @@ fi
 echo "Successfully contacted the Cue API"
 
 # Where Cue and Tempest code lives
-CUE_DIR=${CUE_DIR:-/opt/stack/cue}
-TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/tempest}
+DEFAULT_BASE=$(readlink -e $(dirname $(readlink -f $0))/../../..)
+CUE_DIR=${CUE_DIR:-$DEFAULT_BASE/cue}
+TEMPEST_DIR=${TEMPEST_DIR:-$DEFAULT_BASE/tempest}
 
 # Install tempest
 pip freeze | grep tempest 2>&1 1>/dev/null || pip install -e $TEMPEST_DIR
