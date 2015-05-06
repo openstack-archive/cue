@@ -238,6 +238,8 @@ function init_cue {
 
     set_broker
 
+    configure_scenario_rally_tests
+
     build_cue_rabbit_test_image
 }
 
@@ -266,6 +268,21 @@ function install_cuedashboard {
         if ! [ -h  $DEST/horizon/openstack_dashboard/local/enabled/_70_cue_panel.py ]; then
             ln -s $DEST/cue-dashboard/_70_cue_panel.py $DEST/horizon/openstack_dashboard/local/enabled/_70_cue_panel.py
         fi
+    fi
+}
+
+# configure Cue Scenario Rally tests
+function configure_scenario_rally_tests {
+
+    if ! [ -d $HOME/.rally/plugins ]; then
+        mkdir -p $HOME/.rally/plugins/cue_scenarios
+
+        SCENARIOS=$(find $DEST/cue/tests/rally-scenarios/plugins -type f -name "*.py")
+        for SCENARIO in $SCENARIOS
+        do
+            FILE_NAME=$(echo $SCENARIO | rev | cut -d/ -f1 | rev)
+            ln -s $SCENARIO $HOME/.rally/plugins/cue_scenarios/$FILE_NAME
+        done
     fi
 }
 
