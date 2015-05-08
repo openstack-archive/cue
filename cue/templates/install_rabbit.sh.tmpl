@@ -7,7 +7,7 @@ cat > /etc/hosts << EOF
 EOF
 
 if [ ! -d /var/lib/os-collect-config/local-data ]; then
-  mkdir /var/lib/os-collect-config/local-data
+  mkdir -p /var/lib/os-collect-config/local-data
 fi
 
 cat > /var/lib/os-collect-config/local-data/metadata.json << EOF
