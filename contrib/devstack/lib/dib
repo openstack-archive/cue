@@ -39,6 +39,9 @@ OAC_DIR=$DEST/os-apply-config
 TIE_REPO=${TIE_REPO:-${GIT_BASE}/openstack/tripleo-image-elements.git}
 TIE_BRANCH=${TIE_BRANCH:-master}
 
+# QEMU Image Options
+DIB_QEMU_IMG_OPTIONS='compat=0.10'
+
 # Functions
 # ---------
 
@@ -86,6 +89,11 @@ function disk_image_create_upload {
         pypi_mirror_url_1=http://pypi.python.org/simple
     fi
 
+    QEMU_IMG_OPTION=""
+    if [ ! -z "${DIB_QEMU_IMG_OPTIONS}" ]; then
+        QEMU_IMG_OPTION="--qemu-img-options ${DIB_QEMU_IMG_OPTIONS}"
+    fi
+
     # The disk-image-create command to run
     ELEMENTS_PATH=$elements_path \
     DIB_APT_SOURCES=$DIB_APT_SOURCES \
@@ -94,6 +102,7 @@ function disk_image_create_upload {
     PYPI_MIRROR_URL_1=$pypi_mirror_url_1 \
     disk-image-create -a amd64 $image_elements ${extra_elements:-} \
         --image-cache $DIB_IMAGE_CACHE \
+        ${QEMU_IMG_OPTION} \
         -o $image_path
 
     local token=$(keystone token-get | grep ' id ' | get_field 2)
