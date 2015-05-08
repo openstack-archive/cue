@@ -1,4 +1,4 @@
-# Copyright 2014 OpenStack Foundation
+# Copyright 2015 OpenStack Foundation
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -30,12 +30,12 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
     It contains all the CRUD requests for Cue Clusters.
     """
 
-    def list_clusters(self, params=None):
+    def list_clusters(self, params=None, url='clusters'):
         """List all clusters
 
         :param params: Optional parameters for listing cluster
+        :param url:
         """
-        url = 'clusters'
         if params:
             url += '?%s' % urllib.urlencode(params)
 
@@ -43,7 +43,7 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
         self.expected_success(200, resp.status)
         return rest_client.ResponseBodyData(resp, body)
 
-    def get_cluster_details(self, cluster_id):
+    def get_cluster(self, cluster_id):
         """Get a cluster
 
         :param cluster_id: The ID of the cluster to get
@@ -52,7 +52,7 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
         self.expected_success(200, resp.status)
         return rest_client.ResponseBody(resp, self._parse_resp(body))
 
-    def create_cluster(self, name, flavor, network_id):
+    def create_cluster(self, name, size, flavor, network_id, volume_size=100):
         """Create a new cluster with one node
 
         :param name: The name of the cluster
@@ -61,13 +61,19 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
         """
         post_body = {
             'name': name,
-            'size': 1,
-            "flavor": flavor,
-            'volume_size': 100,
-            "network_id": network_id,
+            'size': size,
+            'flavor': flavor,
+            'volume_size': volume_size,
+            'network_id': network_id,
         }
 
-        post_body = post_body
+        return self.create_cluster_from_body(post_body)
+
+    def create_cluster_from_body(self, post_body):
+        """Create a new cluster with provided request body
+
+        :param post_body: The custom request body
+        """
         post_body = json.dumps(post_body)
 
         resp, body = self.post('clusters', post_body)
@@ -78,6 +84,6 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
 
         :param cluster_id: The ID of the cluster to delete
         """
-        resp, body = self.delete("clusters/%s" % str(cluster_id))
+        resp, body = self.delete('clusters/%s' % str(cluster_id))
         self.expected_success(202, resp.status)
         return rest_client.ResponseBody(resp, body)
