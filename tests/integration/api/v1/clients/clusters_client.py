@@ -1,4 +1,4 @@
-# Copyright 2014 OpenStack Foundation
+# Copyright 2015 OpenStack Foundation
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -30,12 +30,11 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
     It contains all the CRUD requests for Cue Clusters.
     """
 
-    def list_clusters(self, params=None):
+    def list_clusters(self, params=None, url='clusters'):
         """List all clusters
 
         :param params: Optional parameters for listing cluster
         """
-        url = 'clusters'
         if params:
             url += '?%s' % urllib.urlencode(params)
 
@@ -62,12 +61,22 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
         post_body = {
             'name': name,
             'size': 1,
-            "flavor": flavor,
+            'flavor': flavor,
             'volume_size': 100,
-            "network_id": network_id,
+            'network_id': network_id,
         }
 
         post_body = post_body
+        post_body = json.dumps(post_body)
+
+        resp, body = self.post('clusters', post_body)
+        return rest_client.ResponseBody(resp, self._parse_resp(body))
+
+    def create_cluster_from_body(self, post_body):
+        """Create a new cluster with one node
+
+        :param post_body: The cluster info body to post
+        """
         post_body = json.dumps(post_body)
 
         resp, body = self.post('clusters', post_body)
@@ -78,6 +87,6 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
 
         :param cluster_id: The ID of the cluster to delete
         """
-        resp, body = self.delete("clusters/%s" % str(cluster_id))
+        resp, body = self.delete('clusters/%s' % str(cluster_id))
         self.expected_success(202, resp.status)
         return rest_client.ResponseBody(resp, body)
