@@ -63,9 +63,8 @@ class ContextHook(hooks.PecanHook):
 
     def before(self, state):
         user_id = state.request.headers.get('X-User-Id')
-        user_id = state.request.headers.get('X-User', user_id)
-        tenant = state.request.headers.get('X-Tenant-Id')
-        tenant = state.request.headers.get('X-Tenant', tenant)
+        user_name = state.request.headers.get('X-User-Name', user_id)
+        tenant_id = state.request.headers.get('X-Project-Id')
         domain_id = state.request.headers.get('X-User-Domain-Id')
         domain_name = state.request.headers.get('X-User-Domain-Name')
         auth_token = state.request.headers.get('X-Auth-Token')
@@ -74,8 +73,8 @@ class ContextHook(hooks.PecanHook):
 
         state.request.context = context.RequestContext(
             auth_token=auth_token,
-            user=user_id,
-            tenant=tenant,
+            user=user_name,
+            tenant=tenant_id,
             domain_id=domain_id,
             domain_name=domain_name,
             is_public_api=is_public_api)
