@@ -19,7 +19,7 @@ COMMON_ELEMENTS=${COMMON_ELEMENTS:-"vm ubuntu"}
 
 # Common Settings for all msgaas images builds
 SIZE="2"
-ELEMENTS="os-apply-config os-refresh-config ntp hosts cue-rabbitmq-base ifmetric"
+ELEMENTS="ntp hosts cue-rabbitmq-base ifmetric"
 ELEMENTS_PATH="$CUE_HOME/contrib/image-elements"
 
 # QEMU Image options

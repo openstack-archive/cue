@@ -6,24 +6,57 @@ cat > /etc/hosts << EOF
 {%- endfor %}
 EOF
 
-if [ ! -d /var/lib/os-collect-config/local-data ]; then
-  mkdir -p /var/lib/os-collect-config/local-data
-fi
+echo "{{erlang_cookie}}" > /var/lib/rabbitmq/.erlang.cookie
+chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie
+chmod 0400 /var/lib/rabbitmq/.erlang.cookie
 
-cat > /var/lib/os-collect-config/local-data/metadata.json << EOF
-{
-  "rabbit" : {
-    "cluster_nodes": "{%- for node_name in rabbit_nodes -%}
-            'rabbit@{{node_name}}' {%- if not loop.last -%},{%- endif -%}
-        {%- endfor -%}",
-    "cookie": "{{erlang_cookie}}",
-    "default_user": "{{default_rabbit_user}}",
-    "default_pass": "{{default_rabbit_pass}}"
+mkdir -p /var/run/rabbitmq
+chown rabbitmq:rabbitmq /var/run/rabbitmq
+
+cat > /etc/rabbitmq/rabbitmq.config << EOF
+[
+  {kernel,
+          [{inet_dist_listen_min, 61000},
+           {inet_dist_listen_max, 61000},
+           {inet_default_listen_options, [{nodelay, true},
+                                          {sndbuf, 65535},
+                                          {recbuf, 65535},
+                                          {keepalive, true}
+                                         ]
+           },
+           {inet_default_connect_options, [{nodelay, true},
+                                           {keepalive, true}
+                                          ]
+           }
+          ]
   },
-  "os-collect-config": {
-    "collectors": [ "local", "ec2" ]
+  {mnesia, [{dump_log_write_threshold, 1000}]},
+  {rabbit, [{vm_memory_high_watermark, 0.4},
+            {memory_alarms, true},
+            {loopback_users,[]},
+            {disk_free_limit, {mem_relative, 1.0}},
+            {cluster_partition_handling, pause_minority},
+            {cluster_nodes, {[{%- for node_name in rabbit_nodes -%}
+            'rabbit@{{node_name}}' {%- if not loop.last -%},{%- endif -%}
+        {%- endfor -%}], disc}},
+            {default_user, <<"{{default_rabbit_user}}">>},
+            {default_pass, <<"{{default_rabbit_pass}}">>}
+           ]
   }
-}
+].
 EOF
 
-os-apply-config
+cat > /etc/security/limits.d/rabbitmq_limits.conf << EOF
+# Set number of file descriptors
+rabbitmq hard nofile 65536
+rabbitmq soft nofile 65536
+EOF
+
+update-rc.d rabbitmq-server enable
+
+while [ ! -z "$(service rabbitmq-server status | grep 'nodedown')" ]; do
+    service rabbitmq-server start
+    sleep 5
+done
+
+rabbitmqctl set_policy HA '^(?!amq\.).*' '{"ha-mode": "all"}'
