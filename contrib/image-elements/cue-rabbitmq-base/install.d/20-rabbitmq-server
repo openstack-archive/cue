@@ -5,26 +5,17 @@ set -eux
 install-packages rabbitmq-server
 
 # Ensure we leave symlinks in place for RabbitMQ state paths
-register-state-path --leave-symlink /var/lib/rabbitmq
-register-state-path --leave-symlink /var/log/rabbitmq
+#register-state-path --leave-symlink /var/lib/rabbitmq
+#register-state-path --leave-symlink /var/log/rabbitmq
 
 FILES="$(dirname $0)/../files"
 
 # Note(jang): the rabbitmq-server service is installed, but not started, since
 # the first run of os-collect-config is required to configure it properly.
 
-# In Ubuntu rabbit's default init.d script is broken.
-if [ "$DISTRO_NAME" = "ubuntu" ] || [ "$DISTRO_NAME" = "debian" -a "$DIB_INIT_SYSTEM" = "upstart" ]; then
-    sed -i 's,/etc/init.d/rabbitmq-server rotate-logs,/usr/sbin/rabbitmqctl -q rotate_logs,g' /etc/logrotate.d/rabbitmq-server
-    update-rc.d -f rabbitmq-server remove
-    rm /etc/init.d/rabbitmq-server
-
-    # Note(jang) The os-svc-daemon script has too many assumptions baked into it
-    # that it'll be running a venv-based service to use directly. Install an upstart
-    # configuration that's compatible with os-svc-enable and os-svc-restart
-
-    FILE=/etc/init/rabbitmq-server.conf
-    install -g root -o root -m 0755 "${FILES}${FILE}" "${FILE}"
+if [ "$DISTRO_NAME" = "ubuntu" ] || [ "$DISTRO_NAME" = "debian" ]; then
+    # Prevent rabbitmq-server from starting automatically
+    update-rc.d -f rabbitmq-server disable
 fi
 
 if [ "$DIB_INIT_SYSTEM" = "systemd" ]; then
