@@ -14,7 +14,6 @@
 # under the License.
 
 import exceptions
-import os
 import time
 
 from cueclient.v1 import client
@@ -90,15 +89,17 @@ class CueScenario(base.Scenario):
         :param tenant_name: str, OpenStack tenant name
         :return:
         """
-
-        auth = ks_v2.Password(
-            auth_url=auth_url or os.environ['OS_AUTH_URL'],
-            username=username or os.environ['OS_USERNAME'],
-            password=password or os.environ['OS_PASSWORD'],
-            tenant_name=tenant_name or os.environ['OS_TENANT_NAME']
+        keystone_client = self.clients("keystone")
+        auth = ks_v2.Token(
+            keystone_client.auth_url,
+            keystone_client.auth_token,
+            tenant_id=keystone_client.tenant_id,
+            tenant_name=keystone_client.tenant_name,
+            trust_id=keystone_client.trust_id
         )
         session = ks_session.Session(auth=auth)
-        return client.Client(session=session)
+        cue_client = client.Client(session=session)
+        return cue_client
 
     def _verify_cluster(self, ref_cluster, cmp_cluster):
         """Verifies basic values between two cluster dictionaries
