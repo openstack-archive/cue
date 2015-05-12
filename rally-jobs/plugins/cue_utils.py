@@ -22,6 +22,7 @@ from keystoneclient.auth.identity import v2 as ks_v2
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
 from rally.benchmark.scenarios import base
+from rally.benchmark import utils as benchmark_utils
 from rally.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -90,15 +91,17 @@ class CueScenario(base.Scenario):
         :param tenant_name: str, OpenStack tenant name
         :return:
         """
-
-        auth = ks_v2.Password(
-            auth_url=auth_url or os.environ['OS_AUTH_URL'],
-            username=username or os.environ['OS_USERNAME'],
-            password=password or os.environ['OS_PASSWORD'],
-            tenant_name=tenant_name or os.environ['OS_TENANT_NAME']
+        keystone_client = self.clients("keystone")
+        auth = ks_v2.Token(
+            keystone_client.auth_url,
+            keystone_client.auth_token,
+            tenant_id=keystone_client.tenant_id,
+            tenant_name=keystone_client.tenant_name,
+            trust_id=keystone_client.trust_id
         )
         session = ks_session.Session(auth=auth)
-        return client.Client(session=session)
+        cue_client = client.Client(session=session)
+        return cue_client
 
     def _verify_cluster(self, ref_cluster, cmp_cluster):
         """Verifies basic values between two cluster dictionaries
@@ -175,3 +178,72 @@ class CueScenario(base.Scenario):
                 self._delete_cluster(cluster_id)
                 raise exceptions.Exception("Timeout while waiting for status "
                                            "change to %s.", final_status)
+
+    def _delete_server(self, nova_id):
+        """Delete nova instance, security group and key-pair."""
+        # Remove rally key-pair
+        nova_client = self.clients("nova")
+
+        vm_list = nova_client.servers.list()
+        for vm in vm_list:
+            if nova_id == vm.id:
+                server = vm
+                sec_group_name = vm.security_groups[0]['name']
+                server_id = vm.id
+                server_key_name = vm.key_name
+                break
+
+        LOG.info("Deleting nova instance: %s", server_id)
+        nova_client.servers.delete(server_id)
+
+        LOG.info("Waiting for instance to get deleted")
+        benchmark_utils.wait_for_delete(server,
+            update_resource=benchmark_utils.get_from_manager())
+
+        # delete sec-group
+        for secgroup in nova_client.security_groups.list():
+                if secgroup.name == sec_group_name:
+                    LOG.info("Deleting sec-group: %s", sec_group_name)
+                    nova_client.security_groups.delete(secgroup.id)
+
+        # delete key-pair
+        for key_pair in nova_client.keypairs.list():
+            if key_pair.name == server_key_name:
+                LOG.info("Deleting key-pair: %s", server_key_name)
+                nova_client.keypairs.delete(key_pair.id)
+
+    def _delete_network(self, network_tuple):
+        """Delete neutron network, router and interface ."""
+        neutron_client = self.clients("neutron")
+        router = network_tuple[0]
+        network = network_tuple[1]
+        subnet = network_tuple[2]
+
+        try:
+            # delete interface subnet-router
+            LOG.info("Deleting router interface")
+            neutron_client.remove_interface_router(
+                router["router"]["id"], {"subnet_id": subnet['subnet']["id"]})
+
+            # delete ports associated with interface
+            LOG.info("Deleting ports")
+            port_list = neutron_client.list_ports()["ports"]
+            for port in port_list:
+                neutron_client.delete_port(port["id"])
+
+            # delete router
+            LOG.info("Deleting router")
+            neutron_client.delete_router(router["router"]["id"])
+
+            # delete network
+            LOG.info("Deleting network")
+            neutron_client.delete_network(network["network"]["id"])
+
+        except Exception as err:
+            LOG.exception(err)
+
+    def _delete_key_file(self, key_file):
+        """Delete key file."""
+        LOG.info("Deleting rally key file")
+        if os.path.exists(key_file):
+            os.remove(key_file)
