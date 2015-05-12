@@ -277,7 +277,7 @@ function configure_scenario_rally_tests {
     if ! [ -d $HOME/.rally/plugins ]; then
         mkdir -p $HOME/.rally/plugins/cue_scenarios
 
-        SCENARIOS=$(find $DEST/cue/tests/rally-scenarios/plugins -type f -name "*.py")
+        SCENARIOS=$(find $DEST/cue/rally-jobs/plugins -type f -name "*.py")
         for SCENARIO in $SCENARIOS
         do
             FILE_NAME=$(echo $SCENARIO | rev | cut -d/ -f1 | rev)
