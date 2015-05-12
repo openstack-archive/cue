@@ -22,6 +22,9 @@ SIZE="2"
 ELEMENTS="os-apply-config os-refresh-config ntp hosts cue-rabbitmq-base ifmetric"
 ELEMENTS_PATH="$CUE_HOME/contrib/image-elements"
 
+# QEMU Image options
+QEMU_IMG_OPTIONS='compat=0.10'
+
 # Install some required apt packages if needed
 if ! [ -e /usr/sbin/debootstrap -a -e /usr/bin/qemu-img ]; then
   sudo apt-get update
@@ -47,6 +50,11 @@ if [ ! -d $BUILD_DIR/dist ]; then
   mkdir $BUILD_DIR/dist
 fi
 
+# Complete QEMU_IMG_OPTIONS
+if [ ! -z "${QEMU_IMG_OPTIONS}" ]; then
+    QEMU_IMG_OPTIONS="--qemu-img-options ${QEMU_IMG_OPTIONS}"
+fi
+
 # Prepare venv for diskimage-builder
 virtualenv $BUILD_DIR/diskimage-builder/.venv
 
@@ -56,6 +64,6 @@ virtualenv $BUILD_DIR/diskimage-builder/.venv
   pip install -r requirements.txt
   python setup.py install
   popd
-  disk-image-create -a amd64 -o $BUILD_DIR/dist/$BUILD_FILE --image-size $SIZE $COMMON_ELEMENTS $ELEMENTS
+  disk-image-create -a amd64 -o $BUILD_DIR/dist/$BUILD_FILE --image-size $SIZE $QEMU_IMG_OPTIONS $COMMON_ELEMENTS $ELEMENTS
 )
 
