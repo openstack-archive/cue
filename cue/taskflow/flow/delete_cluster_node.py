@@ -14,12 +14,14 @@
 # under the License.
 
 import taskflow.patterns.linear_flow as linear_flow
+import taskflow.retry as retry
 
 import cue.client as client
 from cue.db.sqlalchemy import models
 import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
 import os_tasklib.nova as nova
+import os_tasklib.neutron as neutron
 
 
 def delete_cluster_node(cluster_id, node_number, node_id):
@@ -40,6 +42,7 @@ def delete_cluster_node(cluster_id, node_number, node_id):
     node_name = "cluster[%s].node[%d]" % (cluster_id, node_number)
 
     extract_vm_id = lambda node: node['instance_id']
+    extract_port_ids = lambda interfaces: [i['port_id'] for i in interfaces]
 
     deleted_node_values = {'status': models.Status.DELETED,
                            'deleted': True}
@@ -57,10 +60,24 @@ def delete_cluster_node(cluster_id, node_number, node_id):
             name="extract vm id %s" % node_name,
             rebind={'node': "node_%d" % node_number},
             provides="vm_id_%d" % node_number),
+        nova.ListVmInterfaces(
+            os_client=client.nova_client(),
+            name="list vm interfaces %s" % node_name,
+            rebind={'server': "vm_id_%d" % node_number},
+            provides="vm_interfaces_%d" % node_number),
+        os_common.Lambda(
+            extract_port_ids,
+            name="extract port ids %s" % node_name,
+            rebind={'interfaces': "vm_interfaces_%d" % node_number},
+            provides="vm_port_list_%d" % node_number),
         nova.DeleteVm(
             os_client=client.nova_client(),
             name="delete vm %s" % node_name,
             rebind={'server': "vm_id_%d" % node_number}),
+        neutron.DeletePorts(
+            os_client=client.neutron_client(),
+            name="delete vm %s ports" % node_name,
+            rebind={'port_ids': "vm_port_list_%d" % node_number}),
         cue_tasks.UpdateNode(
             name="update node %s" % node_name,
             inject={'node_id': node_id,
