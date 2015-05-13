@@ -4,7 +4,7 @@ set -ex
 
 pushd $BASE/new/devstack
 
-export ENABLED_SERVICES=cue,cue-api,cue-worker,zookeeper,dib,n-novnc
+export ENABLED_SERVICES=cue,cue-api,cue-worker,zookeeper
 
 echo "DEST=/opt/stack/new" >> $BASE/new/devstack/localrc
 echo "CUE_MANAGEMENT_KEY=cue-mgmt-key" >> $BASE/new/devstack/localrc
