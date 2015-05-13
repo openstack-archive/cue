@@ -15,4 +15,4 @@
 
 
 from create_port import CreatePort  # noqa
-from delete_port import DeletePort  # noqa
+from delete_ports import DeletePorts  # noqa
