@@ -96,7 +96,7 @@ class NeutronClient(base.BaseFixture):
         body['port']['id'] = port_id
         body['port']['fixed_ips'] = []
         body['port']['fixed_ips'].append({'ip_address': '0.0.0.0'})
-        self._port_list[port_id] = body['port']
+        self._port_list[port_id] = body['port'].copy()
         return body
 
     def create_network(self, body=None):
