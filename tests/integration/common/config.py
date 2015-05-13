@@ -28,7 +28,7 @@ def setup_config(config_file=''):
     identity_options = [
         cfg.StrOpt('uri', default='http://localhost:5000/v2.0'),
         cfg.StrOpt('username', default='demo'),
-        cfg.StrOpt('password', default='secret'),
+        cfg.StrOpt('password', default='secretadmin'),
         cfg.StrOpt('tenant_name', default='demo'),
     ]
     TEST_CONF.register_group(identity_group)
@@ -43,7 +43,7 @@ def setup_config(config_file=''):
 
     # Figure out which config to load
     config_to_load = []
-    local_config = 'cue-integration.conf'
+    local_config = './tests/integration/cue-integration.conf'
     if os.path.isfile(config_file):
         config_to_load.append(config_file)
     elif os.path.isfile(local_config):
