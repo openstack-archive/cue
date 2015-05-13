@@ -28,7 +28,7 @@ def setup_config(config_file=''):
     identity_options = [
         cfg.StrOpt('uri', default='http://localhost:5000/v2.0'),
         cfg.StrOpt('username', default='demo'),
-        cfg.StrOpt('password', default='secret'),
+        cfg.StrOpt('password', default='secretadmin'),
         cfg.StrOpt('tenant_name', default='demo'),
     ]
     TEST_CONF.register_group(identity_group)
