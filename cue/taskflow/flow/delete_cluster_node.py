@@ -57,6 +57,10 @@ def delete_cluster_node(cluster_id, node_number, node_id):
             name="extract vm id %s" % node_name,
             rebind={'node': "node_%d" % node_number},
             provides="vm_id_%d" % node_number),
+        nova.ListVmInterfaces(
+            os_client=client.nova_client(),
+            name="list vm interfaces %s" % node_name,
+            rebind={'server': "vm_id_%d" % node_number}),
         nova.DeleteVm(
             os_client=client.nova_client(),
             name="delete vm %s" % node_name,
