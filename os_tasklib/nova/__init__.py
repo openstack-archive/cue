@@ -13,7 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from create_vm import CreateVm          # noqa
-from delete_vm import DeleteVm          # noqa
-from get_vm import GetVm                # noqa
-from get_vm_status import GetVmStatus   # noqa
+from create_vm import CreateVm                   # noqa
+from delete_vm import DeleteVm                   # noqa
+from get_vm import GetVm                         # noqa
+from get_vm_status import GetVmStatus            # noqa
+from list_vm_interfaces import ListVmInterfaces  # noqa
