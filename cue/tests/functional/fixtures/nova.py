@@ -23,12 +23,14 @@ import cue.tests.functional.fixtures.base as base
 
 
 class VmDetails(object):
-    def __init__(self, vm_id, name, flavor, image, status=None):
+    def __init__(self, vm_id, name, flavor, image,
+                 port_list=None, status=None):
         self.id = vm_id
         self.name = name
         self.flavor = flavor
         self.image = image
         self.status = status if status else 'ACTIVE'
+        self.port_list = port_list
 
     def to_dict(self):
         return {
@@ -67,6 +69,12 @@ class FlavorDetails(object):
         self.rxtx_factor = rxtx_factor or 1.0
         self.swap = swap or 0
         self.vcpus = vcpus or 2
+
+
+class InterfaceDetails(object):
+    def __init__(self, net_id=None, port_id=None):
+        self.net_id = net_id
+        self.port_id = port_id
 
 
 class VmStatusDetails(object):
@@ -146,6 +154,7 @@ class NovaClient(base.BaseFixture):
         v2_client.servers.delete = self.delete_vm
         v2_client.servers.get = self.get_vm
         v2_client.servers.list = self.list_vms
+        v2_client.servers.interface_list = self.list_interfaces
         v2_client.images.find = self.find_images
         v2_client.images.list = self.list_images
         v2_client.flavors.find = self.find_flavors
@@ -178,6 +187,7 @@ class NovaClient(base.BaseFixture):
         if image_id not in self._image_list:
             raise nova_exc.BadRequest(400)
 
+        port_list = list()
         if nics is not None:
             neutron_client = client.neutron_client()
             for nic in nics:
@@ -188,8 +198,22 @@ class NovaClient(base.BaseFixture):
                             'networks' not in network_list or
                                 len(network_list['networks']) == 0):
                         raise nova_exc.BadRequest(400)
+
+                    else:
+                        body_value = {
+                            "port": {
+                                "admin_state_up": True,
+                                "name": "test port",
+                                "network_id": nic['net-id'],
+                            }
+                        }
+                        port_info = neutron_client.create_port(
+                            body=body_value)
+                        port_id = port_info['port']['id']
+                        port_list.append(InterfaceDetails(net_id=nic['net-id'],
+                                                          port_id=port_id))
                 if 'port-id' in nic:
-                    pass
+                    port_list.append(InterfaceDetails(port_id=nic['port-id']))
 
         if security_groups is not None:
             missing = set(security_groups) - set(self._security_group_list)
@@ -198,6 +222,7 @@ class NovaClient(base.BaseFixture):
 
         newVm = VmDetails(vm_id=uuid.uuid4(), name=name,
                           flavor=flavor, image=image,
+                          port_list=port_list,
                           status='BUILDING')
 
         self._vm_list[str(newVm.id)] = newVm
@@ -241,7 +266,7 @@ class NovaClient(base.BaseFixture):
 
         return server
 
-    def list_vms(self, retrieve_all=True, **_params):
+    def list_vms(self, retrieve_all=True, **kwargs):
         """Mock'd version of novaclient...list_vms().
 
         List available vms.
@@ -263,7 +288,7 @@ class NovaClient(base.BaseFixture):
             if image_detail.name == name:
                 return image_detail
 
-    def list_images(self, retrieve_all=True, **_params):
+    def list_images(self, retrieve_all=True, **kwargs):
         """Mock'd version of novaclient...list_images().
 
         List available images.
@@ -284,3 +309,24 @@ class NovaClient(base.BaseFixture):
         for flavor_detail in self._flavor_list.itervalues():
             if flavor_detail.name == name:
                 return flavor_detail
+
+    def list_interfaces(self, server, **kwargs):
+        """Mock'd version of novaclient...interface_list().
+
+        Lists all interfaces attached to the specified Nova VM.
+
+        :param server:
+        :param kwargs:
+        :return:
+        """
+        try:
+            server_id = server.id
+        except AttributeError:
+            server_id = server
+
+        try:
+            server = self._vm_list[str(server_id)]
+        except KeyError:
+            raise nova_exc.NotFound(404)
+
+        return server.port_list

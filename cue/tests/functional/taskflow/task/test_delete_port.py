@@ -53,23 +53,23 @@ class DeletePortTests(base.FunctionalTestCase):
 
         # Delete port using DeletePort task
         self.flow = linear_flow.Flow('create port').add(
-            neutron_task.DeletePort(os_client=self.neutron_client))
+            neutron_task.DeletePorts(os_client=self.neutron_client))
 
-    def test_delete_existing_port(self):
+    def test_delete_existing_port_single(self):
         # create port
         body_value = {
             "port": {
                 "admin_state_up": True,
                 "name": "test port",
                 "network_id": self.valid_network['id'],
-                }
+            }
         }
         port_info = self.neutron_client.create_port(body=body_value)
         port_id = port_info['port']['id']
 
         # populate task_store with port-id of port created for this test
         task_store = {
-            'port_id': port_id
+            'port_ids': port_id
         }
 
         # retrieve port list prior to delete
@@ -89,12 +89,50 @@ class DeletePortTests(base.FunctionalTestCase):
                          "port-id %s found in neutron port after "
                          "delete" % port_id)
 
+    def test_delete_existing_port_multi(self):
+        # create port
+        body_value = {
+            "port": {
+                "admin_state_up": True,
+                "name": "test port",
+                "network_id": self.valid_network['id'],
+                }
+        }
+        port_id_list = list()
+        for i in range(0, 10):
+            port_info = self.neutron_client.create_port(body=body_value)
+            port_id = port_info['port']['id']
+            port_id_list.append(port_id)
+
+        # populate task_store with port-id of port created for this test
+        task_store = {
+            'port_ids': port_id_list
+        }
+
+        # retrieve port list prior to delete
+        pre_port_list = self.neutron_client.list_ports()
+
+        # search for created port in port list
+        for port_id in port_id_list:
+            self.assertEqual(True, _find_port(port_id, pre_port_list),
+                             "port-id %s not found" % port_id)
+
+        engines.run(self.flow, store=task_store)
+
+        # retrieve port list after delete
+        post_port_list = self.neutron_client.list_ports()
+
+        # search for deleted port in port list
+        self.assertEqual(False, _find_port(port_id, post_port_list),
+                         "port-id %s found in neutron port after "
+                         "delete" % port_id)
+
     def test_delete_nonexistent_port(self):
         # generate random port_id
         port_id = uuid.uuid4().hex
 
         task_store = {
-            'port_id': port_id
+            'port_ids': port_id
         }
 
         # retrieve current port list
