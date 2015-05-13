@@ -43,11 +43,9 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
 
     def setUp(self):
         super(ClusterTest, self).setUp()
-        self.cluster = self._create_cluster()
 
     def tearDown(self):
         super(ClusterTest, self).tearDown()
-        self.client.delete_cluster(self.cluster['id'])
 
     def _create_cluster(self):
         name = data_utils.rand_name(ClusterTest.__name__ + '-cluster')
@@ -56,32 +54,46 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
         size = 3
         return self.client.create_cluster(name, size, flavor, network_id)
 
-    def test_wait_for_active(self):
-        """Verifies cluster goes to ACTIVE state."""
+    def test_create_cluster(self):
+        """Test create cluster and verifies cluster goes to ACTIVE state."""
+        cluster = self._create_cluster()
+
         start_time = time.time()
         while True:
-            cluster_resp = self.client.get_cluster(self.cluster['id'])
-            if cluster_resp['status'] == 'ACTIVE':
+            cluster_resp = self.client.get_cluster(cluster['id'])
+            if cluster_resp['status'] != 'BUILDING':
                 break
             self.assertEqual(cluster_resp['status'], 'BUILDING')
             time.sleep(1)
-            if time.time() - start_time > 300:
-                self.force_failure('timeout')
+            if time.time() - start_time > 600:
+                self.fail('Waited 10 minutes for cluster to get ACTIVE')
+        self.assertEqual(cluster_resp['status'], 'ACTIVE')
 
-    def test_list_clusters(self):
-        """Verifies cluster list returns expected cluster."""
+        # List clusters
         clusters = self.client.list_clusters()
         self.assertIn('id', clusters.data)
         self.assertIn('status', clusters.data)
 
-    def test_get_cluster(self):
-        """Verifies get cluster returns expected cluster."""
-        cluster_resp = self.client.get_cluster(self.cluster['id'])
-        self.assertEqual(self.cluster['id'], cluster_resp['id'])
-        self.assertEqual(self.cluster['name'], cluster_resp['name'])
-        self.assertEqual(self.cluster['network_id'],
+        # Get cluster
+        cluster_resp = self.client.get_cluster(cluster['id'])
+        self.assertEqual(cluster['id'], cluster_resp['id'])
+        self.assertEqual(cluster['name'], cluster_resp['name'])
+        self.assertEqual(cluster['network_id'],
                          cluster_resp['network_id'])
-        self.assertEqual(self.cluster['size'], cluster_resp['size'])
+        self.assertEqual(cluster['size'], cluster_resp['size'])
+
+        # Delete cluster
+        self.client.delete_cluster(cluster['id'])
+        while True:
+            try:
+                cluster_resp = self.client.get_cluster(cluster['id'])
+            except Exception as e:
+                self.assertEqual('Object not found', e.message)
+                break
+            self.assertEqual(cluster_resp['status'], 'DELETING')
+            time.sleep(1)
+            if time.time() - start_time > 600:
+                self.fail('Waited 10 minutes for cluster to be deleted')
 
     def test_create_cluster_invalid_request_body(self):
         """Verify create cluster request with invalid request body."""
