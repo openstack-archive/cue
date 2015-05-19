@@ -99,13 +99,15 @@ def fetch_func_args(func):
     return fn_args
 
 
-def main():
+def main(argv=None):
+    if argv is None:    # pragma: no cover
+        argv = sys.argv
     CONF.register_cli_opt(category_opt)
 
     try:
         log.register_options(CONF)
 
-        CONF(sys.argv[1:], project='cue',
+        CONF(argv[1:], project='cue',
              version=version.version_info.version_string())
 
         log.setup(CONF, "cue")
@@ -115,7 +117,7 @@ def main():
             st = os.stat(cfgfile)
             print(_LI("Could not read %s. Re-running with sudo") % cfgfile)
             try:
-                os.execvp('sudo', ['sudo', '-u', '#%s' % st.st_uid] + sys.argv)
+                os.execvp('sudo', ['sudo', '-u', '#%s' % st.st_uid] + argv)
             except Exception:
                 print(_LI('sudo failed, continuing as if nothing happened'))
 
