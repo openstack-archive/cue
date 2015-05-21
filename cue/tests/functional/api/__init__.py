@@ -48,7 +48,7 @@ class APITest(base.FunctionalTestCase):
         #                        self.path_get('etc/cue/policy.json'))
         self.app = self._make_app()
         self.auth_headers = {'X-User-Id': str(self.context.user_id),
-                             'X-Tenant-Id': str(self.context.project_id)}
+                             'X-Project-Id': str(self.context.project_id)}
 
     def _make_app(self, enable_acl=False):
         # Determine where we are so we can set up paths in the config
