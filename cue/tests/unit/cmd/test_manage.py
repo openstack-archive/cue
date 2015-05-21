@@ -107,11 +107,7 @@ class TestManage(base.UnitTestCase):
         args3 = "--bar"
 
         self.assertEqual("foobar", manage.get_arg_string(args1))
-
-        # Todo (Dan) Fix the get_arg_string conditional so cases like arg2
-        # Todo (Dan)  will properly return 'foo', not 'o'.
-        self.assertEqual("o", manage.get_arg_string(args2))
-
+        self.assertEqual("foo", manage.get_arg_string(args2))
         self.assertEqual("bar", manage.get_arg_string(args3))
 
     def test_fetch_func_args(self):
