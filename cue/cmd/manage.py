@@ -18,16 +18,12 @@
 import os
 import sys
 
-import eventlet
 from oslo.config import cfg
 from oslo_log import log
 from stevedore import extension
 
 from cue.common.i18n import _LI  # noqa
 from cue import version
-
-
-eventlet.monkey_patch(os=False)
 
 
 CONF = cfg.CONF
