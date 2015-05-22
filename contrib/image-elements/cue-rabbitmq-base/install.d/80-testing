@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -eux
+
+pip install pika
+
+cat > /opt/rabbitmq_test.py << EOF
+import argparse
+import time
+
+import pika
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-H", "--host", required=True,
+                        help="Specify the RabbitMQ host")
+    parser.add_argument("-R", "--receive",
+                        help="Specify the RabbitMQ host to receive message")
+    parser.add_argument("-P", "--port", required=True,
+                        help="Specify the RabbitMQ port",
+                        type=int)
+    parser.add_argument("-u", "--user", required=True,
+                        help="Specify the RabbitMQ username")
+    parser.add_argument("-p", "--password", required=True,
+                        help="Specify the RabbitMQ password")
+    parser.add_argument("--ssl", dest="ssl", action="store_true",
+                        help="Specify whether to use AMQPS protocol")
+    args = parser.parse_args()
+
+    host = args.host
+
+    credentials = pika.PlainCredentials(args.user, args.password)
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        credentials=credentials, host=host, port=args.port, ssl=args.ssl))
+    channel = connection.channel()
+    channel.queue_declare(queue='hello')
+
+    if args.receive:
+        connection_receive = pika.BlockingConnection(pika.ConnectionParameters(
+            credentials=credentials, host=args.receive, port=args.port,
+            ssl=args.ssl))
+        channel_receive = connection_receive.channel()
+        channel_receive.queue_declare(queue='hello')
+    else:
+        channel_receive = channel
+
+    for count in range(1, 10, 1):
+        print("Sending...")
+        channel.basic_publish(exchange='', routing_key='hello',
+                              body='Hello World!' + str(count))
+        print(" [x] Sent 'Hello World!'" + str(count))
+        print("Receiving...")
+        method_frame, header_frame, body = channel_receive.basic_get('hello')
+        if method_frame:
+            print(method_frame, header_frame, body)
+            channel_receive.basic_ack(method_frame.delivery_tag)
+        else:
+            print('No message returned')
+        time.sleep(1)
+    connection.close()
+EOF
+
+chmod 777 /opt/rabbitmq_test.py
