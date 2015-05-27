@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
 from oslo.config import cfg
 
 from cue.common import service
@@ -24,9 +23,4 @@ class TestCommonService(base.UnitTestCase):
 
     def test_prepare_service(self):
         service.prepare_service([])
-        self.assertEqual('cue', cfg.CONF.project)
-
-    @mock.patch('sys.argv')
-    def test_prepare_service_noargs(self, mock_sys):
-        service.prepare_service()
         self.assertEqual('cue', cfg.CONF.project)
