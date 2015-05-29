@@ -115,6 +115,9 @@ function configure_cue {
         setup_colorized_logging $CUE_CONF DEFAULT "tenant" "user"
     fi
 
+    # Set some libraries' log level to INFO so that the log isn't overrun with useless DEBUG messages
+    iniset $CUE_CONF DEFAULT default_log_levels "kazoo.client=INFO,stevedore=INFO"
+
     if is_service_enabled key; then
         # Setup the Keystone Integration
         iniset $CUE_CONF service:api auth_strategy keystone
