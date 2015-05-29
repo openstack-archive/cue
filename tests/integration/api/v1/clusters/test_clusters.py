@@ -66,9 +66,8 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             self.assertEqual(cluster_resp['status'], 'BUILDING',
                              'Create cluster failed')
             time.sleep(1)
-            if time.time() - start_time > 600:
-                self.fail('Waited 10 minutes for cluster to get ACTIVE',
-                          'Create cluster failed')
+            if time.time() - start_time > 900:
+                self.fail('Waited 15 minutes for cluster to get ACTIVE')
         self.assertEqual(cluster_resp['status'], 'ACTIVE',
                          'Create cluster failed')
 
@@ -102,8 +101,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
                              'Delete cluster failed')
             time.sleep(1)
             if time.time() - start_time > 600:
-                self.fail('Waited 10 minutes for cluster to be deleted',
-                          'Delete cluster failed')
+                self.fail('Waited 10 minutes for cluster to be deleted')
 
     def test_create_cluster_invalid_request_body(self):
         """Verify create cluster request with invalid request body."""
