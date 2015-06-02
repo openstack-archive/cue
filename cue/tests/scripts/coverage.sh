@@ -16,6 +16,7 @@
 #    under the License.
 
 ALLOWED_EXTRA_MISSING=4
+COVERAGE_PERCENT_THRESHOLD=80
 
 show_diff () {
     head -1 $1
@@ -41,6 +42,7 @@ current_report=$(mktemp -t rally_coverageXXXXXXX)
 python setup.py testr --coverage --testr-args="$*"
 coverage report > $current_report
 current_missing=$(awk 'END { print $3 }' $current_report)
+current_percent_coverage=$(awk 'END { print $6 }' $current_report | tr -d '%')
 
 # Show coverage details
 allowed_missing=$((baseline_missing+ALLOWED_EXTRA_MISSING))
@@ -49,7 +51,13 @@ echo "Allowed to introduce missing lines : ${ALLOWED_EXTRA_MISSING}"
 echo "Missing lines in master            : ${baseline_missing}"
 echo "Missing lines in proposed change   : ${current_missing}"
 
-if [ $allowed_missing -gt $current_missing ];
+
+if [ -z $baseline_missing ] &&
+   [ $current_percent_coverage -gt $COVERAGE_PERCENT_THRESHOLD ];
+then
+    echo "Coverage is : ${current_percent_coverage} %"
+    exit_code=0
+elif [ $allowed_missing -gt $current_missing ];
 then
     if [ $baseline_missing -lt $current_missing ];
     then
