@@ -28,6 +28,9 @@ fi
 # Generate an ssh keypair to add to devstack
 if [[ ! -f ~/.ssh/id_rsa ]]; then
     ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+    # copying key to /tmp so that tests can access it
+    cp ~/.ssh/id_rsa /tmp/cue-mgmt-key
+    chmod 644 /tmp/cue-mgmt-key
 fi
 
 if [[ -z $CUE_MANAGEMENT_KEY ]]; then

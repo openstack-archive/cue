@@ -45,7 +45,9 @@ CUE_LOG_DIR=/var/log/cue
 CUE_AUTH_CACHE_DIR=${CUE_AUTH_CACHE_DIR:-/var/cache/cue}
 
 CUE_TF_DB=${CUE_TF_DB:-cue_taskflow}
-CUE_TF_PERSISTENCE=${CUE_TF_PERSISTENCE:-}
+CUE_TF_CREATE_CLUSTER_NODE_VM_ACTIVE_RETRY_COUNT=${CUE_TF_CREATE_CLUSTER_NODE_VM_ACTIVE_RETRY_COUNT:-12}
+create_cluster_node_vm_active_retry_count
+CUE_TF=${CUE_SERVICE_PORT:-8795}
 
 # Public IP/Port Settings
 CUE_SERVICE_PROTOCOL=${CUE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
@@ -100,6 +102,9 @@ function configure_cue {
     # Set cluster node check timeouts
     iniset $CUE_CONF taskflow cluster_node_check_timeout 10
     iniset $CUE_CONF taskflow cluster_node_check_max_count 30
+
+    # Set flow create cluster node vm active retry count
+    iniset $CUE_CONF flow_options create_cluster_node_vm_active_retry_count $CUE_TF_CREATE_CLUSTER_NODE_VM_ACTIVE_RETRY_COUNT
 
     iniset $CUE_CONF openstack os_auth_url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
     iniset $CUE_CONF openstack os_tenant_name admin
