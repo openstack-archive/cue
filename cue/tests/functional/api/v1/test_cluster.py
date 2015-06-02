@@ -314,9 +314,9 @@ class TestCreateCluster(api.APITest,
 
         data = self.post_json('/clusters', params=api_cluster,
                               headers=self.auth_headers, expect_errors=True)
-        self.assertEqual(500, data.status_code,
+        self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
-        self.assertEqual('500 Internal Server Error', data.status,
+        self.assertEqual('400 Bad Request', data.status,
                          'Invalid status value received.')
         self.assertIn('invalid literal for int() with base 10:',
                       data.namespace["faultstring"],
