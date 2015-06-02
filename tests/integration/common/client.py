@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 from tempest.services.compute.json import tenant_networks_client
 from tempest_lib import auth
 from tempest_lib.common import rest_client
@@ -34,7 +36,7 @@ class BaseMessageQueueClient(rest_client.RestClient):
 
     def __init__(self):
 
-        auth_provider = self._get_keystone_auth_provider()
+        auth_provider = _get_keystone_auth_provider()
         super(BaseMessageQueueClient, self).__init__(
             auth_provider=auth_provider,
             service='message_queue',
@@ -44,20 +46,65 @@ class BaseMessageQueueClient(rest_client.RestClient):
 
     def _get_network(self, label):
         network_client = tenant_networks_client.TenantNetworksClientJSON(
-            self._get_keystone_auth_provider(),
+            _get_keystone_auth_provider(),
             'compute',
             'RegionOne')
         networks = network_client.list_tenant_networks()
         return [network for network in networks
                 if network['label'] == label][0]
 
-    def _get_keystone_auth_provider(self):
-        creds = auth.KeystoneV2Credentials(
-            username=CONF.identity.username,
-            password=CONF.identity.password,
-            tenant_name=CONF.identity.tenant_name,
+
+class ServerClient(rest_client.RestClient):
+    """This class is used for querying Nova servers.
+
+    It extends the Openstack RestClient class, which provides a base layer for
+    wrapping outgoing http requests in keystone auth as well as providing
+    response code checking and error handling. It obtains the keystone
+    credentials from the configuration.
+    """
+
+    def __init__(self):
+
+        auth_provider = _get_keystone_auth_provider()
+        super(ServerClient, self).__init__(
+            auth_provider=auth_provider,
+            service='compute',
+            region='RegionOne',
         )
-        auth_provider = auth.KeystoneV2AuthProvider(creds,
-                                                    CONF.identity.uri)
-        auth_provider.fill_credentials()
-        return auth_provider
+
+    def get_cluster_nodes(self, cluster_id=None):
+        """Get all server nodes of a cluster
+
+        :param cluster_id: The cluster to get the nodes from
+        """
+        url = 'servers/detail'
+        if cluster_id:
+            url += '?name=%s' % cluster_id
+
+        resp, body = self.get(url)
+        body = json.loads(body)
+        return rest_client.ResponseBody(resp, body)
+
+    def get_console_log(self, server_id):
+        """Get the console node for a server
+
+        :param server_id: The server to get the console log from
+        """
+        post_body = json.dumps({"os-getConsoleOutput": {}})
+        resp, body = self.post('servers/%s/action' % str(server_id),
+                               post_body)
+        body = json.loads(body)['output']
+
+        return rest_client.ResponseBodyData(resp, body)
+
+
+def _get_keystone_auth_provider():
+    creds = auth.KeystoneV2Credentials(
+        username='admin',
+        password=CONF.identity.password,
+        tenant_name='admin',
+    )
+    auth_provider = auth.KeystoneV2AuthProvider(creds,
+                                                CONF.identity.uri)
+    auth_provider.fill_credentials()
+    return auth_provider

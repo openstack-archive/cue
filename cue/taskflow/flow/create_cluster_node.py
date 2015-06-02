@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_config import cfg
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.retry as retry
 
@@ -22,6 +23,45 @@ import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
 import os_tasklib.neutron as neutron
 import os_tasklib.nova as nova
+
+
+CONF = cfg.CONF
+
+FLOW_OPTS = [
+    cfg.IntOpt('create_cluster_node_vm_active_retry_count',
+               default=12),
+
+    cfg.StrOpt('zk_hosts',
+               help="Zookeeper jobboard hosts.",
+               default="localhost"),
+
+    cfg.StrOpt('zk_path',
+               help="Zookeeper path for jobs.",
+               default='/cue/taskflow'),
+
+    cfg.IntOpt('zk_timeout',
+               help="Zookeeper operations timeout.",
+               default=10),
+
+    cfg.StrOpt('jobboard_name',
+               help="Board name.",
+               default='cue'),
+
+    cfg.StrOpt('engine_type',
+               help="Engine type.",
+               default='serial'),
+
+    cfg.IntOpt('cluster_node_check_timeout',
+               help="Number of seconds to wait between checks for node status",
+               default=10),
+
+    cfg.IntOpt('cluster_node_check_max_count',
+               help="Number of times to check a node for status before "
+                    "declaring it FAULTED",
+               default=30),
+]
+
+CONF.register_opts(FLOW_OPTS, group='taskflow')
 
 
 def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
@@ -127,10 +167,11 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     graph_flow.add(get_vm_id)
     graph_flow.link(create_vm, get_vm_id)
 
+    retry_count = CONF.flow_options.create_cluster_node_vm_active_retry_count
     #todo(dagnello): make retry times configurable
     check_vm_active = linear_flow.Flow(
         name="wait for VM active state %s" % node_name,
-        retry=retry.Times(12))
+        retry=retry.Times(retry_count))
     check_vm_active.add(
         nova.GetVmStatus(
             os_client=client.nova_client(),
