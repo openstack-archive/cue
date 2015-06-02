@@ -18,14 +18,18 @@ Tests for the API /cluster/ controller methods.
 """
 
 import logging
+import sys
 import time
+import traceback
 import uuid
 
+import paramiko
 import tempest_lib.base
 from tempest_lib.common.utils import data_utils
 from tempest_lib import exceptions as tempest_exceptions
 
 from tests.integration.api.v1.clients import clusters_client
+from tests.integration.common import client
 from tests.integration.common import config
 
 
@@ -67,6 +71,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
                              'Create cluster failed')
             time.sleep(1)
             if time.time() - start_time > 1800:
+                self.get_logs(cluster_resp['id'])
                 self.fail('Waited 30 minutes for cluster to get ACTIVE')
         self.assertEqual(cluster_resp['status'], 'ACTIVE',
                          'Create cluster failed')
@@ -102,6 +107,42 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             time.sleep(1)
             if time.time() - start_time > 900:
                 self.fail('Waited 15 minutes for cluster to be deleted')
+
+    @staticmethod
+    def get_logs(cluster_id=None):
+        admin_client = client.ServerClient()
+        nodes = admin_client.get_cluster_nodes(cluster_id)
+        for node in nodes['servers']:
+            try:
+                # Print server console log
+                data = admin_client.get_console_log(node['id']).data
+                print("Console log for node %s" % node['name'])
+                print(data)
+
+                # SSH to get the rabbitmq logs
+                networks = node['addresses']['cue_management_net']
+                if networks:
+                    ip = [n['addr'] for n in networks if n['version'] == 4][0]
+                else:
+                    # Devstack bug where network information is missing.
+                    # This issue is intermittent.
+                    print("Could not SSH to %s. Network information is missing"
+                          % (node['name']))
+                    continue
+                print("SSHing to %s, IP: %s" % (node['name'], ip))
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(ip, username='ubuntu',
+                            key_filename='/tmp/cue-mgmt-key')
+                stdin, stdout, stderr = ssh.exec_command(
+                    "tail -n +1 /var/log/rabbitmq/*")
+                print("Printing all logs in /var/log/rabbitmq/")
+                result = stdout.readlines()
+                print(''.join(result))
+                ssh.close()
+            except Exception:
+                print("Could not SSH to %s, IP: %s" % (node['name'], ip))
+                traceback.print_exc(file=sys.stdout)
 
     def test_create_cluster_invalid_request_body(self):
         """Verify create cluster request with invalid request body."""
