@@ -130,7 +130,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     #todo(dagnello): make retry times configurable
     check_vm_active = linear_flow.Flow(
         name="wait for VM active state %s" % node_name,
-        retry=retry.Times(12))
+        retry=retry.Times(60))
     check_vm_active.add(
         nova.GetVmStatus(
             os_client=client.nova_client(),
