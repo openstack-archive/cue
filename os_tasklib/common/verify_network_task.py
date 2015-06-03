@@ -56,7 +56,7 @@ class VerifyNetwork(taskflow.task.Task):
         else:
             check_port = port
         tn = telnet.Telnet()
-        tn.open(vm_ip, check_port, timeout=10)
+        #tn.open(vm_ip, check_port, timeout=10)
 
     def revert(self, *args, **kwargs):
         """Revert CreateVmTask

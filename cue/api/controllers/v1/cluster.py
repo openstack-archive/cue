@@ -170,11 +170,11 @@ class ClusterController(rest.RestController):
             "context": context.to_dict(),
         }
 
-        job_client = task_flow_client.get_client_instance()
+        #job_client = task_flow_client.get_client_instance()
         #TODO(dagnello): might be better to use request_id for job_uuid
         job_uuid = uuidutils.generate_uuid()
-        job_client.post(delete_cluster, job_args, flow_kwargs=flow_kwargs,
-                        tx_uuid=job_uuid)
+        #job_client.post(delete_cluster, job_args, flow_kwargs=flow_kwargs,
+        #                tx_uuid=job_uuid)
 
         LOG.info(_LI('Delete Cluster Request Cluster ID %(cluster_id)s Job ID '
                      '%(job_id)s') % ({"cluster_id": cluster_id,
