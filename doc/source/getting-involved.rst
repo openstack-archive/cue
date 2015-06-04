@@ -3,12 +3,17 @@ Getting Involved
 ================
 
 #openstack-cue
---------------
+==============
 There is an active IRC channel at irc://freenode.net/#openstack-cue, where many of the cue contributors can be found, as
 well as users from various organisations.
 
+Weekly meetings
+===============
+There is a weekly irc meet. The agenda, date/time and other details are listed at
+`Cue meetings wiki page`_.
+
 Contributing
-------------
+============
 We welcome fixes, extensions, documentation, pretty much anything that helps improve Cue, contributing is easy & follows
 the standard OpenStack `Gerrit workflow`_, if you're looking for something to do, you could always checkout the blueprint_ & bug_
 lists.
@@ -36,7 +41,7 @@ Branch, work, & submit:
   git-review
 
 Coding Standards
-----------------
+================
 Cue uses the OpenStack flake8 coding standards guidelines.
 These are stricter than pep8, and are run by gerrit on every commit.
 
@@ -52,3 +57,4 @@ You can use tox to check your code locally by running
 .. _Gerrit workflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 .. _blueprint: https://blueprints.launchpad.net/cue
 .. _bug: https://bugs.launchpad.net/cue
+.. _Cue meetings wiki page: https://wiki.openstack.org/wiki/Meetings/Cue
