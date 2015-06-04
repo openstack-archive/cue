@@ -1,4 +1,3 @@
-================
 Getting Involved
 ================
 
@@ -6,6 +5,11 @@ Getting Involved
 --------------
 There is an active IRC channel at irc://freenode.net/#openstack-cue, where many of the cue contributors can be found, as
 well as users from various organisations.
+
+Weekly meetings
+---------------
+There is a weekly irc meet. The agenda, date/time and other details are listed at
+`Cue meetings wiki page`_.
 
 Contributing
 ------------
@@ -52,3 +56,4 @@ You can use tox to check your code locally by running
 .. _Gerrit workflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 .. _blueprint: https://blueprints.launchpad.net/cue
 .. _bug: https://bugs.launchpad.net/cue
+.. _Cue meetings wiki page: https://wiki.openstack.org/wiki/Meetings/Cue
