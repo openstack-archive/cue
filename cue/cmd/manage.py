@@ -15,14 +15,12 @@
 # under the License.
 #
 # Copied: Designate
-import os
 import sys
 
 from oslo.config import cfg
 from oslo_log import log
 from stevedore import extension
 
-from cue.common.i18n import _LI  # noqa
 from cue import version
 
 
@@ -99,28 +97,17 @@ def fetch_func_args(func):
     return fn_args
 
 
-def main():
+def main(argv=None):
+    if argv is None:    # pragma: no cover
+        argv = sys.argv
     CONF.register_cli_opt(category_opt)
 
-    try:
-        log.register_options(CONF)
+    log.register_options(CONF)
 
-        CONF(sys.argv[1:], project='cue',
-             version=version.version_info.version_string())
+    CONF(argv[1:], project='cue',
+         version=version.version_info.version_string())
 
-        log.setup(CONF, "cue")
-    except cfg.ConfigFilesNotFoundError:
-        cfgfile = CONF.config_file[-1] if CONF.config_file else None
-        if cfgfile and not os.access(cfgfile, os.R_OK):
-            st = os.stat(cfgfile)
-            print(_LI("Could not read %s. Re-running with sudo") % cfgfile)
-            try:
-                os.execvp('sudo', ['sudo', '-u', '#%s' % st.st_uid] + sys.argv)
-            except Exception:
-                print(_LI('sudo failed, continuing as if nothing happened'))
-
-        print(_LI('Please re-run cue-manage as root.'))
-        sys.exit(2)
+    log.setup(CONF, "cue")
 
     fn = CONF.category.action_fn
 
