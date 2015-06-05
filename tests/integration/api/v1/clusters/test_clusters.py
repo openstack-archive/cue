@@ -50,7 +50,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
     def _create_cluster(self):
         name = data_utils.rand_name(ClusterTest.__name__ + '-cluster')
         network_id = [self.client.private_network['id']]
-        flavor = CONF.message_queue.flavor
+        flavor = CONF.message_broker.flavor
         size = 3
         return self.client.create_cluster(name, size, flavor, network_id)
 

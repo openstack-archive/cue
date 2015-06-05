@@ -142,7 +142,7 @@ CUE_URL="http://${floating_ip}:8795/"
 source ./devstack/openrc admin admin
 keystone user-create --name cue --tenant service --pass password
 keystone user-role-add --user cue --role admin --tenant service
-keystone service-create --name cue --type "message_queue" --description "Cue MQ Provisioning Service"
+keystone service-create --name cue --type "message-broker" --description "Message Broker Provisioning Service"
 keystone endpoint-create --region $OS_REGION_NAME --service cue --publicurl $CUE_URL --adminurl $CUE_URL --internalurl $CUE_URL
 
 # Install MySQL DB

@@ -154,7 +154,7 @@ function create_cue_accounts {
 
         if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
             local cue_service=$(get_or_create_service "cue" \
-                "message_queue" "Cue MQ Provisioning Service")
+                "message-broker" "Message Broker Provisioning Service")
             get_or_create_endpoint $cue_service \
                 "$REGION_NAME" \
                 "$CUE_SERVICE_PROTOCOL://$CUE_SERVICE_HOST:$CUE_SERVICE_PORT/" \

@@ -34,12 +34,12 @@ def setup_config(config_file=''):
     TEST_CONF.register_group(identity_group)
     TEST_CONF.register_opts(identity_options, group=identity_group)
 
-    message_queue_group = cfg.OptGroup(name='message_queue')
-    message_queue_options = [
+    message_broker_group = cfg.OptGroup(name='message_broker')
+    message_broker_options = [
         cfg.StrOpt('flavor', default='8795'),
     ]
-    TEST_CONF.register_group(message_queue_group)
-    TEST_CONF.register_opts(message_queue_options, group=message_queue_group)
+    TEST_CONF.register_group(message_broker_group)
+    TEST_CONF.register_opts(message_broker_options, group=message_broker_group)
 
     # Figure out which config to load
     config_to_load = []

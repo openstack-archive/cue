@@ -37,7 +37,7 @@ class BaseMessageQueueClient(rest_client.RestClient):
         auth_provider = self._get_keystone_auth_provider()
         super(BaseMessageQueueClient, self).__init__(
             auth_provider=auth_provider,
-            service='message_queue',
+            service='message-broker',
             region='RegionOne',
         )
         self.private_network = self._get_network('private')
