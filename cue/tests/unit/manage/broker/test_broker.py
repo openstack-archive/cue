@@ -80,6 +80,35 @@ class TestBroker(test_base.UnitTestCase):
 
         mock_add_broker.assert_called_once_with(self.cue_manage_broker.context)
 
+    def test_broker_add_check_result(self):
+        """Test 'cue-manage broker add' return value
+
+        Mocks the cue/objects/broker.py create_broker() call to return a fake
+        broker object with specific attributes and asserts that broker object
+        is printed to std_out
+        """
+        broker_name = "test_broker"
+        active_status = "True"
+
+        fake_broker = FakeBroker('test_id', broker_name, active_status,
+                                 'test_created_at', 'test_updated_at',
+                                 'test_deleted_at')
+
+        with stdout_redirect(StringIO.StringIO()) as new_stdout:
+            with mock.patch.object(
+                    broker.Broker, 'create_broker') as mock_create_broker:
+
+                mock_create_broker.return_value = fake_broker
+
+                self.cue_manage_broker.add(broker_name, active_status)
+
+        new_stdout.seek(0)
+        std_out = new_stdout.read().strip()
+        fake_broker_dict = fake_broker.__dict__
+
+        for key in fake_broker_dict:
+            self.assertIn(fake_broker_dict[key], std_out)
+
     def test_broker_list(self):
         """Test 'cue-manage broker list'
 
