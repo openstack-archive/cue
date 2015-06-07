@@ -51,7 +51,9 @@ class BrokerCommands(base.Commands):
             'active': status,
         }
         broker = objects.Broker(**broker_values)
-        broker.create_broker(self.context)
+        new_broker = broker.create_broker(self.context)
+        print(new_broker.id)
+        return new_broker.id
 
     def list(self):
         """List all the brokers."""

@@ -47,7 +47,7 @@ class Broker(base.CueObject):
         broker_values = self.as_dict()
         db_broker = self.dbapi.create_broker(context, broker_values)
 
-        self._from_db_object(self, db_broker)
+        return self._from_db_object(self, db_broker)
 
     def delete_broker(self, context):
         """Deletes a Broker object for specified broker_id.
