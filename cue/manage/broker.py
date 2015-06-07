@@ -51,7 +51,17 @@ class BrokerCommands(base.Commands):
             'active': status,
         }
         broker = objects.Broker(**broker_values)
-        broker.create_broker(self.context)
+        new_broker = broker.create_broker(self.context)
+
+        new_broker_table = prettytable.PrettyTable(
+            ["Broker id", "Broker Name", "Active", "Created Time",
+             "Updated Time", "Deleted Time", ])
+        new_broker_table.add_row(
+            [new_broker.id, new_broker.name, new_broker.active,
+             new_broker.created_at, new_broker.updated_at,
+             new_broker.deleted_at])
+        print(new_broker_table)
+        return new_broker
 
     def list(self):
         """List all the brokers."""

@@ -102,11 +102,7 @@ class BrokerObjectsTests(base.FunctionalTestCase):
         test_broker_dict = func_utils.get_test_broker_dict()
         new_broker = objects.Broker(**test_broker_dict)
         self.validate_broker_values(new_broker, test_broker_dict)
-        new_broker.create_broker(self.context)
-        # retrieve created broker
-        broker_query = sqlalchemy_api.model_query(
-            self.context, models.Broker).filter_by(id=test_broker_dict['id'])
-        retrieved_broker = broker_query.one()
+        retrieved_broker = new_broker.create_broker(self.context)
 
         self.validate_broker_values(new_broker, retrieved_broker)
 
