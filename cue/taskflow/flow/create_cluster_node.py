@@ -165,7 +165,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
         provides="node_values_%d" % node_number
     )
     graph_flow.add(build_node_info)
-    graph_flow.link(check_rabbit_online, build_node_info)
+    graph_flow.link(get_vm_id, build_node_info)
 
     update_node = cue_tasks.UpdateNode(
         name="update node %s" % node_name,
