@@ -161,7 +161,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     #todo(dagnello): make retry times configurable
     check_rabbit_online = linear_flow.Flow(
         name="wait for RabbitMQ ready state %s" % node_name,
-        retry=retry.Times(node_check_max_count))
+        retry=retry.Times(node_check_max_count, revert_all=True))
     check_rabbit_online.add(
         os_common.VerifyNetwork(
             name="get RabbitMQ status %s" % node_name,
