@@ -34,7 +34,7 @@ class CueClusters(cue_utils.CueScenario):
                                   size=1, network_id=None, volume_size=0,
                                   timeout=300, check_interval=1, min_sleep=0,
                                   max_sleep=0):
-        """Creates a new cue cluster.
+        """Creates a new cue cluster - testing rally job.
 
         1. If Network_id is not provided, network id will be retrieved from
            the private network.
