@@ -34,7 +34,6 @@ cat > /etc/rabbitmq/rabbitmq.config << EOF
   {rabbit, [{vm_memory_high_watermark, 0.4},
             {memory_alarms, true},
             {loopback_users,[]},
-            {disk_free_limit, {mem_relative, 1.0}},
             {cluster_partition_handling, pause_minority},
             {cluster_nodes, {[{%- for node_name in rabbit_nodes -%}
             'rabbit@{{node_name}}' {%- if not loop.last -%},{%- endif -%}
