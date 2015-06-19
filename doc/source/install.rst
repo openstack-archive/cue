@@ -7,3 +7,5 @@ Installation Guide
     :maxdepth: 2
 
     install/ubuntu
+    install/recommended
+    install/dashboard
