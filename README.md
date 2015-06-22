@@ -14,4 +14,4 @@ RabbitMQ
 Getting Started
 ===============
 
-http://cue.rtfd.org/getting-started.html
+http://cue.readthedocs.org/en/latest/getting-started.html
