@@ -62,6 +62,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.synced_folder "../../../cue-dashboard", "/home/vagrant/cue-dashboard"
   end
 
+  if File.directory?("../../../cue-ansible")
+    config.vm.synced_folder "../../../cue-ansible", "/home/vagrant/cue-ansible"
+  end
+
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
 
   config.vm.define "ubuntu" do |ubuntu|
