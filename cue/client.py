@@ -47,6 +47,12 @@ OS_OPTS = [
     cfg.StrOpt('os_availability_zone',
                help='Default availability zone to provision cue VMs',
                default=None),
+    cfg.StrOpt('os_insecure',
+               help='Openstack insecure',
+               default=False),
+    cfg.StrOpt('os_cacert',
+               help='Openstack cacert',
+               default=None),
 ]
 
 opt_group = cfg.OptGroup(
@@ -66,7 +72,9 @@ def nova_client():
                              tenant_id=CONF.openstack.os_tenant_id,
                              auth_url=CONF.openstack.os_auth_url,
                              region_name=CONF.openstack.os_region_name,
-                            )
+                             insecure=CONF.openstack.os_insecure,
+                             cacert=CONF.openstack.os_cacert,
+                             )
 
 
 def cinder_client():
@@ -74,8 +82,10 @@ def cinder_client():
                                CONF.openstack.os_username,
                                CONF.openstack.os_password,
                                CONF.openstack.os_tenant_name,
-                               CONF.openstack.os_auth_url
-                              )
+                               CONF.openstack.os_auth_url,
+                               CONF.openstack.os_insecure,
+                               cacert=CONF.openstack.os_cacert,
+                               )
 
 
 def neutron_client():
@@ -85,4 +95,6 @@ def neutron_client():
                                 tenant_name=CONF.openstack.os_tenant_name,
                                 auth_url=CONF.openstack.os_auth_url,
                                 region_name=CONF.openstack.os_region_name,
-                               )
+                                insecure=CONF.openstack.os_insecure,
+                                ca_cert=CONF.openstack.os_cacert,
+                                )
