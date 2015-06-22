@@ -6,7 +6,7 @@
         timeout: 600
       runner:
         type: "constant"
-        times: 6
+        times: 2
         concurrency: 2
       context:
         users:
