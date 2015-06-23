@@ -13,9 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo import i18n  # noqa
+import oslo_i18n  # noqa
 
-_translators = i18n.TranslatorFactory(domain='cue')
+_translators = oslo_i18n.TranslatorFactory(domain='cue')
 
 # The primary translation function using the well-known name "_"
 _ = _translators.primary

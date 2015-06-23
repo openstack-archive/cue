@@ -44,6 +44,10 @@ coverage report > $current_report
 current_missing=$(awk 'END { print $3 }' $current_report)
 current_percent_coverage=$(awk 'END { print $6 }' $current_report | tr -d '%')
 
+echo current_missing: $current_missing
+echo current_percent_coverage: $current_percent_coverage
+echo baseline_missing: $baseline_missing
+
 # Show coverage details
 allowed_missing=$((baseline_missing+ALLOWED_EXTRA_MISSING))
 
