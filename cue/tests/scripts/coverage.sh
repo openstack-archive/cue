@@ -53,11 +53,11 @@ echo "Missing lines in proposed change   : ${current_missing}"
 
 
 if [ -z $baseline_missing ] &&
-   [ $current_percent_coverage -gt $COVERAGE_PERCENT_THRESHOLD ];
+   [ "$current_percent_coverage" -gt "$COVERAGE_PERCENT_THRESHOLD" ];
 then
     echo "Coverage is : ${current_percent_coverage} %"
     exit_code=0
-elif [ $allowed_missing -gt $current_missing ];
+elif [ "$allowed_missing" -gt "$current_missing" ];
 then
     if [ $baseline_missing -lt $current_missing ];
     then

@@ -1,4 +1,4 @@
 
-from oslo import i18n
+import oslo_i18n
 
-i18n.install('cue')
+oslo_i18n.install('cue')
