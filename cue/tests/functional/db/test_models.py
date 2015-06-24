@@ -20,7 +20,7 @@ from cue.db.sqlalchemy import api as sql_api
 from cue.db.sqlalchemy import models
 from cue.tests.functional import base
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 
 UUID1 = str(uuid.uuid4())

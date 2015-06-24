@@ -28,7 +28,7 @@ from cue.tests.functional import api
 from cue.tests.functional.api import api_utils
 from cue.tests.functional import utils as test_utils
 
-from oslo.config import cfg
+from oslo_config import cfg
 CONF = cfg.CONF
 
 

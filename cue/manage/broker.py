@@ -13,9 +13,9 @@
 # under the License.
 
 
-from oslo.config import cfg
-from oslo.utils import strutils
+from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import strutils
 import prettytable
 
 from cue.common import context as cue_context

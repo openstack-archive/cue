@@ -15,7 +15,7 @@
 # under the License.
 import os.path
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log
 
 log.register_options(cfg.CONF)

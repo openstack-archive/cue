@@ -18,8 +18,8 @@ import collections
 from cue.db.sqlalchemy import api as sql_api
 from cue.db.sqlalchemy import base as sql_base
 
-from oslo.config import cfg
-from oslo.config import fixture as cfg_fixture
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 from oslotest import base
 
 from cue.db.sqlalchemy import base as db_base

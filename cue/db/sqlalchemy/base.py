@@ -17,7 +17,7 @@ from cue.db.sqlalchemy import types
 
 import uuid
 
-from oslo.db.sqlalchemy import models
+from oslo_db.sqlalchemy import models
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
 

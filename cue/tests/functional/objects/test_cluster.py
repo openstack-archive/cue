@@ -19,7 +19,7 @@ Tests for cue cluster object.
 import uuid
 
 import mock
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 import testtools
 
 from cue.api.controllers.v1 import cluster

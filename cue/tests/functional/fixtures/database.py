@@ -17,7 +17,7 @@ import os
 import shutil
 
 import fixtures
-from oslo.config import cfg
+from oslo_config import cfg
 
 from cue.db.sqlalchemy import base as db_base
 

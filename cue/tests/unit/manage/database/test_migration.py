@@ -18,7 +18,7 @@
 
 
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 from oslotest import base as oslo_base
 
 from cue.manage import database as cue_db
@@ -36,7 +36,7 @@ class TestMigration(oslo_base.BaseTestCase):
         CONF.set_override("connection", "sqlite://", group="database")
         self.cue_manage_database = cue_db.DatabaseCommands()
 
-    @mock.patch('oslo.db.sqlalchemy.migration_cli.manager.'
+    @mock.patch('oslo_db.sqlalchemy.migration_cli.manager.'
                 'MigrationManager.revision')
     def test_revision(self, mock_oslo_revision):
         """Verifies cue-manage database revision call hits oslo."""
@@ -45,7 +45,7 @@ class TestMigration(oslo_base.BaseTestCase):
         mock_oslo_revision.assert_called_once_with(
             message='test_migration', autogenerate=False)
 
-    @mock.patch('oslo.db.sqlalchemy.migration_cli.manager.'
+    @mock.patch('oslo_db.sqlalchemy.migration_cli.manager.'
                 'MigrationManager.upgrade')
     def test_upgrade(self, mock_oslo_upgrade):
         """Verifies cue-manage database upgrade call."""
@@ -53,7 +53,7 @@ class TestMigration(oslo_base.BaseTestCase):
         self.cue_manage_database.upgrade(None)
         mock_oslo_upgrade.assert_called_once_with(None)
 
-    @mock.patch('oslo.db.sqlalchemy.migration_cli.manager.'
+    @mock.patch('oslo_db.sqlalchemy.migration_cli.manager.'
                 'MigrationManager.downgrade')
     def test_downgrade(self, mock_oslo_downgrade):
         """Verifies cue-manage database downgrade call."""
@@ -61,7 +61,7 @@ class TestMigration(oslo_base.BaseTestCase):
         self.cue_manage_database.downgrade(None)
         mock_oslo_downgrade.assert_called_once_with(None)
 
-    @mock.patch('oslo.db.sqlalchemy.migration_cli.manager.'
+    @mock.patch('oslo_db.sqlalchemy.migration_cli.manager.'
                 'MigrationManager.version')
     def test_version(self, mock_oslo_version):
         """Verifies cue-manage database version call."""
@@ -69,7 +69,7 @@ class TestMigration(oslo_base.BaseTestCase):
         self.cue_manage_database.version()
         mock_oslo_version.assert_called_once_with()
 
-    @mock.patch('oslo.db.sqlalchemy.migration_cli.manager.'
+    @mock.patch('oslo_db.sqlalchemy.migration_cli.manager.'
                 'MigrationManager.stamp')
     def test_stamp(self, mock_oslo_stamp):
         """Verifies cue-manage database stamp call."""

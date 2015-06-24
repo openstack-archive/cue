@@ -15,7 +15,7 @@
 # under the License.
 import contextlib
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from cue.manage import base
 from cue.taskflow import client

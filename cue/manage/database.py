@@ -17,9 +17,9 @@
 # Copied: Designate
 import os
 
-from oslo.config import cfg
-from oslo.db import options
-from oslo.db.sqlalchemy.migration_cli import manager as migration_manager
+from oslo_config import cfg
+from oslo_db import options
+from oslo_db.sqlalchemy.migration_cli import manager as migration_manager
 
 from cue.manage import base
 
