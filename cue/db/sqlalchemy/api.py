@@ -21,11 +21,11 @@ from cue.common.i18n import _  # noqa
 from cue.db import api
 from cue.db.sqlalchemy import models
 
-from oslo.config import cfg
-from oslo.db import exception as db_exception
-from oslo.db import options as db_options
-from oslo.db.sqlalchemy import session
-from oslo.utils import timeutils
+from oslo_config import cfg
+from oslo_db import exception as db_exception
+from oslo_db import options as db_options
+from oslo_db.sqlalchemy import session
+from oslo_utils import timeutils
 from sqlalchemy.orm import exc as sql_exception
 
 CONF = cfg.CONF

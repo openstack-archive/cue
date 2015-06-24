@@ -14,8 +14,8 @@
 #    under the License.
 
 import mock
-from oslo.config import cfg
-from oslo.config import fixture as config_fixture
+from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 
 from cue.cmd import manage
 from cue.manage import base as manage_base

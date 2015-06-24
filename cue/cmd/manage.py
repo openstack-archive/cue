@@ -17,7 +17,7 @@
 # Copied: Designate
 import sys
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log
 from stevedore import extension
 

@@ -26,7 +26,7 @@ TODO: multi-process capability needs to be reimplemented.  The first
 import logging
 import sys
 
-import oslo.config.cfg as cfg
+import oslo_config.cfg as cfg
 import oslo_log.log as log
 
 from cue.common.i18n import _LI  # noqa

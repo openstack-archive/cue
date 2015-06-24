@@ -29,8 +29,8 @@ from cue.taskflow import client as task_flow_client
 from cue.taskflow.flow import create_cluster
 from cue.taskflow.flow import delete_cluster
 
-from oslo.config import cfg
-from oslo.utils import uuidutils
+from oslo_config import cfg
+from oslo_utils import uuidutils
 from oslo_log import log as logging
 import pecan
 from pecan import rest

@@ -16,7 +16,7 @@
 """
 Tests for cue objects.
 """
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from cue.db.sqlalchemy import models
 from cue import objects

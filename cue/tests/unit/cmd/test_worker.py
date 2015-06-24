@@ -23,7 +23,7 @@ class TestWorker(base.UnitTestCase):
 
     @mock.patch('cue.taskflow.service.ConductorService.start')
     @mock.patch('cue.taskflow.service.ConductorService.handle_signals')
-    @mock.patch('oslo.config.cfg.CONF.log_opt_values')
+    @mock.patch('oslo_config.cfg.CONF.log_opt_values')
     @mock.patch('cue.common.service.prepare_service')
     def test_main(self, mock_prepare, mock_conf, mock_tf_signals,
                   mock_tf_start):

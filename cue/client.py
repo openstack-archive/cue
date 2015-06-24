@@ -16,7 +16,7 @@
 import cinderclient.client as CinderClient
 import neutronclient.neutron.client as NeutronClient
 import novaclient.client as NovaClient
-from oslo.config import cfg
+from oslo_config import cfg
 
 
 CONF = cfg.CONF

@@ -14,7 +14,7 @@
 # under the License.
 import uuid
 
-from oslo.utils import uuidutils
+from oslo_utils import uuidutils
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.task
 

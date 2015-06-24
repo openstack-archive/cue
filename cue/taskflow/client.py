@@ -15,8 +15,8 @@
 import contextlib
 import uuid
 
-from oslo.config import cfg
-from oslo.utils import uuidutils
+from oslo_config import cfg
+from oslo_utils import uuidutils
 from six.moves import urllib_parse
 import taskflow.engines as engines
 import taskflow.jobs.backends as job_backends

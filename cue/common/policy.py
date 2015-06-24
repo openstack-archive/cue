@@ -15,7 +15,7 @@
 
 """Policy Engine For Cue."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_policy.opts
 from oslo_policy import policy

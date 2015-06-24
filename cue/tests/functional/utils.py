@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 """Cue functional test utilities."""
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from cue.api.controllers.v1 import cluster
 from cue.db.sqlalchemy import models
