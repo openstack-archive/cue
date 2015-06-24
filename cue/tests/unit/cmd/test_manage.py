@@ -114,7 +114,7 @@ class TestManage(base.UnitTestCase):
         category_opt = cfg.SubCommandOpt('category', title='Commands',
                                          help='Available Commands',
                                          handler=manage.add_command_parsers)
-        cfg.CONF.register_cli_opt(category_opt)
+        self.CONF.register_cli_opt(category_opt)
         sys_argv = ["cue-manage", "database", "upgrade", "head"]
         cfg.CONF(sys_argv[1:], project='cue',
              version=version.version_info.version_string())
