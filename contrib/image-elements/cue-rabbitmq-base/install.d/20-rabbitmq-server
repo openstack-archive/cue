@@ -2,9 +2,9 @@
 
 set -eux
 
-install-packages rabbitmq-server
-
 FILES="$(dirname $0)/../files"
+
+install-packages -u rabbitmq-server
 
 if [ "$DISTRO_NAME" = "ubuntu" ] || [ "$DISTRO_NAME" = "debian" ]; then
     # Prevent rabbitmq-server from starting automatically

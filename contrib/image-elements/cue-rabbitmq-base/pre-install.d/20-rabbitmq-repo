@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -eux
+
+FILES="$(dirname $0)/../files"
+
+FILE=/etc/apt/sources.list.d/rabbitmq.list
+install -g root -o root -m 0755 "${FILES}${FILE}" "${FILE}"
+
+pushd /tmp
+
+wget https://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+
+apt-key add rabbitmq-signing-key-public.asc
+
+popd
