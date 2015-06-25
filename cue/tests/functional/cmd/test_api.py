@@ -26,8 +26,6 @@ class TestCmdApi(base.FunctionalTestCase):
         super(TestCmdApi, self).setUp()
 
         # setup config fixture
-        self.CONF = config_fixture.Config()
-        self.useFixture(self.CONF)
         config_file_opt = cfg.StrOpt('config_file',
                                      default='')
         self.CONF.register_opt(config_file_opt)

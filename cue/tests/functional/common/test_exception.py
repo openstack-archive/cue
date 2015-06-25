@@ -14,7 +14,6 @@
 #    under the License.
 
 import mock
-from oslo_config import fixture as config_fixture
 
 from cue.common import exception
 from cue.common.i18n import _  # noqa
@@ -26,11 +25,6 @@ class MissingKwargException(exception.CueException):
 
 
 class TestCommonException(base.FunctionalTestCase):
-    def setUp(self):
-        super(TestCommonException, self).setUp()
-        self.CONF = config_fixture.Config()
-        self.useFixture(self.CONF)
-
     @mock.patch('logging.LoggerAdapter.exception')
     @mock.patch('logging.LoggerAdapter.error')
     def test_exception_on_format_error(self,

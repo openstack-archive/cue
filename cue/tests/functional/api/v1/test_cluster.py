@@ -29,8 +29,6 @@ from cue.tests.functional.api import api_utils
 from cue.tests.functional import utils as test_utils
 
 from oslo_config import cfg
-CONF = cfg.CONF
-
 
 class TestGetCluster(api.APITest,
                      api_utils.ClusterValidationMixin):
@@ -255,16 +253,18 @@ class TestCreateCluster(api.APITest,
                       'Invalid faultstring received.')
 
     def test_create_too_large(self):
+        max_cluster_size = 3
+        self.CONF.config(max_cluster_size=max_cluster_size, group='api')
         """test create cluster with size larger than limit."""
         api_cluster = test_utils.create_api_test_cluster(
-            size=(CONF.api.max_cluster_size + 1))
+            size=(max_cluster_size+1))
 
         data = self.post_json('/clusters', headers=self.auth_headers,
                               params=api_cluster, expect_errors=True)
         self.assertEqual(413, data.status_code,
-                         'Invalid status code value received.')
+                         'Invalid status code value received.' + pprint.pformat(data))
         self.assertIn('Invalid cluster size, max size is: ' +
-                      str(CONF.api.max_cluster_size),
+                      str(max_cluster_size),
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
