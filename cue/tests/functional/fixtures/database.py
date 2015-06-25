@@ -17,12 +17,8 @@ import os
 import shutil
 
 import fixtures
-from oslo_config import cfg
 
 from cue.db.sqlalchemy import base as db_base
-
-
-CONF = cfg.CONF
 
 
 class Database(fixtures.Fixture):
@@ -39,7 +35,7 @@ class Database(fixtures.Fixture):
         if sql_connection == "sqlite://":
             self.setup_sqlite(db_migrate)
         else:
-            testdb = os.path.join(CONF.state_path, sqlite_db)
+            testdb = os.path.join(self.CONF.state_path, sqlite_db)
             db_migrate.upgrade('head')
             if os.path.exists(testdb):
                 return
@@ -48,7 +44,7 @@ class Database(fixtures.Fixture):
             self._DB = "".join(line for line in conn.connection.iterdump())
             self.engine.dispose()
         else:
-            cleandb = os.path.join(CONF.state_path, sqlite_clean_db)
+            cleandb = os.path.join(self.CONF.state_path, sqlite_clean_db)
             shutil.copyfile(testdb, cleandb)
 
     def setUp(self):
@@ -59,8 +55,8 @@ class Database(fixtures.Fixture):
             self.addCleanup(self.engine.dispose)  # pylint: disable=E1101
         else:
             shutil.copyfile(
-                os.path.join(CONF.state_path, self.sqlite_clean_db),
-                os.path.join(CONF.state_path, self.sqlite_db),
+                os.path.join(self.CONF.state_path, self.sqlite_clean_db),
+                os.path.join(self.CONF.state_path, self.sqlite_db),
             )
 
     def setup_sqlite(self, db_migrate):

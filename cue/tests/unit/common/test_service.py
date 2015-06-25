@@ -31,7 +31,5 @@ class TestCommonService(base.UnitTestCase):
         self.useFixture(self.CONF)
 
     def test_prepare_service(self):
-        service.prepare_service(['cue-api',
-                                 '--config-file',
-                                 'etc/cue/cue.conf.sample'])
+        service.prepare_service([])
         self.assertEqual('cue', cfg.CONF.project)

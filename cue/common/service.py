@@ -37,17 +37,20 @@ service_opts = [
                'hostname, FQDN, or IP address.'),
 ]
 
-cfg.CONF.register_opts(service_opts)
+
+CONF = cfg.CONF
+
+CONF.register_opts(service_opts)
 
 LOG = log.getLogger(__name__)
 
 
 def prepare_service(argv=None):
 
-    log_levels = (cfg.CONF.default_log_levels +
+    log_levels = (CONF.default_log_levels +
                   ['stevedore=INFO', 'keystoneclient=INFO'])
     log.set_defaults(default_log_levels=log_levels)
     if argv is None:
         argv = sys.argv
-    cfg.CONF(argv[1:], project='cue')
-    log.setup(cfg.CONF, 'cue')
+    CONF(argv[1:], project='cue')
+    log.setup(CONF, 'cue')
