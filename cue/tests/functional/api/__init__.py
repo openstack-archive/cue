@@ -18,7 +18,6 @@
 """
 
 from oslo_config import cfg
-from oslo_config import fixture as fixture_config
 import pecan
 import pecan.testing
 
@@ -40,12 +39,8 @@ class APITest(base.FunctionalTestCase):
 
     def setUp(self):
         super(APITest, self).setUp()
-        self.CONF = self.useFixture(fixture_config.Config()).conf
-
-        self.CONF.set_override("auth_version", "v2.0",
-                               group=OPT_GROUP_NAME)
-        # self.CONF.set_override("policy_file",
-        #                        self.path_get('etc/cue/policy.json'))
+        self.CONF.config(auth_version="v2.0",
+                         group=OPT_GROUP_NAME)
         self.app = self._make_app()
         self.auth_headers = {'X-User-Id': str(self.context.user_id),
                              'X-Project-Id': str(self.context.project_id)}

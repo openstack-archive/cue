@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+# Copyright 2015 Hewlett-Packard Development Company, L.P.
 # Copyright 2012 Bouvet ASA
 #
 # Author: Endre Karlson <endre.karlson@bouvet.no>
@@ -13,8 +15,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-#
-# Copied: Designate
 import sys
 
 from oslo_config import cfg
@@ -97,10 +97,18 @@ def fetch_func_args(func):
     return fn_args
 
 
-def main(argv=None):
+def main(argv=None, conf_fixture=None):
     if argv is None:    # pragma: no cover
         argv = sys.argv
-    CONF.register_cli_opt(category_opt)
+
+    # Registering cli options directly to the global cfg.CONF causes issues
+    # for unit/functional tests that test anything but the cmd.manage module
+    # because cmd.manage adds required cli parameters.  A conf_fixture object
+    # is expected to be passed in only during tests.
+    if conf_fixture is None:    # pragma: no cover
+        CONF.register_cli_opt(category_opt)
+    else:
+        conf_fixture.register_cli_opt(category_opt)
 
     log.register_options(CONF)
 

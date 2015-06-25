@@ -24,6 +24,7 @@ inline callbacks.
 import os
 
 from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 from oslotest import base
 import six
 
@@ -63,6 +64,9 @@ class FunctionalTestCase(base.BaseTestCase):
         self.context = self.get_context()
         self.flags(state_path='/tmp')
         self.flags(connection="sqlite://", group="database")
+
+        self.CONF = config_fixture.Config()
+        self.useFixture(self.CONF)
 
         self._include_default_fixtures()
 

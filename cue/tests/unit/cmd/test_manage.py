@@ -132,7 +132,7 @@ class TestManage(base.UnitTestCase):
         down.
         """
         sys_argv = ["cue-manage", "database", "upgrade"]
-        manage.main(sys_argv)
+        manage.main(sys_argv, conf_fixture=self.CONF)
 
         self.assertEqual('cue', cfg.CONF.project)
         mock_migration_manager.assert_called_once()

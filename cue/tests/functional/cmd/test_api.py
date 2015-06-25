@@ -15,7 +15,6 @@
 
 import mock
 from oslo_config import cfg
-from oslo_config import fixture as config_fixture
 
 from cue.cmd import api
 from cue.tests.functional import base
@@ -25,9 +24,6 @@ class TestCmdApi(base.FunctionalTestCase):
     def setUp(self):
         super(TestCmdApi, self).setUp()
 
-        # setup config fixture
-        self.CONF = config_fixture.Config()
-        self.useFixture(self.CONF)
         config_file_opt = cfg.StrOpt('config_file',
                                      default='')
         self.CONF.register_opt(config_file_opt)

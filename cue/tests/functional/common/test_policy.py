@@ -15,7 +15,6 @@
 
 import mock
 from oslo_config import cfg
-from oslo_config import fixture as config_fixture
 
 from cue.common import exception
 from cue.common import policy
@@ -55,10 +54,6 @@ class TestPolicy(base.FunctionalTestCase):
 
     def setUp(self):
         super(TestPolicy, self).setUp()
-
-        # setup config fixture
-        self.CONF = config_fixture.Config()
-        self.useFixture(self.CONF)
 
         self.saved_policy_enforcer = policy._ENFORCER
         policy._ENFORCER = None

@@ -61,7 +61,7 @@ if [ -z $baseline_missing ] &&
 then
     echo "Coverage is : ${current_percent_coverage} %"
     exit_code=0
-elif [ $allowed_missing -gt $current_missing ];
+elif [ "$allowed_missing" -gt "$current_missing" ];
 then
     if [ $baseline_missing -lt $current_missing ];
     then
