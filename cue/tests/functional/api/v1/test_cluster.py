@@ -89,7 +89,7 @@ class TestGetCluster(api.APITest,
         # verify all endpoints in cluster
         all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
                                                             cluster['id'])
-        self.validate_endpoint_values(all_endpoints, data["end_points"])
+        self.validate_endpoint_values(all_endpoints, data["endpoints"])
 
 
 class TestDeleteCluster(api.APITest,
@@ -176,7 +176,7 @@ class TestListClusters(api.APITest,
         all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
                                                             cluster.id)
         self.validate_endpoint_values(all_endpoints,
-                                            data[0]["end_points"])
+                                            data[0]["endpoints"])
 
     def test_multiple(self):
         num_of_clusters = 5
@@ -196,7 +196,7 @@ class TestListClusters(api.APITest,
             all_endpoints = test_utils.get_endpoints_in_cluster(self.context,
                                                                 clusters[i].id)
             self.validate_endpoint_values(all_endpoints,
-                                                data[i]["end_points"])
+                                                data[i]["endpoints"])
 
 
 class TestCreateCluster(api.APITest,
