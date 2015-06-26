@@ -65,7 +65,7 @@ Create Cluster
         ],
         "created_at": "2015-06-03T21:49:49+00:00",
         "volume_size": 1048576,
-        "end_points": [],
+        "endpoints": [],
         "flavor": "101",
         "id": "2c3c66ba-721b-4443-bc81-55d986848c68",
         "size": 3
@@ -76,7 +76,7 @@ Create Cluster
   :form network_id: a list of UUID of network id's
   :form created_at: create cluster request received timestamp
   :form volume_size: volume size used for each node
-  :form end_points: list of endpoints for each node
+  :form endpoints: list of endpoints for each node
   :form flavor: node flavor
   :form id: the UUID of the cluster
   :form size: size of the cluster
@@ -117,7 +117,7 @@ Get Cluster
         "created_at": "2015-06-03T22:44:17+00:00",
         "updated_at": "2015-06-03T22:47:15+00:00",
         "volume_size": 1048576,
-        "end_points": [
+        "endpoints": [
             {
                 "type": "AMQP",
                 "uri": "10.0.0.9:5672"
@@ -173,7 +173,7 @@ List Clusters
         "created_at": "2015-06-03T22:44:17+00:00",
         "updated_at": "2015-06-04T00:31:16+00:00",
         "volume_size": 1048576,
-        "end_points": [
+        "endpoints": [
             {
                 "type": "AMQP",
                 "uri": "10.0.0.9:5672"
@@ -199,7 +199,7 @@ List Clusters
         ],
         "created_at": "2015-05-13T21:23:15+00:00",
         "updated_at": "2015-05-13T21:30:15+00:00",
-        "end_points": [
+        "endpoints": [
             {
                 "type": "AMQP",
                 "uri": "10.0.0.7:5672"
