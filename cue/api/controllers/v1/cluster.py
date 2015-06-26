@@ -100,7 +100,7 @@ class Cluster(base.APIBase):
     volume_size = wtypes.IntegerType(minimum=0, maximum=sys.maxint)
     "Volume size for nodes in cluster"
 
-    end_points = wtypes.wsattr([EndPoint], default=[])
+    endpoints = wtypes.wsattr([EndPoint], default=[])
     "List of endpoints on accessing node"
 
 
@@ -116,7 +116,7 @@ def get_complete_cluster(context, cluster_id):
 
     # construct api cluster object
     cluster = Cluster(**cluster_as_dict)
-    cluster.end_points = []
+    cluster.endpoints = []
 
     cluster_nodes = objects.Node.get_nodes_by_cluster_id(context, cluster_id)
 
@@ -129,7 +129,7 @@ def get_complete_cluster(context, cluster_id):
         node_endpoints_dict = [EndPoint(**obj_endpoint.as_dict()) for
                                obj_endpoint in node_endpoints]
 
-        cluster.end_points.extend(node_endpoints_dict)
+        cluster.endpoints.extend(node_endpoints_dict)
 
     return cluster
 

@@ -154,7 +154,7 @@ class CueClusters(cue_utils.CueScenario):
             ssh.wait()
 
             # run rabbitmq_test script
-            endpoint = cluster.end_points[0]
+            endpoint = cluster.endpoints[0]
             uri = endpoint['uri'].split(':')
             rabbitmq_username = "rabbitmq"
             rabbitmq_password = cluster['id']

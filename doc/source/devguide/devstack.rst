@@ -65,7 +65,7 @@ Instructions
        | Field      | Value                                     |
        +------------+-------------------------------------------+
        | created_at | 2015-06-02T21:29:15+00:00                 |
-       | end_points | []                                        |
+       | endpoints | []                                        |
        | flavor     | 8795                                      |
        | id         | b7ed9907-2d37-41e6-b70c-22eb1ea44777      |
        | name       | cluster_01                                |
@@ -76,7 +76,7 @@ Instructions
 
        $ openstack message-broker cluster list
        +--------------------------------------+------------+----------+------------+
-       | id                                   | name       | status   | end_points |
+       | id                                   | name       | status   | endpoints |
        +--------------------------------------+------------+----------+------------+
        | b7ed9907-2d37-41e6-b70c-22eb1ea44777 | cluster_01 | BUILDING | []         |
        +--------------------------------------+------------+----------+------------+
@@ -86,7 +86,7 @@ Instructions
        | Field      | Value                                          |
        +------------+------------------------------------------------+
        | created_at | 2015-06-02T21:29:15+00:00                      |
-       | end_points | [{u'type': u'AMQP', u'uri': u'10.0.0.5:5672'}] |
+       | endpoints | [{u'type': u'AMQP', u'uri': u'10.0.0.5:5672'}] |
        | flavor     | 8795                                           |
        | id         | b7ed9907-2d37-41e6-b70c-22eb1ea44777           |
        | name       | cluster_01                                     |
