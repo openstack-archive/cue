@@ -15,6 +15,9 @@
 
 import os_tasklib
 
+from cue.common.i18n import _LW  # noqa
+
+import novaclient.exceptions as nova_exc
 from oslo_log import log as logging
 
 
@@ -37,24 +40,33 @@ class ListVmInterfaces(os_tasklib.BaseTask):
     attached to the indicated VM.
 
     """
-    def execute(self, server, **kwargs):
+    def execute(self, server, ignore_nova_not_found_exception=False, **kwargs):
         """Main execute method
 
         :param server: vm id to get list of attached interfaces to
         :type server: string
+        :type ignore_nova_not_found_exception: bool
         :return: list of interfaces
         """
-        raw_list = self.os_client.servers.interface_list(server=server)
-
-        # The interface returned by Nova API has circular references which
-        # break serialization of the list to storage, so a subset of the data
-        # is being extracted and returned.
 
         interface_list = list()
-        for interface in raw_list:
-            interface_entry = {k: getattr(interface, k)
-                               for k in _INTERFACE_ATTRIBUTES
-                               if hasattr(interface, k)}
-            interface_list.append(interface_entry)
+
+        try:
+            raw_list = self.os_client.servers.interface_list(server=server)
+
+            # The interface returned by Nova API has circular references which
+            # break serialization of the list to storage, so a subset of the
+            # data is being extracted and returned.
+
+            for interface in raw_list:
+                interface_entry = {k: getattr(interface, k)
+                                   for k in _INTERFACE_ATTRIBUTES
+                                   if hasattr(interface, k)}
+                interface_list.append(interface_entry)
+        except nova_exc.NotFound:
+            if ignore_nova_not_found_exception:
+                LOG.warning(_LW("VM was not found %s") % server)
+            else:
+                raise
 
         return interface_list

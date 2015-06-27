@@ -21,6 +21,7 @@ from cue.tests.functional.fixtures import neutron
 from cue.tests.functional.fixtures import nova
 import os_tasklib.nova.list_vm_interfaces as list_vm_interfaces
 
+import novaclient.exceptions as nova_exc
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -79,6 +80,24 @@ class GetVmInterfacesTests(base.FunctionalTestCase):
         result = engines.run(self.flow, store=flow_store)
         interface_list = result['interface_list']
         self.assertEqual(self.valid_net_id, interface_list[0]['net_id'])
+
+    def test_get_vm_interfaces_invalid_vm(self):
+        flow_store = {
+            'server': str(uuid.uuid4())
+        }
+
+        self.assertRaises(nova_exc.NotFound, engines.run, self.flow,
+                          store=flow_store)
+
+    def test_get_vm_interfaces_invalid_vm_ignore_not_found_exception(self):
+        flow_store = {
+            'server': str(uuid.uuid4()),
+            'ignore_nova_not_found_exception': True
+        }
+
+        result = engines.run(self.flow, store=flow_store)
+        interface_list = result['interface_list']
+        self.assertEqual([], interface_list)
 
     def tearDown(self):
         if self.valid_vm_id is not None:
