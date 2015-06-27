@@ -63,6 +63,7 @@ def delete_cluster_node(cluster_id, node_number, node_id):
             os_client=client.nova_client(),
             name="list vm interfaces %s" % node_name,
             rebind={'server': "vm_id_%d" % node_number},
+            inject={'ignore_nova_not_found_exception': True},
             provides="vm_interfaces_%d" % node_number),
         os_common.Lambda(
             extract_port_ids,
