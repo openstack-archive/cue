@@ -28,7 +28,7 @@ posix_ipc
 jinja2
 
 taskflow>=0.11.0
--e git+https://github.com/python-zk/kazoo.git#egg=kazoo
+kazoo>=2.2
 #PyMySQL
 python-keystoneclient
 python-novaclient

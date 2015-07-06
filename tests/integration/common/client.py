@@ -45,7 +45,7 @@ class BaseMessageQueueClient(rest_client.RestClient):
         self.private_network = self._get_network('private')
 
     def _get_network(self, label):
-        network_client = tenant_networks_client.TenantNetworksClientJSON(
+        network_client = tenant_networks_client.TenantNetworksClient(
             _get_keystone_auth_provider(),
             'compute',
             'RegionOne')
