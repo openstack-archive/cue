@@ -135,4 +135,4 @@ class TestManage(base.UnitTestCase):
         manage.main(sys_argv, conf_fixture=self.CONF)
 
         self.assertEqual('cue', cfg.CONF.project)
-        mock_migration_manager.assert_called_once()
+        self.assertEqual(mock_migration_manager.call_count, 1)

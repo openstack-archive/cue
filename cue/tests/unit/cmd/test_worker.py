@@ -30,7 +30,7 @@ class TestWorker(base.UnitTestCase):
 
         worker.main()
 
-        mock_prepare.assert_called_once()
-        mock_conf.assert_called_once()
-        mock_tf_signals.assert_called_once()
-        mock_tf_start.assert_called_once()
+        self.assertEqual(mock_prepare.call_count, 1)
+        self.assertEqual(mock_conf.call_count, 1)
+        mock_tf_signals.assert_called_once_with()
+        mock_tf_start.assert_called_once_with()
