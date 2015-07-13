@@ -44,7 +44,7 @@ Deploying Cue Through Vagrant
 
 ::
 
-   $ git clone https://github.com/stackforge/cue.git
+   $ git clone https://github.com/openstack/cue.git
 
 
 2. Startup Vagrant VM

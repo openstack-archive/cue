@@ -58,7 +58,7 @@ Installing using Source (Git)
 
 ::
 
-    $ git clone git://github.com/stackforge/cue cue
+    $ git clone git://github.com/openstack/cue cue
 
 3. Change directory to the newly cloned repository
 

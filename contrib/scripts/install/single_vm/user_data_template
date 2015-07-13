@@ -165,7 +165,7 @@ echo "GRANT ALL PRIVILEGES ON cue. * TO 'cue_worker'@'%';" | mysql -u root -p${m
 service mysql restart
 
 # Install cue service
-git clone https://github.com/stackforge/cue.git
+git clone https://github.com/openstack/cue.git
 cd cue
 python setup.py install
 pip install pbr

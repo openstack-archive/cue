@@ -4,7 +4,7 @@ To install Cue
     
     # Clone devstack and cue
     git clone https://github.com/openstack-dev/devstack.git
-    git clone https://github.com/stackforge/cue.git
+    git clone https://github.com/openstack/cue.git
 
     # Install the cue plugins onto Devstack
     ./cue/contrib/devstack/install.sh

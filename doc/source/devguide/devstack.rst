@@ -30,7 +30,7 @@ Instructions
 2. Clone Cue and DevStack inside the VM::
 
    $ git clone https://git.openstack.org/openstack-dev/devstack
-   $ git clone https://github.com/stackforge/cue.git
+   $ git clone https://github.com/openstack/cue.git
 
 3. Install the Cue extension for DevStack::
 

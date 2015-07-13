@@ -33,4 +33,4 @@ Indices and tables
 
 
 .. _OpenStack Wiki: https://wiki.openstack.org/wiki/Cue
-.. _source tree: https://github.com/stackforge/cue
+.. _source tree: https://github.com/openstack/cue

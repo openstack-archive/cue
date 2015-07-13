@@ -25,11 +25,11 @@ set +o xtrace
 CUE_PLUGINS=$TOP_DIR/lib/cue_plugins
 
 # Set up default repos
-CUE_REPO=${CUE_REPO:-${GIT_BASE}/stackforge/cue.git}
+CUE_REPO=${CUE_REPO:-${GIT_BASE}/openstack/cue.git}
 CUE_BRANCH=${CUE_BRANCH:-master}
-CUECLIENT_REPO=${CUECLIENT_REPO:-${GIT_BASE}/stackforge/python-cueclient.git}
+CUECLIENT_REPO=${CUECLIENT_REPO:-${GIT_BASE}/openstack/python-cueclient.git}
 CUECLIENT_BRANCH=${CUECLIENT_BRANCH:-master}
-CUEDASHBOARD_REPO=${CUEDASHBOARD_REPO:-${GIT_BASE}/stackforge/cue-dashboard.git}
+CUEDASHBOARD_REPO=${CUEDASHBOARD_REPO:-${GIT_BASE}/openstack/cue-dashboard.git}
 CUEDASHBOARD_BRANCH=${CUEDASHBOARD_BRANCH:-master}
 CUE_MANAGEMENT_NETWORK_SUBNET=${CUE_MANAGEMENT_NETWORK_SUBNET-"172.16.0.0/24"}
 
