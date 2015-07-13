@@ -63,6 +63,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+  config.ssh.forward_agent = true
 
   config.vm.define "ubuntu" do |ubuntu|
     ubuntu.vm.hostname = "cuedev-ubuntu"
