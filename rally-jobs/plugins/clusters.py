@@ -15,8 +15,8 @@
 
 import cue_utils
 from oslo_log import log as logging
-from rally.benchmark.scenarios import base
-from rally.benchmark import types as types
+from rally.task.scenarios import base
+from rally.task import types as types
 from rally.common import sshutils
 
 import os

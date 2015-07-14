@@ -20,8 +20,8 @@ from cueclient.v1 import client
 from keystoneclient.auth.identity import v2 as ks_v2
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
-from rally.benchmark.scenarios import base
-from rally.benchmark import utils as benchmark_utils
+from rally.task.scenarios import base
+from rally.task import utils as benchmark_utils
 from rally.common import log as logging
 
 import os
