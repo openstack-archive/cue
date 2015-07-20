@@ -20,8 +20,8 @@ from cueclient.v1 import client
 from keystoneclient.auth.identity import v2 as ks_v2
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
-from rally.benchmark.scenarios import base
-from rally.benchmark import utils as benchmark_utils
+from rally.task.scenarios import base
+from rally.task import utils as task_utils
 from rally.common import log as logging
 
 import os
@@ -302,12 +302,12 @@ class CueScenario(base.Scenario):
 
         # wait for instance to become active
         LOG.info("Waiting for instance to become active")
-        benchmark_utils.wait_for(server,
-                                 is_ready=benchmark_utils.
-                                 resource_is("ACTIVE"),
-                                 update_resource=benchmark_utils.
-                                 get_from_manager(),
-                                 timeout=nova_server_boot_timeout)
+        task_utils.wait_for(server,
+                            is_ready=task_utils.
+                            resource_is("ACTIVE"),
+                            update_resource=task_utils.
+                            get_from_manager(),
+                            timeout=nova_server_boot_timeout)
 
         # assert if instance is 'active'
         assert('ACTIVE' == server.status), (
@@ -358,9 +358,9 @@ class CueScenario(base.Scenario):
         nova_client.servers.delete(server_id)
 
         LOG.info("Waiting for instance to get deleted")
-        benchmark_utils.wait_for_delete(server,
-                                        update_resource=benchmark_utils.
-                                        get_from_manager())
+        task_utils.wait_for_delete(server,
+                                   update_resource=task_utils.
+                                   get_from_manager())
 
         # delete sec-group
         for secgroup in nova_client.security_groups.list():
