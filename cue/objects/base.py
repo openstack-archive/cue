@@ -16,8 +16,8 @@
 # Copyright [2014] Hewlett-Packard Development Company, L.P.
 # limitations under the License.
 
+from cue.common.i18n import _LE  # noqa
 from cue.objects import utils as obj_utils
-from cue.openstack.common._i18n import _LE  # noqa
 
 import collections
 
