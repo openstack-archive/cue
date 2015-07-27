@@ -15,10 +15,13 @@
 
 import oslo_config.cfg as cfg
 import taskflow.patterns.graph_flow as graph_flow
+import taskflow.patterns.linear_flow as linear_flow
+import taskflow.retry as retry
 
 from cue.db.sqlalchemy import models
 from cue.taskflow.flow import create_cluster_node
 import cue.taskflow.task as cue_tasks
+import os_tasklib.common as os_common
 
 
 def create_cluster(cluster_id, node_ids, user_network_id,
@@ -60,6 +63,25 @@ def create_cluster(cluster_id, node_ids, user_network_id,
     node_check_timeout = cfg.CONF.taskflow.cluster_node_check_timeout
     node_check_max_count = cfg.CONF.taskflow.cluster_node_check_max_count
 
+    check_rabbit_online = linear_flow.Flow(
+        name="wait for RabbitMQ ready state",
+        retry=retry.Times(node_check_max_count, revert_all=True))
+    check_rabbit_online.add(
+        cue_tasks.GetRabbitClusterStatus(
+            name="get RabbitMQ status",
+            rebind={'vm_ip': "vm_management_ip_0"},
+            provides="clustering_status",
+            inject={'proto': 'http'}),
+        os_common.CheckFor(
+            name="check cluster status",
+            rebind={'check_var': "clustering_status"},
+            check_value='OK',
+            retry_delay_seconds=10),
+    )
+    flow.add(check_rabbit_online)
+
+    flow.link(check_rabbit_online, end_task)
+
     #todo(dagnello): verify node_ids is a list and not a string
     for i, node_id in enumerate(node_ids):
         generate_userdata = cue_tasks.ClusterNodeUserData(
@@ -71,7 +93,8 @@ def create_cluster(cluster_id, node_ids, user_network_id,
 
         create_cluster_node.create_cluster_node(cluster_id, i, node_id, flow,
                                                 generate_userdata, start_task,
-                                                end_task, node_check_timeout,
+                                                check_rabbit_online,
+                                                node_check_timeout,
                                                 node_check_max_count,
                                                 user_network_id,
                                                 management_network_id)
