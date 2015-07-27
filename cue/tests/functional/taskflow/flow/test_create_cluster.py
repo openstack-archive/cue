@@ -22,7 +22,7 @@ from cue.taskflow.flow import create_cluster
 from cue.tests.functional import base
 from cue.tests.functional.fixtures import neutron
 from cue.tests.functional.fixtures import nova
-from cue.tests.functional.fixtures import telnet
+from cue.tests.functional.fixtures import urllib2_fixture
 
 from taskflow import engines
 import taskflow.exceptions as taskflow_exc
@@ -32,7 +32,7 @@ class CreateClusterTests(base.FunctionalTestCase):
     additional_fixtures = [
         nova.NovaClient,
         neutron.NeutronClient,
-        telnet.TelnetClient
+        urllib2_fixture.Urllib2Fixture
     ]
 
     def setUp(self):
@@ -65,6 +65,19 @@ class CreateClusterTests(base.FunctionalTestCase):
         network_list = self.neutron_client.list_networks(
             name=management_network_name)
         self.management_network = network_list['networks'][0]
+
+        # Todo(Dan) If testing becomes asynchronous, then there is no guarantee
+        # that these urllib return results will come in the proper order.  Will
+        # have to update the urllib2 fixture to respond appropriately for the
+        # url passed in.
+        urllib2_fixture.Urllib2ResultDetails.set_urllib2_result(
+            ['{"status": "ok"}',
+             '[{"name": "/"}]',
+             '{"status": "ok"}',
+             '[{"name": "/"}]',
+             '{"status": "ok"}',
+             '[{"name": "/"}]']
+        )
 
     def test_create_cluster(self):
         flow_store = {
