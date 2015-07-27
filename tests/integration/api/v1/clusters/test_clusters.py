@@ -73,6 +73,12 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             if time.time() - start_time > 1800:
                 self.get_logs(cluster_resp['id'])
                 self.fail('Waited 30 minutes for cluster to get ACTIVE')
+
+        # Temporary debug
+        # if cluster_resp['status'] != 'ACTIVE':
+        print "Printing cluster logs for " + str(cluster_resp['id']) + " findme"
+        self.get_logs(cluster_resp['id'])
+
         self.assertEqual(cluster_resp['status'], 'ACTIVE',
                          'Create cluster failed')
 
@@ -110,6 +116,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
 
     @staticmethod
     def get_logs(cluster_id=None):
+        ip = None
         admin_client = client.ServerClient()
         nodes = admin_client.get_cluster_nodes(cluster_id)
         for node in nodes['servers']:
@@ -139,6 +146,13 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
                 print("Printing all logs in /var/log/rabbitmq/")
                 result = stdout.readlines()
                 print(''.join(result))
+
+                stdin, stdout, stderr = ssh.exec_command(
+                    "sudo netstat -apn")
+                print("Printing netstat -apn")
+                result = stdout.readlines()
+                print(''.join(result))
+
                 ssh.close()
             except Exception:
                 print("Could not SSH to %s, IP: %s" % (node['name'], ip))
