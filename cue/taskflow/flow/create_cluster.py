@@ -15,6 +15,8 @@
 
 import oslo_config.cfg as cfg
 import taskflow.patterns.graph_flow as graph_flow
+import taskflow.patterns.linear_flow as linear_flow
+import taskflow.retry as retry
 
 from cue.db.sqlalchemy import models
 from cue.taskflow.flow import create_cluster_node
@@ -76,4 +78,15 @@ def create_cluster(cluster_id, node_ids, user_network_id,
                                                 user_network_id,
                                                 management_network_id)
 
+    #todo(dagnello): make retry times configurable
+    check_rabbit_online = linear_flow.Flow(
+        name="wait for RabbitMQ ready state",
+        retry=retry.Times(node_check_max_count, revert_all=True))
+    check_rabbit_online.add(
+        cue_tasks.GetRabbitClusterStatus(
+            name="get RabbitMQ status",
+            rebind={'vm_ip': "vm_management_ip_0"},
+            retry_delay_seconds=node_check_timeout))
+    flow.add(check_rabbit_online)
+    flow.link(generate_userdata, check_rabbit_online)
     return flow
