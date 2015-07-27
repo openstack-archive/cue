@@ -36,7 +36,7 @@ CONF.register_opts(FLOW_OPTS, group='flow_options')
 
 
 def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
-                        generate_userdata, start_task, end_task,
+                        generate_userdata, start_task, post_task,
                         node_check_timeout, node_check_max_count,
                         user_network_id, management_network_id):
     """Create Cluster Node factory function
@@ -53,8 +53,8 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     :type graph_flow: taskflow.patterns.graph_flow
     :param start_task: Update cluster status start task
     :type start_task: cue.taskflow.task.UpdateClusterStatus
-    :param end_task: Update cluster status end task
-    :type end_task: cue.taskflow.task.UpdateClusterStatus
+    :param post_task: Task/Subflow to run after the flow created here
+    :type post_task: taskflow task or flow
     :param generate_userdata: generate user data task
     :type generate_userdata: cue.taskflow.task.ClusterNodeUserData
     :param node_check_timeout: seconds wait between node status checks
@@ -158,18 +158,6 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     graph_flow.add(check_vm_active)
     graph_flow.link(get_vm_id, check_vm_active)
 
-    #todo(dagnello): make retry times configurable
-    check_rabbit_online = linear_flow.Flow(
-        name="wait for RabbitMQ ready state %s" % node_name,
-        retry=retry.Times(node_check_max_count, revert_all=True))
-    check_rabbit_online.add(
-        os_common.VerifyNetwork(
-            name="get RabbitMQ status %s" % node_name,
-            rebind={'vm_ip': "vm_management_ip_%d" % node_number},
-            retry_delay_seconds=node_check_timeout))
-    graph_flow.add(check_rabbit_online)
-    graph_flow.link(check_vm_active, check_rabbit_online)
-
     build_node_info = os_common.Lambda(
         new_node_values,
         name="build new node values %s" % node_name,
@@ -194,13 +182,13 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
         provides="endpoint_values_%d" % node_number
     )
     graph_flow.add(build_endpoint_info)
-    graph_flow.link(check_rabbit_online, build_endpoint_info)
+    graph_flow.link(check_vm_active, build_endpoint_info)
 
     create_endpoint = cue_tasks.CreateEndpoint(
         name="update endpoint for node %s" % node_name,
         rebind={'endpoint_values': "endpoint_values_%d" % node_number})
     graph_flow.add(create_endpoint)
-    graph_flow.link(check_rabbit_online, create_endpoint)
+    graph_flow.link(check_vm_active, create_endpoint)
 
-    graph_flow.link(update_node, end_task)
-    graph_flow.link(create_endpoint, end_task)
+    graph_flow.link(update_node, post_task)
+    graph_flow.link(create_endpoint, post_task)
