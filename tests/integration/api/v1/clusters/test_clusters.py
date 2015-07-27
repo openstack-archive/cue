@@ -73,6 +73,14 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             if time.time() - start_time > 1800:
                 self.get_logs(cluster_resp['id'])
                 self.fail('Waited 30 minutes for cluster to get ACTIVE')
+        if cluster_resp['status'] != 'ACTIVE':
+            self.get_logs(cluster_resp['id'])
+
+        # Temporary debug
+        import subprocess
+        out = subprocess.check_output(['netstat', '-an'])
+        print "netstat findme\n" + str(out)
+
         self.assertEqual(cluster_resp['status'], 'ACTIVE',
                          'Create cluster failed')
 
@@ -110,6 +118,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
 
     @staticmethod
     def get_logs(cluster_id=None):
+        ip = None
         admin_client = client.ServerClient()
         nodes = admin_client.get_cluster_nodes(cluster_id)
         for node in nodes['servers']:
