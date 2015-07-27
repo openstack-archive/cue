@@ -63,8 +63,19 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
         cluster = self._create_cluster()
 
         start_time = time.time()
+        count = 0
         while True:
+            count += 1
             cluster_resp = self.client.get_cluster(cluster['id'])
+            if count > 20:
+                # Temporary debug, collecting logs every 20 seconds
+                try:
+                    print str(count) + "  - Printing cluster logs for " + str(cluster_resp['id'])
+                    self.get_logs(cluster_resp['id'])
+                except Exception as err:
+                    print "Failure printing cluster logs: " + str(err)
+                count = 0
+
             if cluster_resp['status'] != 'BUILDING':
                 break
             self.assertEqual(cluster_resp['status'], 'BUILDING',
@@ -73,6 +84,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             if time.time() - start_time > 1800:
                 self.get_logs(cluster_resp['id'])
                 self.fail('Waited 30 minutes for cluster to get ACTIVE')
+
         self.assertEqual(cluster_resp['status'], 'ACTIVE',
                          'Create cluster failed')
 
@@ -110,6 +122,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
 
     @staticmethod
     def get_logs(cluster_id=None):
+        ip = None
         admin_client = client.ServerClient()
         nodes = admin_client.get_cluster_nodes(cluster_id)
         for node in nodes['servers']:
@@ -139,6 +152,13 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
                 print("Printing all logs in /var/log/rabbitmq/")
                 result = stdout.readlines()
                 print(''.join(result))
+
+                stdin, stdout, stderr = ssh.exec_command(
+                    "sudo netstat -apn")
+                print("Printing netstat -apn")
+                result = stdout.readlines()
+                print(''.join(result))
+
                 ssh.close()
             except Exception:
                 print("Could not SSH to %s, IP: %s" % (node['name'], ip))
