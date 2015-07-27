@@ -163,7 +163,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
         name="wait for RabbitMQ ready state %s" % node_name,
         retry=retry.Times(node_check_max_count, revert_all=True))
     check_rabbit_online.add(
-        os_common.VerifyNetwork(
+        cue_tasks.GetRabbitClusterStatus(
             name="get RabbitMQ status %s" % node_name,
             rebind={'vm_ip': "vm_management_ip_%d" % node_number},
             retry_delay_seconds=node_check_timeout))
