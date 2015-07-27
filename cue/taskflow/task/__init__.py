@@ -17,6 +17,7 @@ from check_or_restart_rabbitmq import CheckOrRestartRabbitMq    # noqa
 from cluster_node_userdata import ClusterNodeUserData           # noqa
 from create_endpoint_task import CreateEndpoint                 # noqa
 from get_node import GetNode                                    # noqa
+from get_rabbit_cluster_status import GetRabbitClusterStatus    # noqa
 from update_cluster_task import UpdateClusterStatus             # noqa
 from update_endpoints_task import UpdateEndpoints               # noqa
 from update_node_task import UpdateNode                         # noqa
