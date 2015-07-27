@@ -50,7 +50,7 @@ TF_OPTS = [
     cfg.IntOpt('cluster_node_check_max_count',
                help="Number of times to check a node for status before "
                "declaring it FAULTED",
-               default=30),
+               default=180),
 ]
 
 opt_group = cfg.OptGroup(
