@@ -15,9 +15,9 @@
 
 import cue_utils
 from oslo_log import log as logging
-from rally.benchmark.scenarios import base
-from rally.benchmark import types as types
 from rally.common import sshutils
+from rally.task.scenarios import base
+from rally.task import types as types
 
 import os
 import stat
@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 
 
 class CueClusters(cue_utils.CueScenario):
-    """Benchmark Rally scenarios for Cue."""
+    """Task Rally scenarios for Cue."""
     SUBNET_IP_VERSION = 4
 
     @base.scenario()
