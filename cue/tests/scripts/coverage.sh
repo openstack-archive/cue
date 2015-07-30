@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-ALLOWED_EXTRA_MISSING=4
 COVERAGE_PERCENT_THRESHOLD=80
 
 show_diff () {
@@ -48,33 +47,14 @@ echo current_missing: $current_missing
 echo current_percent_coverage: $current_percent_coverage
 echo baseline_missing: $baseline_missing
 
-# Show coverage details
-allowed_missing=$((baseline_missing+ALLOWED_EXTRA_MISSING))
-
-echo "Allowed to introduce missing lines : ${ALLOWED_EXTRA_MISSING}"
-echo "Missing lines in master            : ${baseline_missing}"
-echo "Missing lines in proposed change   : ${current_missing}"
-
-
 if [ -z $baseline_missing ] &&
    [ $current_percent_coverage -gt $COVERAGE_PERCENT_THRESHOLD ];
 then
     echo "Coverage is : ${current_percent_coverage} %"
     exit_code=0
-elif [ "$allowed_missing" -gt "$current_missing" ];
-then
-    if [ $baseline_missing -lt $current_missing ];
-    then
-        show_diff $baseline_report $current_report
-        echo "I believe you can cover all your code with 100% coverage!"
-    else
-        echo "Thank you! You are awesome! Keep writing unit tests! :)"
-    fi
-    exit_code=0
 else
-    show_diff $baseline_report $current_report
-    echo "Please write more unit tests, we should keep our test coverage :( "
-    exit_code=1
+    python cue/tests/scripts/diff_coverage.py $baseline_report $current_report
+    exit_code=$?
 fi
 
 rm $baseline_report $current_report
