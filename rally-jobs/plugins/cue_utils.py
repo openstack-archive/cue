@@ -21,6 +21,7 @@ from keystoneclient.auth.identity import v2 as ks_v2
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
 from rally.common import log as logging
+from rally.plugins.openstack import scenario
 from rally.task.scenarios import base
 from rally.task import utils as task_utils
 
@@ -29,7 +30,7 @@ import os
 LOG = logging.getLogger(__name__)
 
 
-class CueScenario(base.Scenario):
+class CueScenario(scenario.OpenStackScenario):
     """Base class for Cue scenarios with basic atomic actions."""
 
     @base.atomic_action_timer("cue.clusters.list")
