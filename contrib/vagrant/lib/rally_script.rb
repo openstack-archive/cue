@@ -15,7 +15,7 @@ cd devstack
 echo "enable_service rally" >> local.conf
 
 cat << EOF >> /home/vagrant/.bash_aliases
-alias run_rally_cue_scenarios="rally -v --debug task start --task ~/cue/rally-jobs/cue-scenarios.yaml"
+alias run_rally_cue_scenarios="rally -v --debug task start --task ~/cue/rally-jobs/rabbitmq-scenarios.yaml"
 
 EOF
 
