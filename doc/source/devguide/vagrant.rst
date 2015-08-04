@@ -108,4 +108,4 @@ cue/rally-jobs
 To run all scenario tests, ssh into the Vagrant VM with DevStack/Cue installation (above) and run the following script:
 ::
 
-   $ rally task start --task ~/cue/rally-jobs/cue-scenarios.yaml
+   $ rally task start --task ~/cue/rally-jobs/rabbitmq-scenarios.yaml
