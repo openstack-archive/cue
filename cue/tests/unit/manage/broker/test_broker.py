@@ -13,7 +13,10 @@
 #    under the License.
 
 import contextlib
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import sys
 
 import mock
@@ -94,7 +97,7 @@ class TestBroker(test_base.UnitTestCase):
                                  'test_created_at', 'test_updated_at',
                                  'test_deleted_at')
 
-        with stdout_redirect(StringIO.StringIO()) as new_stdout:
+        with stdout_redirect(StringIO()) as new_stdout:
             with mock.patch.object(
                     broker.Broker, 'create_broker') as mock_create_broker:
 
@@ -124,7 +127,7 @@ class TestBroker(test_base.UnitTestCase):
                                'bar_created_at', 'bar_updated_at',
                                'bar_deleted_at')
 
-        with stdout_redirect(StringIO.StringIO()) as new_stdout:
+        with stdout_redirect(StringIO()) as new_stdout:
             with mock.patch.object(
                     broker.Broker, 'get_brokers') as mock_get_brokers:
 
@@ -222,7 +225,7 @@ class TestBroker(test_base.UnitTestCase):
                                'bar_value', 'bar_created_at', 'bar_updated_at',
                                'bar_deleted_at')
 
-        with stdout_redirect(StringIO.StringIO()) as new_stdout:
+        with stdout_redirect(StringIO()) as new_stdout:
             with mock.patch.object(
                     broker_metadata.BrokerMetadata,
                     'get_broker_metadata_by_broker_id') as mock_get_brokers:
