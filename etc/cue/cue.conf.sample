@@ -753,3 +753,29 @@ os_image_id=
 # Openstack Availability zone
 #
 #os_availability_zone=
+
+#
+# Openstack Auth version
+#
+# Openstack Auth version which must be supplied to authenticate
+# against specific Keystone version v2.0/v3.
+#
+#os_auth_version=
+
+#
+# Openstack Project Name
+#
+#os_project_name=
+
+#
+# Openstack Project Domain Name
+# If using a project name specify either it’s owning
+# domain name or ID.
+#os_project_domain_name=
+
+#
+# Openstack User Domain Name
+# If using a username specify either it’s owning
+# domain name or ID.
+#
+#os_user_domain_name=
