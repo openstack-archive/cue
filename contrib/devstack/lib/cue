@@ -105,10 +105,12 @@ function configure_cue {
     # Set flow create cluster node vm active retry count
     iniset $CUE_CONF flow_options create_cluster_node_vm_active_retry_count $CUE_TF_CREATE_CLUSTER_NODE_VM_ACTIVE_RETRY_COUNT
 
-    iniset $CUE_CONF openstack os_auth_url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
-    iniset $CUE_CONF openstack os_tenant_name admin
+    iniset $CUE_CONF openstack os_auth_url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v3
+    iniset $CUE_CONF openstack os_project_name admin
     iniset $CUE_CONF openstack os_username admin
     iniset $CUE_CONF openstack os_password $ADMIN_PASSWORD
+    iniset $CUE_CONF openstack os_project_domain_name default
+    iniset $CUE_CONF openstack os_user_domain_name default
 
     if [ "$SYSLOG" != "False" ]; then
         iniset $CUE_CONF DEFAULT use_syslog True
