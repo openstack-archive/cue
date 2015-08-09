@@ -39,7 +39,7 @@ class APITest(base.FunctionalTestCase):
 
     def setUp(self):
         super(APITest, self).setUp()
-        self.CONF.config(auth_version="v2.0",
+        self.CONF.config(auth_version="v3",
                          group=OPT_GROUP_NAME)
         self.app = self._make_app()
         self.auth_headers = {'X-User-Id': str(self.context.user_id),
