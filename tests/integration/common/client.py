@@ -99,12 +99,25 @@ class ServerClient(rest_client.RestClient):
 
 
 def _get_keystone_auth_provider():
-    creds = auth.KeystoneV2Credentials(
-        username='admin',
-        password=CONF.identity.password,
-        tenant_name='admin',
-    )
-    auth_provider = auth.KeystoneV2AuthProvider(creds,
-                                                CONF.identity.uri)
+
+    keystone_v3 = 'v3' in CONF.identity.uri
+    if keystone_v3:
+        creds = auth.KeystoneV3Credentials(
+            username='admin',
+            password=CONF.identity.password,
+            project_name='admin',
+            user_domain_name='default',
+            project_domain_name='default'
+        )
+        auth_provider = auth.KeystoneV3AuthProvider(creds,
+                                                    CONF.identity.uri)
+    else:
+        creds = auth.KeystoneV2Credentials(
+            username='admin',
+            password=CONF.identity.password,
+            tenant_name='admin',
+        )
+        auth_provider = auth.KeystoneV2AuthProvider(creds,
+                                                    CONF.identity.uri)
     auth_provider.fill_credentials()
     return auth_provider
