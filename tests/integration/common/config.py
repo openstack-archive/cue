@@ -26,10 +26,13 @@ def setup_config(config_file=''):
 
     identity_group = cfg.OptGroup(name='identity')
     identity_options = [
-        cfg.StrOpt('uri', default='http://localhost:5000/v2.0'),
+        cfg.StrOpt('auth_version', default='3'),
+        cfg.StrOpt('uri', default='http://localhost:5000/v3'),
         cfg.StrOpt('username', default='demo'),
-        cfg.StrOpt('password', default='secretadmin'),
-        cfg.StrOpt('tenant_name', default='demo'),
+        cfg.StrOpt('password', default='password'),
+        cfg.StrOpt('project_name', default='demo'),
+        cfg.StrOpt('user_domain_name', default='default'),
+        cfg.StrOpt('project_domain_name', default='default')
     ]
     TEST_CONF.register_group(identity_group)
     TEST_CONF.register_opts(identity_options, group=identity_group)
