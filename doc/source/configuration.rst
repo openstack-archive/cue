@@ -85,11 +85,13 @@ cluster_node_check_max_count   30                                    Number of t
 Parameter                    Default                               Note
 ===========================  ====================================  ==============================================================
 os_region_name               None                                  Region name
-os_tenant_id                 None                                  Openstack Tenant ID
-os_tenant_name               None                                  Openstack Tenant Name
 os_username                  None                                  Openstack Username
 os_password                  None                                  Openstack Password
 os_auth_url                  None                                  Openstack Authentication (Identity) URL
+os_auth_version              None                                  Openstack Authentication (Identity) Version
+os_project_name              None                                  Openstack Project Name
+os_project_domain_name       None                                  Openstack Project Domain Name
+os_user_domain_name          None                                  Openstack User Domain Name
 os_key_name                  None                                  SSH key to be provisioned to cue VMs
 os_availability_zone         None                                  Default availability zone to provision cue VMs
 ===========================  ====================================  ==============================================================
