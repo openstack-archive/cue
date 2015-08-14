@@ -14,5 +14,5 @@
 # under the License.
 
 
-from create_port import CreatePort  # noqa
-from delete_ports import DeletePorts  # noqa
+from os_tasklib.neutron.create_port import CreatePort  # noqa
+from os_tasklib.neutron.delete_ports import DeletePorts  # noqa
