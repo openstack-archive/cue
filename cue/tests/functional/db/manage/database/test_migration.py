@@ -57,7 +57,7 @@ class MigrationFunctionalTests(base.BaseTestCase):
         ])
 
         num_revisions = len(self.sorted_revision_list)
-        self.head = self.sorted_revision_list.keys()[num_revisions - 1]
+        self.head = list(self.sorted_revision_list.keys())[num_revisions - 1]
 
         engine = sql_api.get_engine()
         db_base.BASE.metadata.bind = engine
