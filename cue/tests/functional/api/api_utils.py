@@ -20,6 +20,9 @@ Common API base class to controller test classes.
 """
 
 
+import six
+
+
 class ClusterValidationMixin(object):
     cluster_name = "test-cluster"
 
@@ -56,23 +59,23 @@ class ClusterValidationMixin(object):
                                                             "volume_size")
                          else cluster_cmp["volume_size"],
                          "Invalid cluster volume_size value")
-        self.assertEqual(unicode(cluster_ref["created_at"].isoformat()),
+        self.assertEqual(cluster_ref["created_at"].isoformat(),
                          cluster_cmp["created_at"],
                          "Invalid cluster created_at value")
 
         if cluster_ref["updated_at"] is not None:
-            self.assertEqual(unicode(cluster_ref["updated_at"].isoformat()),
+            self.assertEqual(cluster_ref["updated_at"].isoformat(),
                              cluster_cmp["updated_at"],
                              "Invalid cluster updated_at value")
 
         if isinstance((cluster_ref.network_id if hasattr(cluster_ref,
                                                            "network_id")
-                         else cluster_ref["network_id"]), (str, unicode)):
+                         else cluster_ref["network_id"]), six.string_types):
             cluster_ref['network_id'] = [cluster_ref['network_id']]
 
         if isinstance((cluster_cmp.network_id if hasattr(cluster_cmp,
                                                            "network_id")
-                         else cluster_cmp["network_id"]), (str, unicode)):
+                         else cluster_cmp["network_id"]), six.string_types):
             cluster_cmp['network_id'] = [cluster_cmp['network_id']]
 
         self.assertEqual(len(cluster_ref.network_id if hasattr(cluster_ref,

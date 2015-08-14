@@ -104,11 +104,11 @@ class Cluster(base.APIBase):
     flavor = wsme.wsattr(wtypes.text, mandatory=True)
     "Flavor of cluster"
 
-    size = wsme.wsattr(wtypes.IntegerType(minimum=0, maximum=sys.maxint),
+    size = wsme.wsattr(wtypes.IntegerType(minimum=0, maximum=sys.maxsize),
                        mandatory=True)
     "Number of nodes in cluster"
 
-    volume_size = wtypes.IntegerType(minimum=0, maximum=sys.maxint)
+    volume_size = wtypes.IntegerType(minimum=0, maximum=sys.maxsize)
     "Volume size for nodes in cluster"
 
     endpoints = wtypes.wsattr([EndPoint], default=[])
