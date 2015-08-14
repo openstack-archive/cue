@@ -50,7 +50,7 @@ def create_api_test_cluster(**kw):
 
     test_cluster = get_test_cluster(**kw)
 
-    if isinstance(test_cluster['network_id'], (str, unicode)):
+    if isinstance(test_cluster['network_id'], (str)):
         test_cluster['network_id'] = [test_cluster['network_id']]
 
     cluster_parameters = {
@@ -75,7 +75,7 @@ def create_api_test_cluster_all(**kw):
 
     test_cluster = get_test_cluster(**kw)
 
-    if isinstance(test_cluster['network_id'], (str, unicode)):
+    if isinstance(test_cluster['network_id'], (str)):
         test_cluster['network_id'] = [test_cluster['network_id']]
 
     cluster_parameters = {
