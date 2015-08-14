@@ -198,7 +198,7 @@ class ConductorService(object):
         if self._signal_list is None:
             self._signal_list = signals
 
-        if cmp(signals, self._signal_list):
+        if signals < self._signal_list:
             for s in set(self._signal_list):
                 signal.signal(s, signal.SIG_DFL)
 
