@@ -284,7 +284,7 @@ class NovaClient(base.BaseFixture):
         :param name: Image name.
         :return: Image detail matching provided image name.
         """
-        for image_detail in self._image_list.itervalues():
+        for image_detail in self._image_list.values():
             if image_detail.name == name:
                 return image_detail
 
@@ -306,7 +306,7 @@ class NovaClient(base.BaseFixture):
         :param name: Flavor name.
         :return: Flavor detail matching provided flavor name.
         """
-        for flavor_detail in self._flavor_list.itervalues():
+        for flavor_detail in self._flavor_list.values():
             if flavor_detail.name == name:
                 return flavor_detail
 
