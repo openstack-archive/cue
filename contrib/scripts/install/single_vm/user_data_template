@@ -197,13 +197,12 @@ iniset ${CUE_CONF} openstack os_username ${os_username}
 iniset ${CUE_CONF} openstack os_password ${os_password}
 iniset ${CUE_CONF} openstack os_auth_url ${os_auth_url}
 iniset ${CUE_CONF} database connection ${db_connection_worker}
-iniset ${CUE_CONF} keystone_authtoken project_domain_id default
-iniset ${CUE_CONF} keystone_authtoken project_name service
-iniset ${CUE_CONF} keystone_authtoken user_domain_id default
-iniset ${CUE_CONF} keystone_authtoken password password
-iniset ${CUE_CONF} keystone_authtoken username cue
-iniset ${CUE_CONF} keystone_authtoken auth_url http://${floating_ip}:35357
-iniset ${CUE_CONF} keystone_authtoken auth_plugin password
+iniset ${CUE_CONF} keystone_authtoken admin_tenant_name service
+iniset ${CUE_CONF} keystone_authtoken admin_password password
+iniset ${CUE_CONF} keystone_authtoken admin_user cue
+iniset ${CUE_CONF} keystone_authtoken auth_host ${floating_ip}
+iniset ${CUE_CONF} keystone_authtoken auth_port 35357
+iniset ${CUE_CONF} keystone_authtoken auth_protocol http
 
 # Execute Cue's database upgrade scripts
 cue-manage --config-file /etc/cue/cue.conf database upgrade
