@@ -3,7 +3,7 @@
     -
       args:
         size: 3
-        timeout: 600
+        timeout: 800
       runner:
         type: "constant"
         times: 2
@@ -23,7 +23,7 @@
         image:
             name: "cue-rabbitmq-test-image"
         size: 3
-        timeout: 600
+        timeout: 800
       runner:
         type: "constant"
         times: 1
