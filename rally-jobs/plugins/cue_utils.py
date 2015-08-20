@@ -22,7 +22,7 @@ import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
 from rally.common import log as logging
 from rally.plugins.openstack import scenario
-from rally.task.scenarios import base
+from rally.task import atomic
 from rally.task import utils as task_utils
 
 import os
@@ -33,13 +33,13 @@ LOG = logging.getLogger(__name__)
 class CueScenario(scenario.OpenStackScenario):
     """Base class for Cue scenarios with basic atomic actions."""
 
-    @base.atomic_action_timer("cue.clusters.list")
+    @atomic.action_timer("cue.clusters.list")
     def _list_clusters(self, cueclient=None):
         """Returns user clusters list."""
         cue_client = cueclient or self._get_cue_client()
         return cue_client.clusters.list()
 
-    @base.atomic_action_timer("cue.clusters.create")
+    @atomic.action_timer("cue.clusters.create")
     def _create_cluster(self, name, flavor, size, network_id,
                         volume_size=0, cueclient=None):
         """Submit request to create cue cluster.
@@ -60,7 +60,7 @@ class CueScenario(scenario.OpenStackScenario):
                                           flavor=flavor, size=size,
                                           volume_size=volume_size)
 
-    @base.atomic_action_timer("cue.clusters.get")
+    @atomic.action_timer("cue.clusters.get")
     def _get_cluster(self, id, cueclient=None):
         """Retrieves a cluster record by cluster id.
 
@@ -70,7 +70,7 @@ class CueScenario(scenario.OpenStackScenario):
         cue_client = cueclient or self._get_cue_client()
         return cue_client.clusters.get(cluster_id=id)
 
-    @base.atomic_action_timer("cue.clusters.delete")
+    @atomic.action_timer("cue.clusters.delete")
     def _delete_cluster(self, id, cueclient=None):
         """Submits request to Delete a cluster.
 
@@ -129,7 +129,7 @@ class CueScenario(scenario.OpenStackScenario):
 
         return match
 
-    @base.atomic_action_timer("wait.for.delete")
+    @atomic.action_timer("wait.for.delete")
     def _wait_for_cluster_delete(self, cluster_id, timeout=300,
                                  check_interval=1):
         """Waits for specified cluster has been deleted.
@@ -149,7 +149,7 @@ class CueScenario(scenario.OpenStackScenario):
                 raise exceptions.Exception("Delete cluster timed out")
             time.sleep(check_interval)
 
-    @base.atomic_action_timer("wait.for.status.changes")
+    @atomic.action_timer("wait.for.status.changes")
     def _wait_for_status_change(self, cluster_id, final_status, timeout=300,
                                 check_interval=1):
         """Waits for specified change in cluster status.
