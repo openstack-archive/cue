@@ -16,7 +16,7 @@
 import cue_utils
 from oslo_log import log as logging
 from rally.common import sshutils
-from rally.task.scenarios import base
+from rally.plugins.openstack import scenario
 from rally.task import types as types
 
 import os
@@ -29,7 +29,7 @@ class CueClusters(cue_utils.CueScenario):
     """Task Rally scenarios for Cue."""
     SUBNET_IP_VERSION = 4
 
-    @base.scenario()
+    @scenario.configure()
     def create_and_delete_cluster(self, name=None, flavor="8795",
                                   size=1, network_id=None, volume_size=0,
                                   timeout=300, check_interval=1, min_sleep=0,
@@ -80,7 +80,7 @@ class CueClusters(cue_utils.CueScenario):
 
     @types.set(image=types.ImageResourceType,
                flavor=types.FlavorResourceType)
-    @base.scenario()
+    @scenario.configure()
     def create_verify_and_delete_cluster(self, image, flavor, network_id=None,
                                          server_name="rally_vm",
                                          cluster_name=None,
