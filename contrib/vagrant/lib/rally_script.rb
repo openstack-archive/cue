@@ -9,10 +9,8 @@ pushd ~
 
 test -d devstack || git clone https://git.openstack.org/openstack-dev/devstack
 test -d rally || git clone https://github.com/openstack/rally
-cp rally/contrib/devstack/lib/rally devstack/lib/
-cp rally/contrib/devstack/extras.d/70-rally.sh devstack/extras.d/
 cd devstack
-echo "enable_service rally" >> local.conf
+echo "enable_plugin rally https://github.com/openstack/rally master" >> localrc
 
 cat << EOF >> /home/vagrant/.bash_aliases
 alias run_rally_cue_scenarios="rally -v --debug task start --task ~/cue/rally-jobs/rabbitmq-scenarios.yaml"
