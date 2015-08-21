@@ -24,6 +24,7 @@ from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
+from cue.common import validate_auth_token as auth_validate
 from cue import objects
 from cue.taskflow import client as task_flow_client
 from cue.taskflow.flow import create_cluster
@@ -40,6 +41,16 @@ import wsmeext.pecan as wsme_pecan
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+
+
+class AuthenticationCredential(wtypes.Base):
+    """Representation of a Broker Authentication Method"""
+
+    type = wtypes.text
+    "type of authentication"
+
+    token = wtypes.DictType
+    "authentication credentials"
 
 
 class EndPoint(base.APIBase):
@@ -102,6 +113,9 @@ class Cluster(base.APIBase):
 
     endpoints = wtypes.wsattr([EndPoint], default=[])
     "List of endpoints on accessing node"
+
+    authentication = wtypes.wsattr(AuthenticationCredential, readonly=True)
+    "Authentication for accessing message brokers"
 
 
 def get_complete_cluster(context, cluster_id):
@@ -242,11 +256,22 @@ class ClusterController(rest.RestController):
             'management_network_id': CONF.management_network_id,
         }
 
+        # extract username/password
+        if 'authentication' in data:
+            auth_validator = auth_validate.AuthTokenValidator.validate_token(
+                broker_type='rabbit', auth_type=data['authentication'].type,
+                token=data['authentication'].token)
+            if not auth_validator.validate():
+                raise exception.InvalidAuthenticationParameter()
+        else:
+            raise exception.InvalidAuthenticationParameter()
+
+        default_rabbit_user = data['authentication'].token['username']
+        default_rabbit_pass = data['authentication'].token['password']
+
         # generate unique erlang cookie to be used by all nodes in the new
         # cluster, erlang cookies are strings of up to 255 characters
         erlang_cookie = uuidutils.generate_uuid()
-        default_rabbit_user = 'rabbitmq'
-        default_rabbit_pass = cluster.id
         broker_name = CONF.default_broker_name
 
         # get the image id of default broker

@@ -126,6 +126,11 @@ class RequestEntityTooLarge(CueException):
     code = 413
 
 
+class InvalidAuthenticationParameter(CueException):
+    message = _('Broker authentication parameters missing or invalid.')
+    code = 420
+
+
 class TemporaryFailure(CueException):
     message = _("Resource temporarily unavailable, please retry.")
     code = 503
