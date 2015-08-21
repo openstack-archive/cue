@@ -49,7 +49,7 @@ class BaseMessageQueueClient(rest_client.RestClient):
             _get_keystone_auth_provider(),
             'compute',
             'RegionOne')
-        networks = network_client.list_tenant_networks()
+        networks = network_client.list_tenant_networks()['networks']
         return [network for network in networks
                 if network['label'] == label][0]
 
@@ -77,6 +77,7 @@ class ServerClient(rest_client.RestClient):
 
         :param cluster_id: The cluster to get the nodes from
         """
+
         url = 'servers/detail'
         if cluster_id:
             url += '?name=%s' % cluster_id
@@ -103,9 +104,9 @@ def _get_keystone_auth_provider():
     keystone_v3 = CONF.identity.auth_version is '3'
     if keystone_v3:
         creds = auth.KeystoneV3Credentials(
-            username=CONF.identity.username,
+            username='admin',
             password=CONF.identity.password,
-            project_name=CONF.identity.project_name,
+            project_name='admin',
             user_domain_name=CONF.identity.user_domain_name,
             project_domain_name=CONF.identity.project_domain_name
         )
@@ -113,9 +114,9 @@ def _get_keystone_auth_provider():
                                                     CONF.identity.uri)
     else:
         creds = auth.KeystoneV2Credentials(
-            username=CONF.identity.username,
+            username='admin',
             password=CONF.identity.password,
-            tenant_name=CONF.identity.project_name
+            tenant_name='admin'
         )
         auth_provider = auth.KeystoneV2AuthProvider(creds,
                                                     CONF.identity.uri)
