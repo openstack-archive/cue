@@ -52,7 +52,8 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
         self.expected_success(200, resp.status)
         return rest_client.ResponseBody(resp, self._parse_resp(body))
 
-    def create_cluster(self, name, size, flavor, network_id, volume_size=100):
+    def create_cluster(self, name, size, flavor, network_id, volume_size=100,
+                       username='rabbitmq', password='rabbit'):
         """Create a new cluster with one node
 
         :param name: The name of the cluster
@@ -65,6 +66,9 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
             'flavor': flavor,
             'volume_size': volume_size,
             'network_id': network_id,
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': username,
+                                         'password': password}}
         }
 
         return self.create_cluster_from_body(post_body)
