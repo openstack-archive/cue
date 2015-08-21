@@ -77,12 +77,16 @@ class ServerClient(rest_client.RestClient):
 
         :param cluster_id: The cluster to get the nodes from
         """
+        cluster_id = None
         url = 'servers/detail'
         if cluster_id:
             url += '?name=%s' % cluster_id
 
         resp, body = self.get(url)
         body = json.loads(body)
+        print("url: ", url)
+        print("resp: ", resp)
+        print("body: ", body)
         return rest_client.ResponseBody(resp, body)
 
     def get_console_log(self, server_id):
