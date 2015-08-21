@@ -65,6 +65,9 @@ class MessageQueueClustersClient(BaseMessageQueueClient):
             'flavor': flavor,
             'volume_size': volume_size,
             'network_id': network_id,
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
 
         return self.create_cluster_from_body(post_body)

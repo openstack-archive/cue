@@ -163,7 +163,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -176,7 +179,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -189,7 +195,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -202,7 +211,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'size': 1,
             'flavor': '8795',
-            'volume_size': 100
+            'volume_size': 100,
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -216,7 +228,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': 'Invalid Network ID'
+            'network_id': 'Invalid Network ID',
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -236,7 +251,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 0,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -263,7 +281,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': 0,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -282,3 +303,114 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.list_clusters,
                           url='fake_url')
+
+    def test_create_cluster_missing_authentication(self):
+        """Verify create cluster request with missing authentication field."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())]
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_type(self):
+        """Verify create cluster request with missing authentication type."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_token(self):
+        """Verify create cluster request with missing authentication token."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN'}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_username(self):
+        """Verify create cluster request with missing username."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'password': 'rabbit'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_password(self):
+        """Verify create cluster request with missing password."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_invalid_authentication_username(self):
+        """Verify create cluster request with invalid username."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': '',
+                                         'password': 'rabbit'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_invalid_authentication_password(self):
+        """Verify create cluster request with invalid password."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': ''}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
