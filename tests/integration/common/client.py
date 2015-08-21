@@ -66,7 +66,6 @@ class ServerClient(rest_client.RestClient):
     def __init__(self):
 
         auth_provider = _get_keystone_auth_provider(username='admin',
-                                                    password='password',
                                                     project_name='admin')
         super(ServerClient, self).__init__(
             auth_provider=auth_provider,
