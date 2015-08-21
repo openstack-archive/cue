@@ -119,5 +119,6 @@ def _get_keystone_auth_provider():
         )
         auth_provider = auth.KeystoneV2AuthProvider(creds,
                                                     CONF.identity.uri)
+
     auth_provider.fill_credentials()
     return auth_provider

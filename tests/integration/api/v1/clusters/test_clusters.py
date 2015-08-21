@@ -51,16 +51,20 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
     def tearDown(self):
         super(ClusterTest, self).tearDown()
 
-    def _create_cluster(self):
+    def _create_cluster(self, username, password):
         name = data_utils.rand_name(ClusterTest.__name__ + '-cluster')
         network_id = [self.client.private_network['id']]
         flavor = CONF.message_broker.flavor
         size = 3
-        return self.client.create_cluster(name, size, flavor, network_id)
+        return self.client.create_cluster(name, size, flavor, network_id,
+                                          username=username, password=password)
 
     def test_create_cluster(self):
         """Test create cluster and verifies cluster goes to ACTIVE state."""
-        cluster = self._create_cluster()
+        cluster_resp = {'status': 'BUILDING'}
+        username = 'rabbitmq'
+        password = 'rabbit'
+        cluster = self._create_cluster(username, password)
 
         start_time = time.time()
         while True:
@@ -76,13 +80,9 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
         self.assertEqual(cluster_resp['status'], 'ACTIVE',
                          'Create cluster failed')
 
-        # List clusters
-        clusters = self.client.list_clusters()
-        self.assertIn('id', clusters.data, 'List cluster failed')
-        self.assertIn('status', clusters.data, 'List cluster failed')
-
         # Get cluster
         cluster_resp = self.client.get_cluster(cluster['id'])
+        print("cluster_resp", cluster_resp)
         self.assertEqual(cluster['id'], cluster_resp['id'],
                          'Get cluster failed')
         self.assertEqual(cluster['name'], cluster_resp['name'],
@@ -92,6 +92,34 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
                          'Get cluster failed')
         self.assertEqual(cluster['size'], cluster_resp['size'],
                          'Get cluster failed')
+
+        # Verify invalid and valid rabbitmq credentials
+        uri = cluster_resp['endpoints'][0]['uri'].split(':')
+        ip = uri[0]
+        port = uri[1]
+        rabbitmq_file = "/opt/rabbitmq_test.py"
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ip, username='ubuntu',
+                    key_filename='/tmp/cue-mgmt-key')
+        status, stdout, stderr = ssh.exec_command(
+            "python {0} -H {1} -P {2} -u {3} -p {4}".format(
+                rabbitmq_file, ip, port, username, "invalid"))
+        print("status: %s\n stdout: %s\n stderror: %s", status, stdout, stderr)
+        self.assertNotEqual(status, 0,
+                            "Invalid RabbitMQ credentials test failed")
+
+        status, stdout, stderr = ssh.exec_command(
+            "python {0} -H {1} -P {2} -u {3} -p {4}".format(
+                rabbitmq_file, ip, port, username, password))
+        
+        self.assertEqual(status, 0, "Valid RabbitMQ credentials test failed")
+        ssh.close()
+
+        # List clusters
+        clusters = self.client.list_clusters()
+        self.assertIn('id', clusters.data, 'List cluster failed')
+        self.assertIn('status', clusters.data, 'List cluster failed')
 
         # Delete cluster
         self.client.delete_cluster(cluster['id'])
@@ -163,7 +191,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -176,7 +207,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -189,7 +223,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -202,7 +239,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'size': 1,
             'flavor': '8795',
-            'volume_size': 100
+            'volume_size': 100,
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -216,7 +256,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': 'Invalid Network ID'
+            'network_id': 'Invalid Network ID',
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -236,7 +279,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 0,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -263,7 +309,10 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': 0,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -282,3 +331,114 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.list_clusters,
                           url='fake_url')
+
+    def test_create_cluster_missing_authentication(self):
+        """Verify create cluster request with missing authentication field."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())]
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_type(self):
+        """Verify create cluster request with missing authentication type."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'token': {'username': 'rabbitmq',
+                                         'password': 'rabbit'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_token(self):
+        """Verify create cluster request with missing authentication token."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN'}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_username(self):
+        """Verify create cluster request with missing username."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'password': 'rabbit'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_missing_authentication_password(self):
+        """Verify create cluster request with missing password."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_invalid_authentication_username(self):
+        """Verify create cluster request with invalid username."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': '',
+                                         'password': 'rabbit'}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)
+
+    def test_create_cluster_invalid_authentication_password(self):
+        """Verify create cluster request with invalid password."""
+
+        post_body = {
+            'name': 'fake name',
+            'flavor': '8795',
+            'size': 1,
+            'volume_size': 100,
+            'network_id': [str(uuid.uuid4())],
+            'authentication': {'type': 'PLAIN',
+                               'token': {'username': 'rabbitmq',
+                                         'password': ''}}
+        }
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          post_body)

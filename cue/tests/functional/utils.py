@@ -35,6 +35,10 @@ def get_test_cluster(**kw):
         'created_at': kw.get('created_at', timeutils.utcnow()),
         'updated_at': kw.get('updated_at', timeutils.utcnow()),
         'deleted_at': kw.get('deleted_at', None),
+        'authentication': kw.get('authentication',
+                                 {'type': 'PLAIN',
+                                  'token': {'username': 'rabbit_user',
+                                            'password': 'rabbit_password'}}),
     }
 
 
@@ -59,6 +63,7 @@ def create_api_test_cluster(**kw):
         'flavor': test_cluster['flavor'],
         'size': test_cluster['size'],
         'volume_size': test_cluster['volume_size'],
+        'authentication': test_cluster['authentication'],
     }
 
     return cluster_parameters
