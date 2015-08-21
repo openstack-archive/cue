@@ -30,6 +30,7 @@ DIB_BUILD_OFFLINE=$(trueorfalse False DIB_BUILD_OFFLINE)
 DIB_IMAGE_CACHE=$DATA_DIR/diskimage-builder/image-create
 DIB_PIP_REPO=$DATA_DIR/diskimage-builder/pip-repo
 DIB_PIP_REPO_PORT=${DIB_PIP_REPO_PORT:-8899}
+BASE_IMAGE_FILE=ubuntu-14.04-server-cloudimg-amd64-root.tar.gz
 
 OCC_DIR=$DEST/os-collect-config
 ORC_DIR=$DEST/os-refresh-config

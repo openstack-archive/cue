@@ -11,6 +11,9 @@ export BUILD_DIR=${BUILD_DIR:-$CUE_HOME/build}
 # DIB Output Image Type
 export IMAGE_TYPE=${IMAGE_TYPE:-qcow2}
 
+# Image file
+export BASE_IMAGE_FILE=ubuntu-14.04-server-cloudimg-amd64-root.tar.gz
+
 # Image Name
 BUILD_FILE="rabbitmq-cue-image.qcow2"
 

@@ -49,7 +49,7 @@ class BaseMessageQueueClient(rest_client.RestClient):
             _get_keystone_auth_provider(),
             'compute',
             'RegionOne')
-        networks = network_client.list_tenant_networks()
+        networks = network_client.list_tenant_networks()['networks']
         return [network for network in networks
                 if network['label'] == label][0]
 
@@ -65,7 +65,9 @@ class ServerClient(rest_client.RestClient):
 
     def __init__(self):
 
-        auth_provider = _get_keystone_auth_provider()
+        auth_provider = _get_keystone_auth_provider(username='admin',
+                                                    password='password',
+                                                    project_name='admin')
         super(ServerClient, self).__init__(
             auth_provider=auth_provider,
             service='compute',
@@ -77,6 +79,7 @@ class ServerClient(rest_client.RestClient):
 
         :param cluster_id: The cluster to get the nodes from
         """
+
         url = 'servers/detail'
         if cluster_id:
             url += '?name=%s' % cluster_id
@@ -98,24 +101,28 @@ class ServerClient(rest_client.RestClient):
         return rest_client.ResponseBodyData(resp, body)
 
 
-def _get_keystone_auth_provider():
+def _get_keystone_auth_provider(username=None, password=None,
+                                project_name=None, user_domain_name=None,
+                                project_domain_name=None):
 
     keystone_v3 = CONF.identity.auth_version is '3'
     if keystone_v3:
         creds = auth.KeystoneV3Credentials(
-            username=CONF.identity.username,
-            password=CONF.identity.password,
-            project_name=CONF.identity.project_name,
-            user_domain_name=CONF.identity.user_domain_name,
-            project_domain_name=CONF.identity.project_domain_name
+            username=username or CONF.identity.username,
+            password=password or CONF.identity.password,
+            project_name=project_name or CONF.identity.project_name,
+            user_domain_name=(user_domain_name or
+                              CONF.identity.user_domain_name),
+            project_domain_name=(project_domain_name or
+                                 CONF.identity.project_domain_name)
         )
         auth_provider = auth.KeystoneV3AuthProvider(creds,
                                                     CONF.identity.uri)
     else:
         creds = auth.KeystoneV2Credentials(
-            username=CONF.identity.username,
-            password=CONF.identity.password,
-            tenant_name=CONF.identity.project_name
+            username=username or CONF.identity.username,
+            password=password or CONF.identity.password,
+            tenant_name=project_name or CONF.identity.project_name,
         )
         auth_provider = auth.KeystoneV2AuthProvider(creds,
                                                     CONF.identity.uri)
