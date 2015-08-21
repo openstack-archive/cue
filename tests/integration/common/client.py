@@ -77,12 +77,16 @@ class ServerClient(rest_client.RestClient):
 
         :param cluster_id: The cluster to get the nodes from
         """
+
         url = 'servers/detail'
         if cluster_id:
             url += '?name=%s' % cluster_id
 
         resp, body = self.get(url)
         body = json.loads(body)
+        print("url: ", url)
+        print("resp: ", resp)
+        print("body: ", body)
         return rest_client.ResponseBody(resp, body)
 
     def get_console_log(self, server_id):
@@ -109,6 +113,7 @@ def _get_keystone_auth_provider():
             user_domain_name=CONF.identity.user_domain_name,
             project_domain_name=CONF.identity.project_domain_name
         )
+        print ("creds_v3: ", creds)
         auth_provider = auth.KeystoneV3AuthProvider(creds,
                                                     CONF.identity.uri)
     else:
@@ -117,6 +122,7 @@ def _get_keystone_auth_provider():
             password=CONF.identity.password,
             tenant_name=CONF.identity.project_name
         )
+        print ("creds: ", creds)
         auth_provider = auth.KeystoneV2AuthProvider(creds,
                                                     CONF.identity.uri)
     auth_provider.fill_credentials()
