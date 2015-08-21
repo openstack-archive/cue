@@ -24,6 +24,7 @@ from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
+from cue.common import validate_auth_token as auth_validate
 from cue import objects
 from cue.taskflow import client as task_flow_client
 from cue.taskflow.flow import create_cluster
@@ -40,6 +41,16 @@ import wsmeext.pecan as wsme_pecan
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+
+
+class AuthenticationCredential(wtypes.Base):
+    """Representation of a Broker Authentication Method."""
+
+    type = wtypes.text
+    "type of authentication"
+
+    token = wtypes.DictType(unicode, unicode)
+    "authentication credentials"
 
 
 class EndPoint(base.APIBase):
@@ -102,6 +113,9 @@ class Cluster(base.APIBase):
 
     endpoints = wtypes.wsattr([EndPoint], default=[])
     "List of endpoints on accessing node"
+
+    authentication = wtypes.wsattr(AuthenticationCredential)
+    "Authentication for accessing message brokers"
 
 
 def get_complete_cluster(context, cluster_id):
@@ -213,14 +227,30 @@ class ClusterController(rest.RestController):
         if len(data.network_id) > 1:
             raise exception.Invalid(_("Invalid number of network_id's"))
 
-        data = data.as_dict()
+        # extract username/password
+        if (data.authentication and data.authentication.type and
+                data.authentication.token):
+            auth_validator = auth_validate.AuthTokenValidator.validate_token(
+                auth_type=data.authentication.type,
+                token=data.authentication.token)
+            if not auth_validator or not auth_validator.validate():
+                raise exception.Invalid(_("Invalid broker authentication "
+                                          "parameter(s)"))
+        else:
+            raise exception.Invalid(_("Missing broker authentication "
+                                      "parameter(s)"))
+
+        default_rabbit_user = data.authentication.token['username']
+        default_rabbit_pass = data.authentication.token['password']
+
+        request_data = data.as_dict()
 
         # convert 'network_id' from list to string type for objects/cluster
         # compatibility
-        data['network_id'] = data['network_id'][0]
+        request_data['network_id'] = request_data['network_id'][0]
 
         # create new cluster object with required data from user
-        new_cluster = objects.Cluster(**data)
+        new_cluster = objects.Cluster(**request_data)
 
         # create new cluster with node related data from user
         new_cluster.create(context)
@@ -245,8 +275,6 @@ class ClusterController(rest.RestController):
         # generate unique erlang cookie to be used by all nodes in the new
         # cluster, erlang cookies are strings of up to 255 characters
         erlang_cookie = uuidutils.generate_uuid()
-        default_rabbit_user = 'rabbitmq'
-        default_rabbit_pass = cluster.id
         broker_name = CONF.default_broker_name
 
         # get the image id of default broker
