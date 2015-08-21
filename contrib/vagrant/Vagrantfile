@@ -23,7 +23,7 @@ $install_build_deps = true
 $install_tmate = false
 $install_rally = true
 $ubuntu_box = "sputnik13/trusty64"
-$vm_memory = 4096 
+$vm_memory = 6144 
 $vm_cpus = 2
 
 if File.exist?(CONFIG)
