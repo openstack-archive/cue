@@ -67,16 +67,17 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
         cluster = self._create_cluster(username, password)
 
         start_time = time.time()
+        cluster_id = 0
         while True:
             cluster_resp = self.client.get_cluster(cluster['id'])
-            if cluster_resp['status'] != 'BUILDING':
+            cluster_id = cluster_resp['id']
+            if (cluster_resp['status'] == 'ACTIVE' or
+                    cluster_resp['status'] == 'ERROR' or
+                    time.time() - start_time >= 1800):
                 break
-            self.assertEqual(cluster_resp['status'], 'BUILDING',
-                             'Create cluster failed')
             time.sleep(1)
-            if time.time() - start_time > 1800:
-                self.get_logs(cluster_resp['id'])
-                self.fail('Waited 30 minutes for cluster to get ACTIVE')
+
+        self.get_logs(cluster_id)
         self.assertEqual(cluster_resp['status'], 'ACTIVE',
                          'Create cluster failed')
 
