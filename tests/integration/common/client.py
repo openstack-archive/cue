@@ -116,6 +116,7 @@ def _get_keystone_auth_provider(username=None, password=None,
             project_domain_name=(project_domain_name or
                                  CONF.identity.project_domain_name)
         )
+        print ('creds: ', creds)
         auth_provider = auth.KeystoneV3AuthProvider(creds,
                                                     CONF.identity.uri)
     else:
@@ -124,6 +125,7 @@ def _get_keystone_auth_provider(username=None, password=None,
             password=password or CONF.identity.password,
             tenant_name=project_name or CONF.identity.project_name,
         )
+        print ('creds: ', creds)
         auth_provider = auth.KeystoneV2AuthProvider(creds,
                                                     CONF.identity.uri)
     auth_provider.fill_credentials()
