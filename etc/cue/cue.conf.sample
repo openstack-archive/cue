@@ -721,13 +721,13 @@ os_image_id=
 #os_tenant_id=
 
 #
-# Openstack Tenant Name
+# Openstack Project Name
 #
-# Openstack Tenant ID and Tenant Name are not both required,
+# Openstack Project ID and Project Name are not both required,
 # but at least one must be supplied.  If both are supplied,
-# Tenant ID will be preferred over the Tenant Name
+# Project ID will be preferred over the Tenant Name
 #
-#os_tenant_name=
+#os_project_name=
 
 #
 # Openstack Username
@@ -753,3 +753,24 @@ os_image_id=
 # Openstack Availability zone
 #
 #os_availability_zone=
+
+#
+# Openstack Auth version
+#
+# Openstack Auth version which must be supplied to authenticate
+# against specific Keystone version '2.0'/'3'.
+#
+#os_auth_version=
+
+#
+# Openstack Project Domain Name
+# If using a project name specify either it’s owning
+# domain name or ID. This is required only for keystone v3.
+#os_project_domain_name=
+
+#
+# Openstack User Domain Name
+# If using a username specify either it’s owning
+# domain name or ID. This is required only for keystone v3.
+#
+#os_user_domain_name=
