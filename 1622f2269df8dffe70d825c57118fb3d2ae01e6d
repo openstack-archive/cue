@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Workflow+1: Vipul Sabhaya <vipuls@gmail.com>
+Code-Review+1: Steve Leon <kokhang@gmail.com>
+Code-Review+1: Davide Agnello <dagnello@hp.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 28 Aug 2015 18:31:46 +0000
+Reviewed-on: https://review.openstack.org/211696
+Project: openstack/cue
+Branch: refs/heads/master
