@@ -147,14 +147,17 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
     def test_create_cluster_invalid_request_body(self):
         """Verify create cluster request with invalid request body."""
 
-        # Note:  adding a None or Int to this list will generate a
-        # tempest_lib.exceptions.ServerFault exception.
-        bad_request_bodies = ['Not a post body', [], {}]
+        self.assertRaises(tempest_exceptions.ServerFault,
+                          self.client.create_cluster_from_body,
+                          'Not a post body')
 
-        for bad in bad_request_bodies:
-            self.assertRaises(tempest_exceptions.BadRequest,
-                              self.client.create_cluster_from_body,
-                              bad)
+        self.assertRaises(tempest_exceptions.ServerFault,
+                          self.client.create_cluster_from_body,
+                          [])
+
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.create_cluster_from_body,
+                          {})
 
     def test_create_cluster_missing_name(self):
         """Verify create cluster request with missing name field."""
