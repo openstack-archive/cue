@@ -77,7 +77,7 @@ CONF.register_opts(OS_OPTS, group=opt_group)
 
 def nova_client():
     keystoneSession = get_keystone_session()
-    return NovaClient.Client(2,
+    return NovaClient.Client('v2',
                              session=keystoneSession,
                              auth_url=CONF.openstack.os_auth_url,
                              region_name=CONF.openstack.os_region_name,
