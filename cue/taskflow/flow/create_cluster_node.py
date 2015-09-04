@@ -68,7 +68,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     :return: A flow instance that represents the workflow for creating a
              cluster node.
     """
-    node_name = "cue[%s].node[%d]" % (cluster_id, node_number)
+    node_name = "cue_%s_node_%d" % (cluster_id, node_number)
 
     extract_port_info = (lambda user_port_info, management_port_info:
                          (
