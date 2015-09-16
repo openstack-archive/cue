@@ -73,6 +73,7 @@ class NeutronClient(base.BaseFixture):
         v2_client.list_ports = self.list_ports
         v2_client.list_networks = self.list_networks
         v2_client.delete_port = self.delete_port
+        v2_client.show_network = self.show_network
 
     def create_port(self, body=None):
         """Mock'd version of neutronclient...create_port().
@@ -160,3 +161,15 @@ class NeutronClient(base.BaseFixture):
             self._port_list.pop(port_id)
         else:
             raise exceptions.NeutronClientException("404 Not found")
+
+    def show_network(self, network):
+        try:
+            network_id = network.id
+        except AttributeError:
+            network_id = network
+
+        if network_id in self._network_list:
+            return {'network': self._network_list[network_id]}
+        else:
+            raise exceptions.NeutronClientException(
+                "Network " + network_id + " could not be found.")
