@@ -84,6 +84,7 @@ class DeleteClusterTests(base.FunctionalTestCase):
 
     def test_delete_cluster(self):
         flow_store_create = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "port": self.port,
@@ -172,6 +173,7 @@ class DeleteClusterTests(base.FunctionalTestCase):
         self.flags(cluster_node_anti_affinity=True, group="taskflow")
 
         flow_store_create = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "port": self.port,

@@ -23,6 +23,7 @@ from cue.db.sqlalchemy import models
 from cue.taskflow.flow import create_cluster_node
 import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
+import os_tasklib.neutron as os_neutron
 import os_tasklib.nova as nova
 
 
@@ -103,6 +104,27 @@ def create_cluster(cluster_id, node_ids, user_network_id,
 
     flow.add(create_cluster_end_task)
 
+    show_network = os_neutron.ShowNetwork(
+        name="get tenant network information",
+        os_client=client.neutron_client(),
+        inject={'network': user_network_id},
+        provides="tenant_network_info"
+    )
+    flow.add(show_network)
+    flow.link(create_node_start_task, show_network)
+
+    validate_network_info = (lambda tenant_network_info, tenant_id:
+                             tenant_network_info['shared'] or
+                             tenant_network_info['tenant_id'] == tenant_id)
+
+    validate_tenant_network = os_common.Assert(
+        validate_network_info,
+        name="validate tenant network info",
+        requires=('tenant_network_info', 'tenant_id')
+    )
+    flow.add(validate_tenant_network)
+    flow.link(show_network, validate_tenant_network)
+
     node_check_timeout = cfg.CONF.taskflow.cluster_node_check_timeout
     node_check_max_count = cfg.CONF.taskflow.cluster_node_check_max_count
 
@@ -136,10 +158,11 @@ def create_cluster(cluster_id, node_ids, user_network_id,
                     'cluster_id': cluster_id})
         flow.add(generate_userdata)
 
-        create_cluster_node.create_cluster_node(
-            cluster_id=cluster_id, node_number=i, node_id=node_id,
-            graph_flow=flow, generate_userdata=generate_userdata,
-            start_task=create_node_start_task, post_task=check_rabbit_online,
-            user_network_id=user_network_id,
-            management_network_id=management_network_id)
+        create_cluster_node.create_cluster_node(cluster_id, i, node_id, flow,
+                                                generate_userdata,
+                                                validate_tenant_network,
+                                                check_rabbit_online,
+                                                user_network_id,
+                                                management_network_id)
+
     return flow
