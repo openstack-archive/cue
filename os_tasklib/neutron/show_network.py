@@ -13,7 +13,30 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os_tasklib
 
-from create_port import CreatePort  # noqa
-from delete_ports import DeletePorts  # noqa
-from show_network import ShowNetwork  # noqa
+from oslo_log import log as logging
+
+
+LOG = logging.getLogger(__name__)
+
+
+class ShowNetwork(os_tasklib.BaseTask):
+    """ShowNetwork Task
+
+    This task interfaces with Neutron API and retrieves information about the
+    specified network.
+
+    """
+
+    def execute(self, network_id, **kwargs):
+        """Main execute method
+
+        :param network_id: Network id to connect new port to
+        :type network_id: string
+        :return: Port record provided by Neutron
+        :rtype: dict
+        """
+        network = self.os_client.show_network(network=network_id)
+
+        return network['network']

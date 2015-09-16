@@ -254,6 +254,7 @@ class ClusterController(rest.RestController):
             context, broker_name)
 
         job_args = {
+            'tenant_id': cluster.project_id,
             'flavor': cluster.flavor,
             'image': image_id,
             'volume_size': cluster.volume_size,
