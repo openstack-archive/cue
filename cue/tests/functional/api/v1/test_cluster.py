@@ -21,6 +21,7 @@ Tests for the API /cluster/ controller methods.
 
 import uuid
 
+from cue.common import validate_auth_token as auth_validate
 from cue.db.sqlalchemy import api as db_api
 from cue.db.sqlalchemy import models
 from cue import objects
@@ -205,6 +206,7 @@ class TestCreateCluster(api.APITest,
         super(TestCreateCluster, self).setUp()
 
     def test_create_empty_body(self):
+        """test create cluster with empty request body."""
         cluster_params = {}
         #header = {'Content-Type': 'application/json'}
         data = self.post_json('/clusters', params=cluster_params,
@@ -226,8 +228,7 @@ class TestCreateCluster(api.APITest,
         del request_body['size']
 
         data = self.post_json('/clusters', headers=self.auth_headers,
-                              params=request_body,
-                            expect_errors=True)
+                              params=request_body, expect_errors=True)
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
         self.assertEqual('400 Bad Request', data.status,
@@ -252,6 +253,7 @@ class TestCreateCluster(api.APITest,
                       'Invalid faultstring received.')
 
     def test_create_too_large(self):
+        """test create cluster with size greater than limit."""
         max_cluster_size = 3
         self.CONF.config(max_cluster_size=max_cluster_size, group='api')
         """test create cluster with size larger than limit."""
@@ -388,6 +390,118 @@ class TestCreateCluster(api.APITest,
         # verify updated_at time is after deleted_at
         self.assertEqual(True, cluster_1.updated_at > cluster_1.deleted_at,
                          "Cluster deleted_at time is invalid")
+
+    def test_create_rabbit_authentication_missing(self):
+        """test create a cluster with missing authentication field."""
+        api_cluster = test_utils.create_api_test_cluster()
+        del api_cluster['authentication']
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_token_missing(self):
+        """test create a cluster with missing authentication token."""
+        api_cluster = test_utils.create_api_test_cluster()
+        del api_cluster['authentication']['token']
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_type_missing(self):
+        """test create a cluster with missing authentication type."""
+        api_cluster = test_utils.create_api_test_cluster()
+        del api_cluster['authentication']['type']
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_username_missing(self):
+        """test create a cluster with missing authentication username."""
+        api_cluster = test_utils.create_api_test_cluster()
+        del api_cluster['authentication']['token']['username']
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_password_missing(self):
+        """test create a cluster with missing authentication password."""
+        api_cluster = test_utils.create_api_test_cluster()
+        del api_cluster['authentication']['token']['password']
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_invalid_type(self):
+        """test create a cluster with invalid authentication type."""
+        api_cluster = test_utils.create_api_test_cluster()
+        api_cluster['authentication']['type'] = 'blah'
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_too_short_username(self):
+        """test create a cluster with invalid authentication username."""
+        api_cluster = test_utils.create_api_test_cluster()
+        api_cluster['authentication']['token']['username'] = ''
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_too_short_password(self):
+        """test create a cluster with invalid authentication password."""
+        api_cluster = test_utils.create_api_test_cluster()
+        api_cluster['authentication']['token']['password'] = ''
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_too_long_username(self):
+        """test create a cluster with invalid authentication username."""
+        m = auth_validate.MAX_USERNAME_LENGTH + 1
+        api_cluster = test_utils.create_api_test_cluster()
+        api_cluster['authentication']['token']['username'] = 'x' * m
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_rabbit_authentication_too_long_password(self):
+        """test create a cluster with invalid authentication password."""
+        m = auth_validate.MAX_PASSWORD_LENGTH + 1
+        api_cluster = test_utils.create_api_test_cluster()
+        api_cluster['authentication']['token']['password'] = 'y' * m
+
+        data = self.post_json('/clusters', headers=self.auth_headers,
+                              params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
 
     def test_create_invalid_volume_size(self):
         """test with invalid volume_size parameter."""
