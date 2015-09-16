@@ -81,6 +81,7 @@ class CreateClusterTests(base.FunctionalTestCase):
 
     def test_create_cluster(self):
         flow_store = {
+            "tenant_id": str(uuid.uuid4()),
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "port": self.port,

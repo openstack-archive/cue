@@ -254,10 +254,10 @@ class ClusterController(rest.RestController):
             context, broker_name)
 
         job_args = {
+            'tenant_id': new_cluster.project_id,
             'flavor': cluster.flavor,
             'image': image_id,
             'volume_size': cluster.volume_size,
-            'network_id': cluster.network_id,
             'port': '5672',
             'context': context.to_dict(),
             # TODO(sputnik13: this needs to come from the create request and
