@@ -31,7 +31,6 @@ class CreatePort(os_tasklib.BaseTask):
     parameters provided to the Task.
 
     """
-    default_provides = 'neutron_port_id'
 
     def execute(self, network_id, port_name, security_groups=None, **kwargs):
         """Main execute method
