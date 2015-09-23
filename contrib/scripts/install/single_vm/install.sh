@@ -139,7 +139,7 @@ export MYSQL_CUEAPI_PASSWORD
 export MYSQL_CUEWORKER_PASSWORD
 
 # set working directory to script location
-PROJECT_ROOT="$( cd $(dirname "$0") && pwd)"
+PROJECT_ROOT=$( cd $(dirname "$0") && pwd)
 pushd ${PROJECT_ROOT}
 
 # Configure user data script from template file
