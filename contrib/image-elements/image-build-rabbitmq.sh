@@ -3,7 +3,7 @@
 set -eux
 
 # Path Settings
-export CUE_HOME="$(readlink -e $(dirname $(readlink -f $0))/../..)"
+export CUE_HOME=$(readlink -e $(dirname $(readlink -f $0))/../..)
 
 # BUILD_DIR Directory where builds will be performed and images will be left
 export BUILD_DIR=${BUILD_DIR:-$CUE_HOME/build}
