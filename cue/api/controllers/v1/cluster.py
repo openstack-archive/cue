@@ -29,6 +29,7 @@ from cue import objects
 from cue.taskflow import client as task_flow_client
 from cue.taskflow.flow import create_cluster
 from cue.taskflow.flow import delete_cluster
+import six
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -49,7 +50,7 @@ class AuthenticationCredential(wtypes.Base):
     type = wtypes.text
     "type of authentication"
 
-    token = wtypes.DictType(unicode, unicode)
+    token = wtypes.DictType(six.text_type, six.text_type)
     "authentication credentials"
 
 

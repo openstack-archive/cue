@@ -17,6 +17,7 @@
 Cue test utilities.
 """
 import iso8601
+import six
 
 
 def compare_dates(datetime1, datetime2):
@@ -82,12 +83,12 @@ def validate_cluster_values(self, cluster_ref, cluster_cmp):
 
         if not isinstance((cluster_ref.network_id if hasattr(cluster_ref,
                                                              "network_id")
-                           else cluster_ref["network_id"]), (str, unicode)):
+                           else cluster_ref["network_id"]), six.string_types):
             cluster_ref['network_id'] = cluster_ref['network_id'][0]
 
         if not isinstance((cluster_cmp.network_id if hasattr(cluster_cmp,
                                                              "network_id")
-                           else cluster_cmp["network_id"]), (str, unicode)):
+                           else cluster_cmp["network_id"]), six.string_types):
             cluster_cmp['network_id'] = cluster_cmp['network_id'][0]
 
         self.assertEqual(cluster_ref.network_id if hasattr(cluster_ref,
