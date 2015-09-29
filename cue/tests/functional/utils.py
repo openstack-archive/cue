@@ -14,6 +14,7 @@
 #    under the License.
 """Cue functional test utilities."""
 from oslo_utils import timeutils
+import six
 
 from cue.api.controllers.v1 import cluster
 from cue.db.sqlalchemy import models
@@ -54,7 +55,7 @@ def create_api_test_cluster(**kw):
 
     test_cluster = get_test_cluster(**kw)
 
-    if isinstance(test_cluster['network_id'], (str)):
+    if isinstance(test_cluster['network_id'], six.string_types):
         test_cluster['network_id'] = [test_cluster['network_id']]
 
     cluster_parameters = {
@@ -80,7 +81,7 @@ def create_api_test_cluster_all(**kw):
 
     test_cluster = get_test_cluster(**kw)
 
-    if isinstance(test_cluster['network_id'], (str)):
+    if isinstance(test_cluster['network_id'], six.string_types):
         test_cluster['network_id'] = [test_cluster['network_id']]
 
     cluster_parameters = {
