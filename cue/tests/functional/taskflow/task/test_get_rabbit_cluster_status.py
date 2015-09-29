@@ -13,14 +13,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from six.moves import urllib
+
 from cue.taskflow.task import get_rabbit_cluster_status
 from cue.tests.functional import base
 from cue.tests.functional.fixtures import urllib2_fixture as urllib2_fixture
 
 from taskflow import engines
 from taskflow.patterns import linear_flow
-
-import urllib2
 
 
 class GetRabbitClusterStatusTest(base.FunctionalTestCase):
@@ -85,6 +85,6 @@ class GetRabbitClusterStatusTest(base.FunctionalTestCase):
         try:
             # start engine
             engines.run(self.flow, store=GetRabbitClusterStatusTest.task_store)
-        except urllib2.URLError:
+        except urllib.error.URLError:
             # Expected
             pass
