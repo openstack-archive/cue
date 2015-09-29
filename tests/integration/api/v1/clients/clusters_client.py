@@ -15,8 +15,8 @@
 
 import json
 import logging
-import urllib
 
+from six.moves import urllib
 from tempest_lib.common import rest_client
 
 from tests.integration.common import client
@@ -37,7 +37,7 @@ class MessageQueueClustersClient(client.BaseMessageQueueClient):
         :param url: Optional parameter for custom url
         """
         if params:
-            url += '?%s' % urllib.urlencode(params)
+            url += '?%s' % urllib.parse.urlencode(params)
 
         resp, body = self.get(url)
         self.expected_success(200, resp.status)

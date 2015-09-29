@@ -13,9 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import urllib2
-
 import six
+from six.moves import urllib
 
 import cue.tests.functional.fixtures.base as base
 
@@ -66,5 +65,5 @@ class Urllib2Fixture(base.BaseFixture):
     def open(self, url):
         result = Urllib2ResultDetails.get_urllib2_result()
         if result.getvalue() is 'URLError':
-            raise urllib2.URLError('urlerror')
+            raise urllib.error.URLError('urlerror')
         return result
