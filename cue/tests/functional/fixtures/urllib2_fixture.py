@@ -14,7 +14,8 @@
 # under the License.
 
 import StringIO
-import urllib2
+
+from six.moves import urllib
 
 import cue.tests.functional.fixtures.base as base
 
@@ -59,11 +60,11 @@ class Urllib2Fixture(base.BaseFixture):
         """Set up test fixture and apply all method overrides."""
         super(Urllib2Fixture, self).setUp()
 
-        urllib2_client = self.mock('urllib2.OpenerDirector')
+        urllib2_client = self.mock('six.moves.urllib.request.OpenerDirector')
         urllib2_client.open = self.open
 
     def open(self, url):
         result = Urllib2ResultDetails.get_urllib2_result()
         if result.getvalue() is 'URLError':
-            raise urllib2.URLError('urlerror')
+            raise urllib.error.URLError('urlerror')
         return result
