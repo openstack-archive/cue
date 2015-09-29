@@ -14,9 +14,8 @@
 # under the License.
 
 import json
-import urllib
-import urllib2
 
+from six.moves import urllib
 import taskflow.task
 
 
@@ -48,34 +47,34 @@ class GetRabbitClusterStatus(taskflow.task.Task):
         # RMQ management url to query whether the RMQ nodes have clustered
         aliveness_url = base_url + '/aliveness-test'
 
-        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
         password_mgr.add_password(None,
                                   vhosts_url,
                                   default_rabbit_user,
                                   default_rabbit_pass)
-        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-        opener = urllib2.build_opener(handler)
+        handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+        opener = urllib.request.build_opener(handler)
 
         retval = "NOT-OK"
 
         try:
             res = opener.open(vhosts_url)
-        except urllib2.URLError:
+        except urllib.error.URLError:
             pass
         else:
             json_res = json.load(res)
 
             result = {}
             for x in json_res:
-                vhost = urllib.quote(x['name'], '')
+                vhost = urllib.parse.quote(x['name'], '')
                 cur_aliveness_url = aliveness_url + '/' + vhost
 
                 password_mgr.add_password(None,
                                           cur_aliveness_url,
                                           default_rabbit_user,
                                           default_rabbit_pass)
-                handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-                opener = urllib2.build_opener(handler)
+                handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+                opener = urllib.request.build_opener(handler)
                 res = opener.open(cur_aliveness_url)
 
                 result[x['name']] = json.load(res)['status']
