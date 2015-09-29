@@ -20,6 +20,16 @@
 """
 import sys
 
+from oslo_config import cfg
+from oslo_log import log as logging
+from oslo_utils import uuidutils
+import pecan
+from pecan import rest
+import six
+import wsme
+from wsme import types as wtypes
+import wsmeext.pecan as wsme_pecan
+
 from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
@@ -29,15 +39,6 @@ from cue import objects
 from cue.taskflow import client as task_flow_client
 from cue.taskflow.flow import create_cluster
 from cue.taskflow.flow import delete_cluster
-
-from oslo_config import cfg
-from oslo_log import log as logging
-from oslo_utils import uuidutils
-import pecan
-from pecan import rest
-import wsme
-from wsme import types as wtypes
-import wsmeext.pecan as wsme_pecan
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -49,7 +50,7 @@ class AuthenticationCredential(wtypes.Base):
     type = wtypes.text
     "type of authentication"
 
-    token = wtypes.DictType(unicode, unicode)
+    token = wtypes.DictType(six.text_type, six.text_type)
     "authentication credentials"
 
 

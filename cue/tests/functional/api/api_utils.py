@@ -1,3 +1,6 @@
+import six
+
+
 # Copyright 2015 Hewlett-Packard Development Company, L.P.
 #
 # Authors: Davide Agnello <davide.agnello@hp.com>
@@ -56,23 +59,24 @@ class ClusterValidationMixin(object):
                                                             "volume_size")
                          else cluster_cmp["volume_size"],
                          "Invalid cluster volume_size value")
-        self.assertEqual(unicode(cluster_ref["created_at"].isoformat()),
+        self.assertEqual(six.text_type(cluster_ref["created_at"].isoformat()),
                          cluster_cmp["created_at"],
                          "Invalid cluster created_at value")
 
         if cluster_ref["updated_at"] is not None:
-            self.assertEqual(unicode(cluster_ref["updated_at"].isoformat()),
+            updated_at = six.text_type(cluster_ref["updated_at"].isoformat())
+            self.assertEqual(updated_at,
                              cluster_cmp["updated_at"],
                              "Invalid cluster updated_at value")
 
         if isinstance((cluster_ref.network_id if hasattr(cluster_ref,
                                                            "network_id")
-                         else cluster_ref["network_id"]), (str, unicode)):
+                         else cluster_ref["network_id"]), six.string_types):
             cluster_ref['network_id'] = [cluster_ref['network_id']]
 
         if isinstance((cluster_cmp.network_id if hasattr(cluster_cmp,
                                                            "network_id")
-                         else cluster_cmp["network_id"]), (str, unicode)):
+                         else cluster_cmp["network_id"]), six.string_types):
             cluster_cmp['network_id'] = [cluster_cmp['network_id']]
 
         self.assertEqual(len(cluster_ref.network_id if hasattr(cluster_ref,
