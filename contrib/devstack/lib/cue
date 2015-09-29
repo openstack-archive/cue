@@ -196,8 +196,8 @@ function init_cue {
 
 
     NEUTRON_OS_URL="${Q_PROTOCOL}://$Q_HOST:$Q_PORT"
-    OPENSTACK_CMD="openstack --os-token $TOKEN"
-    NEUTRON_CMD="neutron --os-token $TOKEN --os-url $NEUTRON_OS_URL"
+    OPENSTACK_CMD="openstack"
+    NEUTRON_CMD="neutron"
 
     # Create cue specific flavor if one does not exist
     if [[ -z $($OPENSTACK_CMD flavor list | grep $CUE_FLAVOR) ]]; then
