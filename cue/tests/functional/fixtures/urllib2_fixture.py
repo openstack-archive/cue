@@ -13,8 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import StringIO
 import urllib2
+
+import six
 
 import cue.tests.functional.fixtures.base as base
 
@@ -29,7 +30,7 @@ class Urllib2ResultDetails(object):
         :param results: list of results
         """
         for result in results:
-            io = StringIO.StringIO(result)
+            io = six.StringIO(result)
             Urllib2ResultDetails.urllib2_result_list.append(io)
 
     @staticmethod
