@@ -30,6 +30,7 @@ class Node(base.CueObject):
         'cluster_id': obj_utils.str_or_none,
         'instance_id': obj_utils.str_or_none,
         'flavor': obj_utils.str_or_none,
+        'management_ip': obj_utils.str_or_none,
         'status': obj_utils.str_or_none,
         'created_at': obj_utils.datetime_or_str_or_none,
         'updated_at': obj_utils.datetime_or_str_or_none,
