@@ -54,6 +54,13 @@ class NodeObjectsTests(base.FunctionalTestCase):
                          node_cmp.status if hasattr(node_cmp, "status") else
                          node_cmp["status"],
                          "Invalid status value")
+        self.assertEqual(node_ref.management_ip if hasattr(
+                         node_ref, "management_ip") else
+                         node_ref["management_ip"],
+                         node_cmp.management_ip if hasattr(
+                         node_cmp, "management_ip") else
+                         node_cmp["management_ip"],
+                         "Invalid management ip value")
 
         self.assertTrue(test_utils.compare_dates(node_ref["created_at"],
                                                  node_cmp["created_at"]),
