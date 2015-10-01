@@ -13,10 +13,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from check_cluster_status import check_cluster_status   # noqa
+from check_node_status import check_node_status         # noqa
 from create_cluster import create_cluster               # noqa
 from create_cluster_node import create_cluster_node     # noqa
 from delete_cluster import delete_cluster               # noqa
 from delete_cluster_node import delete_cluster_node     # noqa
+
 
 from oslo_config import cfg
 
