@@ -84,8 +84,10 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
 
     extract_vm_id = lambda vm_info: str(vm_info['id'])
 
-    new_node_values = lambda nova_vm_id: {'status': models.Status.ACTIVE,
-                                          'instance_id': nova_vm_id}
+    new_node_values = lambda nova_vm_id, vm_mgmt_ip: {
+                                          'status': models.Status.ACTIVE,
+                                          'instance_id': nova_vm_id,
+                                          'mgmt_ip': vm_mgmt_ip}
 
     new_endpoint_values = lambda vm_ip: {'node_id': node_id,
                                          'uri': vm_ip + ':',
@@ -161,7 +163,8 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     build_node_info = os_common.Lambda(
         new_node_values,
         name="build new node values %s" % node_name,
-        rebind={'nova_vm_id': "vm_id_%d" % node_number},
+        rebind={'nova_vm_id': "vm_id_%d" % node_number,
+                'vm_mgmt_ip': "vm_management_ip_%d" % node_number},
         provides="node_values_%d" % node_number
     )
     graph_flow.add(build_node_info)
