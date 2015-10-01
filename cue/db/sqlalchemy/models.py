@@ -27,6 +27,7 @@ class Status():
     DELETING = 'DELETING'
     DELETED = 'DELETED'
     ERROR = 'ERROR'
+    DOWN = 'DOWN'
 
 
 class MetadataKey():
