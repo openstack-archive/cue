@@ -205,6 +205,7 @@ def get_test_node_dict(**kw):
                               'b7cf7433-60f7-4d09-a759-cee12d8a3cb3'),
         'flavor': kw.get('flavor', 'flavor1'),
         'status': kw.get('status', 'BUILDING'),
+        'management_ip': kw.get('management_ip', '172.1.1.1'),
         'created_at': kw.get('created_at', timeutils.utcnow()),
         'updated_at': kw.get('updated_at', timeutils.utcnow()),
         'deleted_at': kw.get('deleted_at', None)
