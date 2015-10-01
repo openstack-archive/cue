@@ -56,6 +56,7 @@ class Node(base.BASE, base.IdMixin, models.TimestampMixin,
     flavor = sa.Column(sa.String(36), nullable=False)
     instance_id = sa.Column(sa.String(36), nullable=True)
     status = sa.Column(sa.String(50), nullable=False)
+    management_ip = sa.Column(sa.String(15), nullable=True)
     sa.Index("nodes_id_idx", "id", unique=True)
     sa.Index("nodes_cluster_id_idx", "cluster_id", unique=False)
 

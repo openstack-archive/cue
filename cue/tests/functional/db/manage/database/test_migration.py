@@ -51,6 +51,8 @@ class MigrationFunctionalTests(base.BaseTestCase):
             ('None', []),
             ('236f63c96b6a', ['clusters', 'endpoints', 'nodes']),
             ('3917e931a55a', ['clusters', 'endpoints', 'nodes', 'broker',
+                              'broker_metadata']),
+            ('244aa473e595', ['clusters', 'endpoints', 'nodes', 'broker',
                               'broker_metadata'])
         ])
 
