@@ -142,6 +142,12 @@ class CreateClusterTests(base.FunctionalTestCase):
             self.assertEqual(uri, endpoint.uri, "invalid endpoint uri")
             self.assertEqual('AMQP', endpoint.type, "invalid endpoint type")
 
+            node_ref = objects.Node.get_node_by_id(self.context, node.id)
+            expected_management_ip = node_ref.management_ip
+            actual_management_ip = result['vm_management_ip_' + str(i)]
+            self.assertEqual(expected_management_ip, actual_management_ip,
+                             "invalid management ip")
+
     def test_create_cluster_overlimit(self):
         vm_list = self.nova_client.servers.list()
         port_list = self.neutron_client.list_ports()
