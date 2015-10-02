@@ -67,7 +67,8 @@ def check_cluster_status(cluster_id, node_ids):
 
     update_cluster_status = cue_tasks.UpdateClusterStatus(
         name="update cluster status %s" % cluster_id,
-        inject={'cluster_id': cluster_id},
+        inject={'cluster_id': cluster_id,
+                'project_only': False},
         rebind={'cluster_values': "final_cluster_status"}
     )
     flow.add(update_cluster_status)
