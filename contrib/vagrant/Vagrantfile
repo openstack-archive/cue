@@ -54,6 +54,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.synced_folder "../..", "/home/vagrant/cue"
 
+  if File.directory?("../../../cue-ansible")
+    config.vm.synced_folder "../../../cue-ansible", "/home/vagrant/cue-ansible"
+  end
+
+  if File.directory?("../../../paas-tools")
+    config.vm.synced_folder "../../../paas-tools", "/home/vagrant/paas-tools"
+  end
+
+  if File.directory?("../../../hlm-ansible")
+    config.vm.synced_folder "../../../hlm-ansible", "/home/vagrant/hlm-ansible"
+  end
+
+  if File.directory?("../../../hlm-dev-tools")
+    config.vm.synced_folder "../../../hlm-dev-tools", "/home/vagrant/hlm-dev-tools"
+  end
+
   if File.directory?("../../../python-cueclient")
     config.vm.synced_folder "../../../python-cueclient", "/home/vagrant/python-cueclient"
   end
