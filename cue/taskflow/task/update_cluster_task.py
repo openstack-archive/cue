@@ -27,7 +27,7 @@ class UpdateClusterStatus(task.Task):
         models.Status.BUILDING: models.Status.ERROR
     }
 
-    def execute(self, context, cluster_id, cluster_values, **kwargs):
+    def execute(self, context, cluster_id, cluster_values, project_only=True, **kwargs):
         """Main execute method which will update the cluster status in the DB
 
         :param context: The request context in dict format
@@ -39,7 +39,7 @@ class UpdateClusterStatus(task.Task):
         """
         request_context = context_module.RequestContext.from_dict(context)
         cluster = objects.Cluster(**cluster_values)
-        cluster.update(request_context, cluster_id)
+        cluster.update(request_context, cluster_id, project_only=project_only, **kwargs)
 
     def revert(self, context, cluster_id, cluster_values, **kwargs):
         """Revert UpdateClusterStatus
