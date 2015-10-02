@@ -99,8 +99,8 @@ class Connection(api.Connection):
     def __init__(self):
         pass
 
-    def get_clusters(self, context):
-        query = model_query(context, models.Cluster)
+    def get_clusters(self, context, *args, **kwargs):
+        query = model_query(context, models.Cluster, *args, **kwargs)
         return query.all()
 
     def create_cluster(self, context, cluster_values):
@@ -131,8 +131,9 @@ class Connection(api.Connection):
 
         return cluster
 
-    def update_cluster(self, context, cluster_values, cluster_id):
-        cluster_query = (model_query(context, models.Cluster)
+    def update_cluster(self, context, cluster_values,
+                       cluster_id, *args, **kwargs):
+        cluster_query = (model_query(context, models.Cluster, *args, **kwargs)
             .filter_by(id=cluster_id))
 
         # if status is set to deleted, soft delete this cluster record

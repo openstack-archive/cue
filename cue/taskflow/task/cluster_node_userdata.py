@@ -30,6 +30,7 @@ class ClusterNodeUserData(task.Task):
         requires.append('node_name')
         requires.append('default_rabbit_user')
         requires.append('default_rabbit_pass')
+        requires.append('cluster_id')
 
         super(ClusterNodeUserData, self).__init__(name=name,
                                                   requires=requires,
@@ -64,6 +65,7 @@ class ClusterNodeUserData(task.Task):
             'erlang_cookie': kwargs['erlang_cookie'],
             'default_rabbit_user': kwargs['default_rabbit_user'],
             'default_rabbit_pass': kwargs['default_rabbit_pass'],
+            'cluster_id': kwargs['cluster_id'],
         }
         script = self.userdata_template.render(userdata_inputs)
         sub_message = mime_text.MIMEText(script,
