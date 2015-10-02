@@ -199,6 +199,7 @@ class ClusterController(rest.RestController):
         """Return list of Clusters."""
 
         context = pecan.request.context
+
         clusters = objects.Cluster.get_clusters(context)
         cluster_list = [get_complete_cluster(context, obj_cluster.id)
                         for obj_cluster in clusters]
