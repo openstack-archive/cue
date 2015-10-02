@@ -23,9 +23,17 @@ TF_OPTS = [
                help="Persistence connection.",
                default=None),
 
+    cfg.StrOpt('coord_url',
+               help="Coordinator connection string prefix.",
+               default='zookeeper'),
+
     cfg.StrOpt('zk_hosts',
                help="Zookeeper jobboard hosts.",
                default="localhost"),
+
+    cfg.StrOpt('zk_port',
+               help="Zookeeper jobboard port.",
+               default="2181"),
 
     cfg.StrOpt('zk_path',
                help="Zookeeper path for jobs.",
