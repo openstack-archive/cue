@@ -44,7 +44,7 @@ class Connection(object):
         """Constructor."""
 
     @abc.abstractmethod
-    def get_clusters(self, context):
+    def get_clusters(self, context, *args, **kwargs):
         """Returns a list of Cluster objects for specified project_id.
 
         :param context: request context object

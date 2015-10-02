@@ -60,4 +60,9 @@ while [ ! -z "$(service rabbitmq-server status | grep 'nodedown')" ]; do
     sleep 5
 done
 
+# Create monitoring user
+rabbitmqctl add_user cue_monitor "{{cluster_id}}"
+rabbitmqctl set_user_tags cue_monitor monitoring
+rabbitmqctl set_permissions cue_monitor ".*" ".*" ".*"
+
 rabbitmqctl set_policy HA '^(?!amq\.).*' '{"ha-mode": "all"}'
