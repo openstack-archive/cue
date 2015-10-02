@@ -28,9 +28,9 @@ def check_cluster_status(cluster_id, node_ids):
     This factory function uses :func:`cue.taskflow.flow.check_node_status` to
     check cluster status on each node.
 
-    :param cluster_id: A unique ID assigned to the cluster
+    :param cluster_id: A unique ID assigned to the cluster being created
     :type cluster_id: string
-    :param node_ids: node id's associated with the cluster
+    :param node_ids: The Cue Node id's associated with each node in the cluster
     :type node_ids: list of uuid strings
     :return: A flow instance that represents the workflow for checking cluster
              status
