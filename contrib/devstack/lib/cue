@@ -300,6 +300,7 @@ function configure_scenario_rally_tests {
 function start_cue {
     run_process cue-api "$CUE_BIN_DIR/cue-api --config-file $CUE_CONF"
     run_process cue-worker "$CUE_BIN_DIR/cue-worker --config-file $CUE_CONF"
+    run_process cue-monitor "$CUE_BIN_DIR/cue-monitor --config-file $CUE_CONF"
 
     # Start proxies if enabled
     if is_service_enabled cue-api && is_service_enabled tls-proxy; then

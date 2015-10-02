@@ -27,6 +27,10 @@ TF_OPTS = [
                help="Zookeeper jobboard hosts.",
                default="localhost"),
 
+    cfg.StrOpt('zk_port',
+               help="Zookeeper jobboard port.",
+               default="2181"),
+
     cfg.StrOpt('zk_path',
                help="Zookeeper path for jobs.",
                default='/cue/taskflow'),
