@@ -88,7 +88,8 @@ def create_cluster(cluster_id, node_ids, user_network_id,
             "userdata_%d" % i,
             len(node_ids),
             "vm_management_ip_",
-            inject={'node_name': "rabbit-node-%d" % i})
+            inject={'node_name': "rabbit-node-%d" % i,
+                    'cluster_id': cluster_id})
         flow.add(generate_userdata)
 
         create_cluster_node.create_cluster_node(cluster_id, i, node_id, flow,
