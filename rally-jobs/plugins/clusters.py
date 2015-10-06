@@ -130,13 +130,17 @@ class CueClusters(cue_utils.CueScenario):
                 test_network = self._create_network(neutron_client,
                                                     network_name)
             network_id = test_network[1]["network"]["id"]
+            rabbitmq_username = "rabbitmq"
+            rabbitmq_password = "passowrd"
 
             # create cue_cluster
             cluster = self._create_cue_cluster(cluster_name, size, network_id,
                                                cluster_flavor,
                                                cluster_volume_size,
                                                cluster_timeout,
-                                               cluster_check_interval)
+                                               cluster_check_interval,
+                                               'plain', rabbitmq_username,
+                                               rabbitmq_password)
 
             # assign network_id argument
             kwargs["nics"] = [{"net-id": network_id}]
@@ -156,8 +160,6 @@ class CueClusters(cue_utils.CueScenario):
             # run rabbitmq_test script
             endpoint = cluster.endpoints[0]
             uri = endpoint['uri'].split(':')
-            rabbitmq_username = "rabbitmq"
-            rabbitmq_password = cluster['id']
             rabbitmq_file = "/opt/rabbitmq_test.py"
 
             LOG.info("Running rabbitmq-test script")
