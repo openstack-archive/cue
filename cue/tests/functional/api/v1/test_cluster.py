@@ -59,7 +59,7 @@ class TestGetCluster(api.APITest,
                          'Invalid status code value received.')
         self.assertEqual('400 Bad Request', data.status,
                          'Invalid status value received.')
-        self.assertIn('badly formed cluster_id UUID string',
+        self.assertIn('Invalid cluster id provided',
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
@@ -122,7 +122,7 @@ class TestDeleteCluster(api.APITest,
                          'Invalid status code value received.')
         self.assertEqual('400 Bad Request', data.status,
                          'Invalid status value received.')
-        self.assertIn('badly formed cluster_id UUID string',
+        self.assertIn('Invalid cluster id provided',
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
