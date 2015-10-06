@@ -55,11 +55,11 @@ class TestGetCluster(api.APITest,
         data = self.get_json('/clusters/' + invalid_uuid,
                              headers=self.auth_headers, expect_errors=True)
 
-        self.assertEqual(400, data.status_code,
+        self.assertEqual(500, data.status_code,
                          'Invalid status code value received.')
-        self.assertEqual('400 Bad Request', data.status,
+        self.assertEqual('500 Internal Server Error', data.status,
                          'Invalid status value received.')
-        self.assertIn('badly formed cluster_id UUID string',
+        self.assertIn('Value should be UUID format',
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
@@ -118,11 +118,11 @@ class TestDeleteCluster(api.APITest,
         data = self.delete('/clusters/' + invalid_uuid,
                            headers=self.auth_headers, expect_errors=True)
 
-        self.assertEqual(400, data.status_code,
+        self.assertEqual(500, data.status_code,
                          'Invalid status code value received.')
-        self.assertEqual('400 Bad Request', data.status,
+        self.assertEqual('500 Internal Server Error', data.status,
                          'Invalid status value received.')
-        self.assertIn('badly formed cluster_id UUID string',
+        self.assertIn('Value should be UUID format',
                       data.namespace["faultstring"],
                       'Invalid faultstring received.')
 
