@@ -89,10 +89,13 @@ class Cluster(base.APIBase):
                 self.fields.append(k)
                 setattr(self, k, kwargs.get(k, wtypes.Unset))
 
-    id = wsme.wsattr(wtypes.text, readonly=True)
+    # id = wsme.wsattr(wtypes.text, readonly=True)
+    # "UUID of cluster"
+
+    id = wsme.wsattr(wtypes.UuidType(), readonly=True)
     "UUID of cluster"
 
-    network_id = wtypes.wsattr([wtypes.text], mandatory=True)
+    network_id = wtypes.wsattr([wtypes.UuidType()], mandatory=True)
     "NIC of Neutron network"
 
     name = wsme.wsattr(wtypes.text, mandatory=True)
@@ -151,16 +154,17 @@ def get_complete_cluster(context, cluster_id):
 class ClusterController(rest.RestController):
     """Manages operations on specific Cluster of nodes."""
 
-    @wsme_pecan.wsexpose(Cluster, wtypes.text, status_code=200)
+    @wsme_pecan.wsexpose(Cluster, wtypes.UuidType, status_code=200)
     def get_one(self, cluster_id):
         """Return this cluster."""
         context = pecan.request.context
+
         cluster = get_complete_cluster(context, cluster_id)
 
         cluster.unset_empty_fields()
         return cluster
 
-    @wsme_pecan.wsexpose(None, wtypes.text, status_code=202)
+    @wsme_pecan.wsexpose(None, wtypes.UuidType, status_code=202)
     def delete(self, cluster_id):
         """Delete this Cluster."""
         context = pecan.request.context
