@@ -38,7 +38,7 @@ git checkout -
 
 # Generate and save coverage report
 current_report=$(mktemp -t rally_coverageXXXXXXX)
-python setup.py testr --coverage --testr-args="$*"
+python setup.py testr --coverage --testr-args="$*" || exit $?
 coverage report > $current_report
 current_missing=$(awk 'END { print $3 }' $current_report)
 current_percent_coverage=$(awk 'END { print $6 }' $current_report | tr -d '%')
