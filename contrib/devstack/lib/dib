@@ -105,7 +105,7 @@ function disk_image_create_upload {
         ${QEMU_IMG_OPTION} \
         -o $image_path
 
-    local token=$(keystone token-get | grep ' id ' | get_field 2)
+    local token=$(openstack token issue | grep ' id ' | get_field 2)
     die_if_not_set $LINENO token "Keystone fail to get token"
 
     glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT \
