@@ -28,8 +28,8 @@ uncommited=$(git status --porcelain | grep -v "^??")
 git checkout HEAD^
 
 baseline_report=$(mktemp -t rally_coverageXXXXXXX)
-python setup.py testr --coverage --testr-args="$*"
-coverage report > $baseline_report
+python setup.py testr --coverage --testr-args="$*" || exit $?
+coverage report --ignore-errors > $baseline_report
 baseline_missing=$(awk 'END { print $3 }' $baseline_report)
 
 # Checkout back and unstash uncommited changes (if any)
@@ -38,8 +38,8 @@ git checkout -
 
 # Generate and save coverage report
 current_report=$(mktemp -t rally_coverageXXXXXXX)
-python setup.py testr --coverage --testr-args="$*"
-coverage report > $current_report
+python setup.py testr --coverage --testr-args="$*" || exit $?
+coverage report --ignore-errors > $current_report
 current_missing=$(awk 'END { print $3 }' $current_report)
 current_percent_coverage=$(awk 'END { print $6 }' $current_report | tr -d '%')
 
