@@ -4,4 +4,4 @@ source = cue, os_tasklib
 omit = cue/tests/*,cue/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True

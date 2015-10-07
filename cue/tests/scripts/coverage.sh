@@ -29,8 +29,12 @@ git checkout HEAD^
 
 baseline_report=$(mktemp -t rally_coverageXXXXXXX)
 python setup.py testr --coverage --testr-args="$*"
-coverage report > $baseline_report
-baseline_missing=$(awk 'END { print $3 }' $baseline_report)
+if [ -z $? ]; then
+    coverage report > $baseline_report
+    baseline_missing=$(awk 'END { print $3 }' $baseline_report)
+else
+    baseline_missing=''
+fi
 
 # Checkout back and unstash uncommited changes (if any)
 git checkout -
@@ -38,7 +42,7 @@ git checkout -
 
 # Generate and save coverage report
 current_report=$(mktemp -t rally_coverageXXXXXXX)
-python setup.py testr --coverage --testr-args="$*"
+python setup.py testr --coverage --testr-args="$*" || exit $?
 coverage report > $current_report
 current_missing=$(awk 'END { print $3 }' $current_report)
 current_percent_coverage=$(awk 'END { print $6 }' $current_report | tr -d '%')
