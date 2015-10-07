@@ -1,12 +1,14 @@
 #!/bin/bash
 
+set -o xtrace
+
 TOP_DIR=$(cd $(dirname "$0") && pwd)
 source $TOP_DIR/functions
 source $TOP_DIR/stackrc
 source $TOP_DIR/lib/cue
 DEST=${DEST:-/opt/stack}
 
-source $TOP_DIR/openrc admin admin
+IDENTITY_API_VERSION=3 source $TOP_DIR/openrc admin admin
 
 IPTABLES_RULE='iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
 
@@ -38,8 +40,8 @@ if [[ -z $CUE_MANAGEMENT_KEY ]]; then
 fi
 
 # Add ssh keypair to admin account
-if [[ -z $(nova keypair-list | grep $CUE_MANAGEMENT_KEY) ]]; then
-    nova keypair-add --pub-key ~/.ssh/id_rsa.pub $CUE_MANAGEMENT_KEY
+if [[ -z $(openstack keypair list | grep $CUE_MANAGEMENT_KEY) ]]; then
+    openstack keypair create --public-key ~/.ssh/id_rsa.pub $CUE_MANAGEMENT_KEY
 fi
 
 # Add ping and ssh rules to rabbitmq security group
@@ -50,8 +52,8 @@ neutron security-group-rule-create --direction ingress --protocol tcp --port-ran
 neutron subnet-update --dns-nameserver 8.8.8.8 private-subnet
 
 # Add ssh keypair to demo account
-source $TOP_DIR/openrc demo demo
-if [[ -z $(nova keypair-list | grep $CUE_MANAGEMENT_KEY) ]]; then
-    nova keypair-add --pub-key ~/.ssh/id_rsa.pub $CUE_MANAGEMENT_KEY
+IDENTITY_API_VERSION=3 source $TOP_DIR/openrc demo demo
+if [[ -z $(openstack keypair list | grep $CUE_MANAGEMENT_KEY) ]]; then
+    openstack keypair create --public-key ~/.ssh/id_rsa.pub $CUE_MANAGEMENT_KEY
 fi
 
