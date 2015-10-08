@@ -51,13 +51,13 @@ rabbitmq hard nofile 65536
 rabbitmq soft nofile 65536
 EOF
 
-rabbitmq-plugins enable rabbitmq_management
-
 update-rc.d rabbitmq-server enable
 
-while [ ! -z "$(service rabbitmq-server status | grep 'nodedown')" ]; do
+while [ ! -z "$(rabbitmqctl status 2>&1 | grep 'nodedown')" ]; do
     service rabbitmq-server start
     sleep 5
 done
+
+rabbitmq-plugins enable rabbitmq_management
 
 rabbitmqctl set_policy HA '^(?!amq\.).*' '{"ha-mode": "all"}'
