@@ -41,7 +41,8 @@ class CueScenario(scenario.OpenStackScenario):
 
     @atomic.action_timer("cue.clusters.create")
     def _create_cluster(self, name, flavor, size, network_id,
-                        volume_size=0, cueclient=None):
+                        volume_size=0, cueclient=None, auth_type='plain',
+                        username='rabbitmq', password='rabbitmq'):
         """Submit request to create cue cluster.
 
         Will return immediate response from Cue, does not wait until "ACTIVE"
@@ -58,7 +59,9 @@ class CueScenario(scenario.OpenStackScenario):
         cue_client = cueclient or self._get_cue_client()
         return cue_client.clusters.create(name=cluster_name, nic=network_id,
                                           flavor=flavor, size=size,
-                                          volume_size=volume_size)
+                                          volume_size=volume_size,
+                                          auth_type=auth_type,
+                                          username=username, password=password)
 
     @atomic.action_timer("cue.clusters.get")
     def _get_cluster(self, id, cueclient=None):
@@ -225,7 +228,8 @@ class CueScenario(scenario.OpenStackScenario):
 
     def _create_cue_cluster(self, cluster_name, size, network_id,
                             cluster_flavor, cluster_volume_size,
-                            cluster_timeout, cluster_check_interval):
+                            cluster_timeout, cluster_check_interval,
+                            auth_type, username, password):
         """Create cue cluster
 
         Will wait until the cluster goes "ACTIVE" and returns the cue object.
@@ -245,7 +249,10 @@ class CueScenario(scenario.OpenStackScenario):
                         'flavor': cluster_flavor,
                         'size': size,
                         'network_id': network_id,
-                        'volume_size': cluster_volume_size}
+                        'volume_size': cluster_volume_size,
+                        'auth_type': auth_type,
+                        'username': username,
+                        'password': password}
 
         # Submit request to create cluster and wait for ACTIVE status
         LOG.info("Creating cue cluster")
