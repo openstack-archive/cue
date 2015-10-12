@@ -63,7 +63,7 @@ class Cluster(base.CueObject):
 
         self._from_db_object(self, db_cluster)
 
-    def update(self, context, cluster_id):
+    def update(self, context, cluster_id, *args, **kwargs):
         """Updates a database cluster object.
 
         :param context: The request context
@@ -71,7 +71,8 @@ class Cluster(base.CueObject):
         """
         cluster_changes = self.obj_get_changes()
 
-        self.dbapi.update_cluster(context, cluster_changes, cluster_id)
+        self.dbapi.update_cluster(context, cluster_changes,
+                                  cluster_id, *args, **kwargs)
 
     @classmethod
     def get_clusters(cls, context):
