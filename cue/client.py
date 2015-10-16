@@ -64,6 +64,9 @@ OS_OPTS = [
     cfg.StrOpt('os_user_domain_name',
                help='Openstack user domain name',
                default=None),
+    cfg.StrOpt('os_endpoint_type',
+               help='Openstack endpoint type (publicURL/internalURL/adminURL)',
+               default='publicURL'),
 ]
 
 opt_group = cfg.OptGroup(
@@ -83,6 +86,7 @@ def nova_client():
                              region_name=CONF.openstack.os_region_name,
                              insecure=CONF.openstack.os_insecure,
                              cacert=CONF.openstack.os_cacert,
+                             endpoint_type=CONF.openstack.os_endpoint_type,
                              )
 
 
@@ -94,6 +98,7 @@ def neutron_client():
                                 region_name=CONF.openstack.os_region_name,
                                 insecure=CONF.openstack.os_insecure,
                                 ca_cert=CONF.openstack.os_cacert,
+                                endpoint_type=CONF.openstack.os_endpoint_type,
                                 )
 
 
