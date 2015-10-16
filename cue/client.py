@@ -64,6 +64,10 @@ OS_OPTS = [
     cfg.StrOpt('os_user_domain_name',
                help='Openstack user domain name',
                default=None),
+    cfg.StrOpt('os_endpoint_type',
+               help='Openstack endpoint type [public|internal|admin]',
+               default='public',
+               choices=['public', 'internal', 'admin']),
 ]
 
 opt_group = cfg.OptGroup(
@@ -76,24 +80,28 @@ CONF.register_opts(OS_OPTS, group=opt_group)
 
 
 def nova_client():
-    keystoneSession = get_keystone_session()
+    keystone_session = get_keystone_session()
+    endpoint_type = CONF.openstack.os_endpoint_type + 'URL'
     return NovaClient.Client(2,
-                             session=keystoneSession,
+                             session=keystone_session,
                              auth_url=CONF.openstack.os_auth_url,
                              region_name=CONF.openstack.os_region_name,
                              insecure=CONF.openstack.os_insecure,
                              cacert=CONF.openstack.os_cacert,
+                             endpoint_type=endpoint_type,
                              )
 
 
 def neutron_client():
-    keystoneSession = get_keystone_session()
+    keystone_session = get_keystone_session()
+    endpoint_type = CONF.openstack.os_endpoint_type + 'URL'
     return NeutronClient.Client('2.0',
-                                session=keystoneSession,
+                                session=keystone_session,
                                 auth_url=CONF.openstack.os_auth_url,
                                 region_name=CONF.openstack.os_region_name,
                                 insecure=CONF.openstack.os_insecure,
                                 ca_cert=CONF.openstack.os_cacert,
+                                endpoint_type=endpoint_type,
                                 )
 
 
