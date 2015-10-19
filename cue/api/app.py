@@ -16,6 +16,7 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_middleware import cors
 import pecan
 
 from cue.api import acl
@@ -50,6 +51,35 @@ def get_pecan_config():
     return pecan.configuration.conf_from_file(filename)
 
 
+def wrap_middleware(app, pecan_config):
+    '''Wrap an application with common middleware.
+
+    :param app: The application to wrap.
+    :param pecan_config: Pecan configuration.
+    :return: A wrapped application.
+    '''
+    # Apply auth if appropriate.
+    app = acl.install(app, cfg.CONF, pecan_config.app.acl_public_routes)
+
+    # Make sure all errors are parseable.
+    app = middleware.ParsableErrorMiddleware(app)
+
+    # CORS must be the last one.
+    app = cors.CORS(app, CONF)
+
+    return app
+
+
+def wrap_factory(config):
+    '''Generate a function scope around wrap_middleware.
+
+    This method allows us to pass a config boject into wrap_middleware.
+    :param config: Pecan configuration.
+    :return: A middleware processor for our middleware.
+    '''
+    return lambda app: wrap_middleware(app, config)
+
+
 def setup_app(pecan_config=None, extra_hooks=None):
     policy.init()
     app_hooks = [hooks.ConfigHook(),
@@ -71,11 +101,8 @@ def setup_app(pecan_config=None, extra_hooks=None):
         debug=CONF.api.pecan_debug,
         force_canonical=getattr(pecan_config.app, 'force_canonical', True),
         hooks=app_hooks,
-        wrap_app=middleware.ParsableErrorMiddleware,
+        wrap_app=wrap_factory(pecan_config),
     )
-
-    if pecan_config.app.enable_acl:
-        return acl.install(app, cfg.CONF, pecan_config.app.acl_public_routes)
 
     return app
 
