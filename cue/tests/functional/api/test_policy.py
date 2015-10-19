@@ -18,6 +18,7 @@ from oslo_config import cfg
 
 from cue.common import policy
 from cue.tests.functional import api
+from cue.tests.functional import base
 
 
 class TestPolicyHarness(api.APITest):
@@ -33,7 +34,7 @@ class TestPolicyHarness(api.APITest):
         self.assertEqual(1, self.mock_init.call_count)
 
 
-class TestPolicyOsloConfig(api.APITest):
+class TestPolicyOsloConfig(base.FunctionalTestCase):
     """Test the policy harness initialization configuration states."""
 
     def test_init_with_uninitialized_config_dir(self):

@@ -16,6 +16,7 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_middleware import cors as cors_middleware
 import pecan
 
 from cue.api import acl
@@ -35,9 +36,8 @@ API_OPTS = [
                 help='Pecan HTML Debug Interface'),
 ]
 
-CONF = cfg.CONF
-CONF.register_opts(auth_opts)
-CONF.register_opts(API_OPTS, group='api')
+cfg.CONF.register_opts(auth_opts)
+cfg.CONF.register_opts(API_OPTS, group='api')
 
 
 def list_opts():
@@ -68,14 +68,23 @@ def setup_app(pecan_config=None, extra_hooks=None):
     app = pecan.make_app(
         pecan_config.app.root,
         static_root=pecan_config.app.static_root,
-        debug=CONF.api.pecan_debug,
+        debug=cfg.CONF.api.pecan_debug,
         force_canonical=getattr(pecan_config.app, 'force_canonical', True),
         hooks=app_hooks,
         wrap_app=middleware.ParsableErrorMiddleware,
     )
 
     if pecan_config.app.enable_acl:
-        return acl.install(app, cfg.CONF, pecan_config.app.acl_public_routes)
+        app = acl.install(app, cfg.CONF, pecan_config.app.acl_public_routes)
+
+    # Create a CORS wrapper, and attach ironic-specific defaults that must be
+    # included in all CORS responses.
+    app = cors_middleware.CORS(app, cfg.CONF)
+    app.set_latent(
+        allow_headers=['X-Auth-Token', 'X-Server-Management-Url'],
+        allow_methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
+        expose_headers=['X-Auth-Token', 'X-Server-Management-Url']
+    )
 
     return app
 
@@ -83,7 +92,7 @@ def setup_app(pecan_config=None, extra_hooks=None):
 class VersionSelectorApplication(object):
     def __init__(self):
         pc = get_pecan_config()
-        pc.app.enable_acl = (CONF.auth_strategy == 'keystone')
+        pc.app.enable_acl = (cfg.CONF.auth_strategy == 'keystone')
         self.v1 = setup_app(pecan_config=pc)
 
     def __call__(self, environ, start_response):
