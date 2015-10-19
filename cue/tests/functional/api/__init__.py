@@ -70,6 +70,9 @@ class APITest(base.FunctionalTestCase):
             },
         }
 
+        # Bootstrap the configuration, to ensure parsing has been handled.
+        cfg.CONF(project='cue', args=[])
+
         return pecan.testing.load_test_app(self.config)
 
     def tearDown(self):
