@@ -127,6 +127,16 @@
 #fatal_deprecations = false
 
 
+[cue_monitor]
+
+#
+# From cue.monitor
+#
+
+# How often Cluster Status is checked. (integer value)
+#loop_interval_seconds = 60
+
+
 [database]
 
 #
@@ -248,51 +258,3 @@
 # valued)
 # Deprecated group/name - [DEFAULT]/policy_dirs
 #policy_dirs = policy.d
-
-
-[taskflow]
-
-#
-# From cue.taskflow
-#
-
-# Persistence connection. (string value)
-#persistence_connection = <None>
-
-# Coordinator connection string prefix. (string value)
-#coord_url = zookeeper
-
-# Zookeeper jobboard hosts. (string value)
-#zk_hosts = localhost
-
-# Zookeeper jobboard port. (string value)
-#zk_port = 2181
-
-# Zookeeper path for jobs. (string value)
-#zk_path = /cue/taskflow
-
-# Zookeeper operations timeout. (integer value)
-#zk_timeout = 10
-
-# Board name. (string value)
-#jobboard_name = cue
-
-# Engine type. (string value)
-#engine_type = serial
-
-# Number of seconds to wait between checks for node status (integer value)
-#cluster_node_check_timeout = 10
-
-# Number of times to check a node for status before declaring it FAULTED
-# (integer value)
-#cluster_node_check_max_count = 30
-
-
-[worker]
-
-#
-# From cue.cmd.worker
-#
-
-# Number of worker processes to spawn (integer value)
-#count = 10
