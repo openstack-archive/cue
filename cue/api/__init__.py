@@ -42,3 +42,7 @@ opt_group = cfg.OptGroup(name='api',
                          title='Options for the cue-api service')
 CONF.register_group(opt_group)
 CONF.register_opts(API_SERVICE_OPTS, opt_group)
+
+
+def list_opts():
+    return [('api', API_SERVICE_OPTS)]
