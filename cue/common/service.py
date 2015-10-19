@@ -54,3 +54,7 @@ def prepare_service(argv=None):
         argv = sys.argv
     CONF(argv[1:], project='cue')
     log.setup(CONF, 'cue')
+
+
+def list_opts():
+    return [('DEFAULT', service_opts)]
