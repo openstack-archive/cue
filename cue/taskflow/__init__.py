@@ -68,3 +68,6 @@ opt_group = cfg.OptGroup(
 
 CONF.register_group(opt_group)
 CONF.register_opts(TF_OPTS, group='taskflow')
+
+def list_opts():
+    return [('taskflow', TF_OPTS)]

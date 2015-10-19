@@ -42,6 +42,9 @@ CONF = cfg.CONF
 
 CONF.register_opts(service_opts)
 
+def list_opts():
+    return [('DEFAULT', service_opts)]
+
 LOG = log.getLogger(__name__)
 
 

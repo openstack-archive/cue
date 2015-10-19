@@ -20,7 +20,7 @@ from oslo_log import log
 
 log.register_options(cfg.CONF)
 
-cfg.CONF.register_opts([
+DEFAULT_OPTS = [
     cfg.StrOpt('pybasedir',
                default=os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                     '../')),
@@ -41,4 +41,9 @@ cfg.CONF.register_opts([
     cfg.StrOpt('default_broker_name',
                default='rabbitmq',
                help='The name of the default broker image')
-])
+]
+
+cfg.CONF.register_opts(DEFAULT_OPTS)
+
+def list_opts():
+    return [('DEFAULT', DEFAULT_OPTS)]

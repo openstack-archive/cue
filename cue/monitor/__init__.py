@@ -19,7 +19,7 @@ CONF = cfg.CONF
 
 
 MONITOR_OPTS = [
-    cfg.StrOpt('loop_interval_seconds',
+    cfg.IntOpt('loop_interval_seconds',
                help='How often Cluster Status is checked.',
                default=60)
 ]
@@ -31,3 +31,6 @@ opt_group = cfg.OptGroup(
 
 CONF.register_group(opt_group)
 CONF.register_opts(MONITOR_OPTS, group='cue_monitor')
+
+def list_opts():
+    return [('cue_monitor', MONITOR_OPTS)]
