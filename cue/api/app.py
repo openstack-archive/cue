@@ -16,6 +16,7 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_middleware import cors
 import pecan
 
 from cue.api import acl
@@ -49,6 +50,12 @@ def get_pecan_config():
     filename = config.__file__.replace('.pyc', '.py')
     return pecan.configuration.conf_from_file(filename)
 
+def wrap_middleware(application):
+    application = middleware.ParsableErrorMiddleware(application)
+
+    # CORS must always be first in the chain, i.e. last in this list.
+    application = cors.CORS(application, cfg.CONF)
+    return application
 
 def setup_app(pecan_config=None, extra_hooks=None):
     policy.init()
@@ -71,7 +78,7 @@ def setup_app(pecan_config=None, extra_hooks=None):
         debug=CONF.api.pecan_debug,
         force_canonical=getattr(pecan_config.app, 'force_canonical', True),
         hooks=app_hooks,
-        wrap_app=middleware.ParsableErrorMiddleware,
+        wrap_app=wrap_middleware,
     )
 
     if pecan_config.app.enable_acl:
