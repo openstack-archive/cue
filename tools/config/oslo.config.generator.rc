@@ -1,2 +1,2 @@
-export CUE_CONFIG_GENERATOR_EXTRA_LIBRARIES='oslo.db oslo.messaging'
+export CUE_CONFIG_GENERATOR_EXTRA_LIBRARIES='oslo.db oslo.messaging oslo.middleware.cors'
 export CUE_CONFIG_GENERATOR_EXTRA_MODULES=keystonemiddleware.auth_token
