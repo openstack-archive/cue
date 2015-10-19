@@ -30,13 +30,18 @@ auth_opts = [
         help='Method to use for authentication: noauth or keystone.'),
     ]
 
-CONF = cfg.CONF
-CONF.register_opts(auth_opts)
-
-cfg.CONF.register_opts([
+API_OPTS = [
     cfg.BoolOpt('pecan_debug', default=False,
                 help='Pecan HTML Debug Interface'),
-], group='api')
+]
+
+CONF = cfg.CONF
+CONF.register_opts(auth_opts)
+CONF.register_opts(API_OPTS, group='api')
+
+
+def list_opts():
+    return [('DEFAULT', auth_opts), ('api', API_OPTS)]
 
 
 def get_pecan_config():

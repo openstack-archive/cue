@@ -49,6 +49,10 @@ cfg.CONF.register_group(opt_group)
 cfg.CONF.register_opts(WORKER_OPTS, group=opt_group)
 
 
+def list_opts():
+    return [('worker', WORKER_OPTS)]
+
+
 def main():
     # Initialize environment
     CONF = cfg.CONF
