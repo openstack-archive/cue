@@ -17,7 +17,6 @@ import exceptions
 import time
 
 from cueclient.v1 import client
-from keystoneclient.auth.identity import v3 as ks_v3
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
 from rally.common import log as logging
@@ -89,16 +88,7 @@ class CueScenario(scenario.OpenStackScenario):
         :return: cue client
         """
         keystone_client = self.clients("keystone")
-
-        auth = ks_v3.Password(
-            auth_url=keystone_client.auth_url,
-            username=keystone_client.username,
-            password=keystone_client.password,
-            project_name=keystone_client.project_name,
-            project_domain_name=keystone_client.project_domain_name,
-            user_domain_name=keystone_client.user_domain_name
-        )
-        session = ks_session.Session(auth=auth)
+        session = ks_session.Session(auth=keystone_client.auth_token)
         cue_client = client.Client(session=session)
         return cue_client
 
