@@ -17,10 +17,12 @@ import exceptions
 import time
 
 from cueclient.v1 import client
+from keystoneclient.auth.identity import v2 as ks_v2
 from keystoneclient.auth.identity import v3 as ks_v3
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
 from rally.common import log as logging
+from rally.common import utils as common_utils
 from rally.plugins.openstack import scenario
 from rally.task import atomic
 from rally.task import utils as task_utils
@@ -55,7 +57,8 @@ class CueScenario(scenario.OpenStackScenario):
         :param volume_size: int, volume size for VM instance(s)
         :returns: new cue cluster details
         """
-        cluster_name = name or self._generate_random_name('rally_cue_cluster_')
+        cluster_name = name or common_utils.generate_random_name(
+            'rally_cue_cluster_')
         cue_client = cueclient or self._get_cue_client()
         return cue_client.clusters.create(name=cluster_name, nic=network_id,
                                           flavor=flavor, size=size,
@@ -90,14 +93,23 @@ class CueScenario(scenario.OpenStackScenario):
         """
         keystone_client = self.clients("keystone")
 
-        auth = ks_v3.Password(
-            auth_url=keystone_client.auth_url,
-            username=keystone_client.username,
-            password=keystone_client.password,
-            project_name=keystone_client.project_name,
-            project_domain_name=keystone_client.project_domain_name,
-            user_domain_name=keystone_client.user_domain_name
-        )
+        if keystone_client.auth_ref.version == 'v2.0':
+            auth = ks_v2.Token(
+                keystone_client.auth_url,
+                keystone_client.auth_token,
+                tenant_id=keystone_client.tenant_id,
+                tenant_name=keystone_client.tenant_name,
+                trust_id=keystone_client.trust_id
+            )
+        else:
+            auth = ks_v3.Password(
+                auth_url=keystone_client.auth_url,
+                username=keystone_client.username,
+                password=keystone_client.password,
+                project_name=keystone_client.project_name,
+                project_domain_name=keystone_client.project_domain_name,
+                user_domain_name=keystone_client.user_domain_name
+            )
         session = ks_session.Session(auth=auth)
         cue_client = client.Client(session=session)
         return cue_client
@@ -243,7 +255,7 @@ class CueScenario(scenario.OpenStackScenario):
         :param cluster_check_interval: int, interval to check status change
         :return: new cue cluster
         """
-        cluster_name = cluster_name or self._generate_random_name(
+        cluster_name = cluster_name or common_utils.generate_random_name(
             'rally_cue_cluster_')
         cluster_dict = {'name': cluster_name,
                         'flavor': cluster_flavor,
@@ -282,6 +294,7 @@ class CueScenario(scenario.OpenStackScenario):
         :return: new nova instance
         """
         secgroup_found = False
+        secgroup = None
         # add sec-group
         sec_groups = nova_client.security_groups.list()
         for sec in sec_groups:
@@ -307,17 +320,17 @@ class CueScenario(scenario.OpenStackScenario):
                                             image=image,
                                             flavor=flavor,
                                             key_name=keypair.name,
-                                            security_groups=[secgroup.id],
+                                            security_groups=[secgroup.id if
+                                                             secgroup else
+                                                             None],
                                             **kwargs)
 
         # wait for instance to become active
         LOG.info("Waiting for instance to become active")
         task_utils.wait_for(server,
-                                 is_ready=task_utils.
-                                 resource_is("ACTIVE"),
-                                 update_resource=task_utils.
-                                 get_from_manager(),
-                                 timeout=nova_server_boot_timeout)
+                            is_ready=task_utils.resource_is("ACTIVE"),
+                            update_resource=task_utils.get_from_manager(),
+                            timeout=nova_server_boot_timeout)
 
         # assert if instance is 'active'
         assert('ACTIVE' == server.status), (
@@ -369,8 +382,8 @@ class CueScenario(scenario.OpenStackScenario):
 
         LOG.info("Waiting for instance to get deleted")
         task_utils.wait_for_delete(server,
-                                        update_resource=task_utils.
-                                        get_from_manager())
+                                   update_resource=task_utils.get_from_manager(
+                                   ))
 
         # delete sec-group
         for secgroup in nova_client.security_groups.list():
