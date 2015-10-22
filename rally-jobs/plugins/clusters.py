@@ -16,6 +16,7 @@
 import cue_utils
 from oslo_log import log as logging
 from rally.common import sshutils
+from rally.common import utils as common_utils
 from rally.plugins.openstack import scenario
 from rally.task import types as types
 
@@ -104,7 +105,7 @@ class CueClusters(cue_utils.CueScenario):
         :param cluster_check_interval: int, check interval seconds
         :param kwargs: other optional parameters to initialize the server
         """
-        server_name = server_name or self._generate_random_name()
+        server_name = common_utils.generate_random_name(server_name + '_')
         nova_server_boot_timeout = 60 * 5
         network_name = "rally_network"
         sec_group_name = "rally_sec_group"
