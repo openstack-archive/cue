@@ -39,6 +39,12 @@ class APITest(base.FunctionalTestCase):
 
     def setUp(self):
         super(APITest, self).setUp()
+
+        # If no config dir available/provided, we have to manually add the
+        # project directory, so the test policy files will be found.
+        if 'config_dir' not in cfg.CONF or not cfg.CONF.config_dir:
+            cfg.CONF.config_dir = cfg.CONF.pybasedir + '/etc/cue/'
+
         self.CONF.config(auth_version="v3",
                          group=OPT_GROUP_NAME)
         self.app = self._make_app()
