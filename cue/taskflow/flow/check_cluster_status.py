@@ -50,10 +50,14 @@ def check_cluster_status(cluster_id, node_ids):
                                                          node_id))
     flow.add(sub_flow)
 
+    node_status_list = ["%s%d" % ("node_status_", i)
+                        for i in range(len(node_ids))]
+    # this is used as second arg of lambda in case of cluster size one
+    node_status_list.append('node_status_0')
     get_cluster_status = os_common.Reduce(
         lambda a, b: a if (a == 'OK') else b,
         provides='cluster_status',
-        requires=["%s%d" % ("node_status_", i) for i in range(len(node_ids))],
+        requires=node_status_list,
     )
     flow.add(get_cluster_status)
 
