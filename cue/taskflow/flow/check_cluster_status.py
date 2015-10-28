@@ -53,7 +53,8 @@ def check_cluster_status(cluster_id, node_ids):
     get_cluster_status = os_common.Reduce(
         lambda a, b: a if (a == 'OK') else b,
         provides='cluster_status',
-        requires=["%s%d" % ("node_status_", i) for i in range(len(node_ids))],
+        requires=["%s%d" % ("node_status_", i) for i in range(len(node_ids))]
+                 + ['node_status_0'],
     )
     flow.add(get_cluster_status)
 
