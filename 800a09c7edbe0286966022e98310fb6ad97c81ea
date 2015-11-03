@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Min Pae <min.pae@hp.com>
+Workflow+1: Min Pae <min.pae@hp.com>
+Code-Review+1: Davide Agnello <dagnello@hp.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 03 Nov 2015 20:47:43 +0000
+Reviewed-on: https://review.openstack.org/240028
+Project: openstack/cue
+Branch: refs/heads/master
