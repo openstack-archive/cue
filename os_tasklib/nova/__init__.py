@@ -14,6 +14,7 @@
 # under the License.
 
 from create_vm import CreateVm                   # noqa
+from create_vm_group import CreateVmGroup        # noqa
 from delete_vm import DeleteVm                   # noqa
 from get_vm import GetVm                         # noqa
 from get_vm_status import GetVmStatus            # noqa

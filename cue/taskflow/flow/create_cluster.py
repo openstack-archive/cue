@@ -18,10 +18,12 @@ import taskflow.patterns.graph_flow as graph_flow
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.retry as retry
 
+import cue.client as client
 from cue.db.sqlalchemy import models
 from cue.taskflow.flow import create_cluster_node
 import cue.taskflow.task as cue_tasks
 import os_tasklib.common as os_common
+import os_tasklib.nova as nova
 
 
 def create_cluster(cluster_id, node_ids, user_network_id,
@@ -48,6 +50,8 @@ def create_cluster(cluster_id, node_ids, user_network_id,
     end_flow_status = {'cluster_id': cluster_id,
                        'cluster_values': {'status': models.Status.ACTIVE}}
 
+    extract_vm_group_id = lambda vm_group: {'group': str(vm_group['id'])}
+
     start_task = cue_tasks.UpdateClusterStatus(
         name="update cluster status start "
              "%s" % cluster_id,
@@ -59,6 +63,26 @@ def create_cluster(cluster_id, node_ids, user_network_id,
              "%s" % cluster_id,
         inject=end_flow_status)
     flow.add(end_task)
+
+    cluster_affinity = cfg.CONF.taskflow.cluster_member_affinity
+    if not cluster_affinity:
+        create_vm_group = nova.CreateVmGroup(
+            name="create cluster group",
+            os_client=client.nova_client(),
+            requires=('name', 'enable_affinity'),
+            inject={'name': "cue_group_%s" % cluster_id,
+                    'enable_affinity': cluster_affinity},
+            provides="cluster_group")
+        flow.add(create_vm_group)
+        flow.link(create_vm_group, start_task)
+
+        get_vm_group_id = os_common.Lambda(
+            extract_vm_group_id,
+            name="extract cluster group id",
+            rebind={'vm_group': "cluster_group"},
+            provides="scheduler_hints")
+        flow.add(get_vm_group_id)
+        flow.link(create_vm_group, get_vm_group_id)
 
     node_check_timeout = cfg.CONF.taskflow.cluster_node_check_timeout
     node_check_max_count = cfg.CONF.taskflow.cluster_node_check_max_count
@@ -98,6 +122,8 @@ def create_cluster(cluster_id, node_ids, user_network_id,
                                                 node_check_timeout,
                                                 node_check_max_count,
                                                 user_network_id,
-                                                management_network_id)
+                                                management_network_id,
+                                                get_vm_group_id
+                                                )
 
     return flow

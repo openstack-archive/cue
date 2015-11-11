@@ -59,6 +59,10 @@ TF_OPTS = [
                help="Number of times to check a node for status before "
                "declaring it FAULTED",
                default=30),
+
+    cfg.BoolOpt('cluster_member_affinity',
+           help="Affinity policy for broker cluster nodes",
+           default=False),
 ]
 
 opt_group = cfg.OptGroup(
