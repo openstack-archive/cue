@@ -68,5 +68,11 @@ class UpdateCluster(task.Task):
         else:
             cluster_values['status'] = models.Status.ERROR
 
+        # Extract exception information
+        if 'flow_failures' in kwargs:
+            cluster_values['error_detail'] = '\n'.join(
+                [str(value) for value in
+                 kwargs['flow_failures'].values()])
+
         cluster = objects.Cluster(**cluster_values)
         cluster.update(request_context, cluster_id)

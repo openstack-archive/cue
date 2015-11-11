@@ -153,6 +153,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
             provides="vm_status_%d" % node_number),
         os_common.CheckFor(
             name="check vm status %s" % node_name,
+            details="waiting for ACTIVE VM status",
             rebind={'check_var': "vm_status_%d" % node_number},
             check_value='ACTIVE',
             retry_delay_seconds=10),
