@@ -14,6 +14,7 @@
 # under the License.
 
 from os_tasklib.nova.create_vm import CreateVm                   # noqa
+from os_tasklib.nova.create_vm_group import CreateVmGroup        # noqa
 from os_tasklib.nova.delete_vm import DeleteVm                   # noqa
 from os_tasklib.nova.get_vm import GetVm                         # noqa
 from os_tasklib.nova.get_vm_status import GetVmStatus            # noqa

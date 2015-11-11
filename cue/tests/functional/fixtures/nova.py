@@ -24,13 +24,14 @@ import cue.tests.functional.fixtures.base as base
 
 class VmDetails(object):
     def __init__(self, vm_id, name, flavor, image,
-                 port_list=None, status=None):
+                 port_list=None, status=None, host_id=None):
         self.id = vm_id
         self.name = name
         self.flavor = flavor
         self.image = image
         self.status = status if status else 'ACTIVE'
         self.port_list = port_list
+        self.host_id = host_id
 
     def to_dict(self):
         return {
@@ -105,6 +106,20 @@ class VmStatusDetails(object):
         return status
 
 
+class VmGroupDetails(object):
+    def __init__(self, vm_group_id, name, policies=None):
+        self.id = vm_group_id or str(uuid.uuid4())
+        self.name = name or 'cue_group'
+        self.policies = policies or ['anti-affinity']
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'policies': self.policies
+        }
+
+
 class NovaClient(base.BaseFixture):
     """A test fixture to simulate a Nova Client connection
 
@@ -114,11 +129,12 @@ class NovaClient(base.BaseFixture):
 
     def __init__(self, image_list=None, flavor_list=None,
                  vm_limit=None, security_group_list=None,
-                 *args, **kwargs):
+                 vm_group_list=None, *args, **kwargs):
         super(NovaClient, self).__init__(*args, **kwargs)
         self._vm_list = dict()
         self._image_list = dict()
         self._flavor_list = dict()
+        self._vm_group_list = dict()
 
         if not image_list:
             image_list = ['cirros-0.3.2-x86_64-uec-kernel']
@@ -145,6 +161,12 @@ class NovaClient(base.BaseFixture):
 
         self._security_group_list = security_group_list
 
+        # for group in vm_group_list:
+        #     vm_group_detail = VmGroupDetails(name=group)
+        #     self._vm_group_list.update({
+        #         vm_group_detail.id: vm_group_detail
+        #     })
+
     def setUp(self):
         """Set up test fixture and apply all method overrides."""
         super(NovaClient, self).setUp()
@@ -158,9 +180,11 @@ class NovaClient(base.BaseFixture):
         v2_client.images.find = self.find_images
         v2_client.images.list = self.list_images
         v2_client.flavors.find = self.find_flavors
+        v2_client.server_groups.create = self.create_vm_group
+        v2_client.server_groups.get = self.get_vm_group
 
     def create_vm(self, name, image, flavor, nics=None, security_groups=None,
-                  **kwargs):
+                  scheduler_hints=None, **kwargs):
         """Mock'd version of novaclient...create_vm().
 
         Create a Nova VM.
@@ -224,6 +248,17 @@ class NovaClient(base.BaseFixture):
                           flavor=flavor, image=image,
                           port_list=port_list,
                           status='BUILDING')
+
+        if scheduler_hints is not None:
+            try:
+                group_id = scheduler_hints['group']
+            except AttributeError:
+                group_id = scheduler_hints
+
+            if group_id not in self._vm_group_list:
+                raise nova_exc.BadRequest(400)
+
+            newVm.host_id = str(uuid.uuid4())
 
         self._vm_list[str(newVm.id)] = newVm
 
@@ -330,3 +365,36 @@ class NovaClient(base.BaseFixture):
             raise nova_exc.NotFound(404)
 
         return server.port_list
+
+    def create_vm_group(self, name, policies, **kwargs):
+        """Mock'd version of novaclient...server_group_create().
+
+        Create a Nova server group.
+
+        :param body: Dictionary with vm information.
+        :return: An updated copy of the 'body' that was passed in, with other
+                 information populated.
+        """
+        newVmGroup = VmGroupDetails(vm_group_id=str(uuid.uuid4()), name=name,
+                                    policies=policies)
+
+        self._vm_group_list[newVmGroup.id] = newVmGroup
+        return newVmGroup
+
+    def get_vm_group(self, vm_group, **kwargs):
+        """Mock'd version of novaclient...server_group_get()
+
+        :param server: vm group object with populated id instance variable
+        :return: current server group object for specified vm id
+        """
+        try:
+            vm_group_id = vm_group.id
+        except AttributeError:
+            vm_group_id = vm_group
+
+        try:
+            vm_group = self._vm_group_list[str(vm_group_id)]
+        except KeyError:
+            raise nova_exc.NotFound(404)
+
+        return vm_group
