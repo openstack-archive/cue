@@ -240,6 +240,54 @@ class CreateClusterTests(base.FunctionalTestCase):
         else:
             self.fail("Expected taskflow_exc.WrappedFailure exception.")
 
+    def test_create_cluster_anti_affinity(self):
+        self.flags(cluster_node_anti_affinity=True, group="taskflow")
+
+        flow_store = {
+            'image': self.valid_image.id,
+            'flavor': self.valid_flavor.id,
+            "port": self.port,
+            "context": self.context.to_dict(),
+            "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
+        }
+
+        cluster_values = {
+            "project_id": self.context.tenant_id,
+            "name": "RabbitCluster",
+            "network_id": str(uuid.uuid4()),
+            "flavor": "1",
+            "size": 3,
+        }
+
+        new_cluster = objects.Cluster(**cluster_values)
+        new_cluster.create(self.context)
+
+        nodes = objects.Node.get_nodes_by_cluster_id(self.context,
+                                                     new_cluster.id)
+
+        node_ids = []
+        for node in nodes:
+            node_ids.append(node.id)
+
+        flow = create_cluster(new_cluster.id,
+                              node_ids,
+                              self.valid_network['id'],
+                              self.management_network['id'])
+
+        engines.run(flow, store=flow_store)
+
+        nodes_after = objects.Node.get_nodes_by_cluster_id(self.context,
+                                                           new_cluster.id)
+
+        # check if the host_ids are different for cluster nodes
+        host_ids = []
+        for node in nodes_after:
+            host_id = self.nova_client.servers.get(node.instance_id).host_id
+            self.assertNotIn(host_id, host_ids)
+            host_ids.append(host_id)
+
     def tearDown(self):
         for vm_id in self.new_vm_list:
             self.nova_client.servers.delete(vm_id)
