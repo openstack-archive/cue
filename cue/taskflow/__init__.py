@@ -59,6 +59,10 @@ TF_OPTS = [
                help="Number of times to check a node for status before "
                "declaring it FAULTED",
                default=30),
+
+    cfg.BoolOpt('cluster_node_anti_affinity',
+                 help="Anti-affinity policy for cue cluster nodes",
+                 default=True),
 ]
 
 opt_group = cfg.OptGroup(
