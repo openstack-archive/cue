@@ -24,11 +24,13 @@ class CheckFor(task.Task):
                  retry_delay_seconds=None,
                  retry_delay_ms=None,
                  name=None,
+                 details=None,
                  **kwargs):
         super(CheckFor, self).__init__(name=name, **kwargs)
 
         self.check_value = check_value
         self.sleep_time = 0
+        self.details = details
         if retry_delay_seconds:
             self.sleep_time = retry_delay_seconds
 
@@ -39,8 +41,12 @@ class CheckFor(task.Task):
         if check_var == self.check_value:
             return self.check_value
         else:
-            raise AssertionError("expected %s, got %s" %
-                                 (self.check_value, check_var))
+            error_string = "expected %s, got %s" % (self.check_value,
+                                                    check_var)
+            if self.details is not None:
+                error_string += ", message: %s" % self.details
+
+            raise AssertionError(error_string)
 
     def revert(self, check_var, *args, **kwargs):
         if self.sleep_time != 0:
