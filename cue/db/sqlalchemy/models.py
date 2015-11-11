@@ -73,6 +73,7 @@ class Cluster(base.BASE, base.IdMixin, models.TimestampMixin,
     flavor = sa.Column(sa.String(50), nullable=False)
     size = sa.Column(sa.Integer(), default=1, nullable=False)
     volume_size = sa.Column(sa.Integer(), nullable=True)
+    error_detail = sa.Column(sa.Text(), nullable=True)
     sa.Index("clusters_cluster_id_idx", "cluster_id", unique=True)
 
 
