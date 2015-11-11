@@ -26,6 +26,7 @@ from oslo_utils import timeutils
 UUID1 = str(uuid.uuid4())
 UUID2 = str(uuid.uuid4())
 UUID3 = str(uuid.uuid4())
+UUID4 = str(uuid.uuid4())
 
 
 class ModelsTests(base.FunctionalTestCase):
@@ -47,6 +48,7 @@ class ModelsTests(base.FunctionalTestCase):
             "updated_at": timeutils.utcnow(),
             "deleted_at": timeutils.utcnow(),
             "error_detail": "My cluster's error(s) detail",
+            "group_id": UUID4,
         }
 
         cluster = models.Cluster()
@@ -79,6 +81,9 @@ class ModelsTests(base.FunctionalTestCase):
         self.assertEqual(cluster_values["error_detail"],
                          cluster.error_detail,
                          "Invalid error_detail value")
+        self.assertEqual(cluster_values["group_id"],
+                         cluster.group_id,
+                         "Invalid group_id value")
 
         db_session = sql_api.get_session()
         cluster.save(db_session)
@@ -114,6 +119,9 @@ class ModelsTests(base.FunctionalTestCase):
         self.assertEqual(cluster_values["error_detail"],
                          cluster_db.error_detail,
                          "Invalid error_detail value")
+        self.assertEqual(cluster_values["group_id"],
+                         cluster_db.group_id,
+                         "Invalid group_id value")
 
     def test_create_node_model(self):
         """Verifies a new cluster record is created in DB."""
