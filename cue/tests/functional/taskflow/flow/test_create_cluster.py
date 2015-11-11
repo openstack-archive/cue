@@ -93,7 +93,7 @@ class CreateClusterTests(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": self.valid_network['id'],
             "flavor": "1",
             "size": 3,
         }
@@ -165,7 +165,7 @@ class CreateClusterTests(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": self.valid_network['id'],
             "flavor": "1",
             "size": 10,
         }
@@ -190,6 +190,55 @@ class CreateClusterTests(base.FunctionalTestCase):
 
         self.assertEqual(vm_list, self.nova_client.servers.list())
         self.assertEqual(port_list, self.neutron_client.list_ports())
+
+    def test_create_cluster_invalid_user_network(self):
+        invalid_network_id = str(uuid.uuid4())
+        cluster_size = 3
+
+        flow_store = {
+            'image': self.valid_image.id,
+            'flavor': self.valid_flavor.id,
+            "port": self.port,
+            "context": self.context.to_dict(),
+            "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
+        }
+
+        cluster_values = {
+            "project_id": self.context.tenant_id,
+            "name": "RabbitCluster",
+            "network_id": invalid_network_id,
+            "flavor": "1",
+            "size": cluster_size,
+        }
+
+        new_cluster = objects.Cluster(**cluster_values)
+        new_cluster.create(self.context)
+
+        nodes = objects.Node.get_nodes_by_cluster_id(self.context,
+                                                     new_cluster.id)
+
+        node_ids = []
+        for node in nodes:
+            node_ids.append(node.id)
+
+        flow = create_cluster(new_cluster.id,
+                              node_ids,
+                              invalid_network_id,
+                              self.management_network['id'])
+
+        try:
+            engines.run(flow, store=flow_store)
+        except taskflow_exc.WrappedFailure as err:
+            cluster_ref = objects.Cluster.get_cluster_by_id(self.context,
+                                                            new_cluster.id)
+            self.assertEqual(cluster_size, len(err._causes))
+            for failure in err._causes:
+                self.assertEqual(cluster_ref.error_detail,
+                                 failure.__str__())
+        else:
+            self.fail("Expected taskflow_exc.WrappedFailure exception.")
 
     def tearDown(self):
         for vm_id in self.new_vm_list:
