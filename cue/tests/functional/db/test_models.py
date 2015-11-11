@@ -46,6 +46,7 @@ class ModelsTests(base.FunctionalTestCase):
             "created_at": timeutils.utcnow(),
             "updated_at": timeutils.utcnow(),
             "deleted_at": timeutils.utcnow(),
+            "error_description": "My cluster's error(s) description",
         }
 
         cluster = models.Cluster()
@@ -75,6 +76,9 @@ class ModelsTests(base.FunctionalTestCase):
                          "Invalid updated_at value")
         self.assertEqual(cluster_values["deleted_at"], cluster.deleted_at,
                          "Invalid deleted_at value")
+        self.assertEqual(cluster_values["error_description"],
+                         cluster.error_description,
+                         "Invalid error_description value")
 
         db_session = sql_api.get_session()
         cluster.save(db_session)
@@ -107,6 +111,9 @@ class ModelsTests(base.FunctionalTestCase):
                          "Invalid updated_at value")
         self.assertEqual(cluster_values["deleted_at"], cluster_db.deleted_at,
                          "Invalid deleted_at value")
+        self.assertEqual(cluster_values["error_description"],
+                         cluster_db.error_description,
+                         "Invalid error_description value")
 
     def test_create_node_model(self):
         """Verifies a new cluster record is created in DB."""

@@ -117,6 +117,9 @@ class Cluster(base.APIBase):
     authentication = wtypes.wsattr(AuthenticationCredential)
     "Authentication for accessing message brokers"
 
+    error_description = wsme.wsattr(wtypes.text, mandatory=False)
+    "Error description associated with cluster"
+
 
 def get_complete_cluster(context, cluster_id):
     """Helper to retrieve the api-compatible full structure of a cluster."""
