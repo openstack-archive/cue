@@ -26,6 +26,7 @@ from cue.tests.functional.fixtures import neutron
 from cue.tests.functional.fixtures import nova
 from cue.tests.functional.fixtures import urllib2_fixture
 
+import novaclient.exceptions as nova_exc
 from taskflow import engines
 import taskflow.exceptions as taskflow_exc
 
@@ -114,10 +115,9 @@ class DeleteClusterTests(base.FunctionalTestCase):
             node_ids.append(str(node.id))
 
         flow_create = create_cluster(new_cluster.id,
-                              node_ids,
-                              self.valid_network['id'],
-                              self.management_network['id'])
-        flow_delete = delete_cluster(str(new_cluster.id), node_ids)
+                                     node_ids,
+                                     self.valid_network['id'],
+                                     self.management_network['id'])
 
         result = engines.run(flow_create, store=flow_store_create)
 
@@ -148,6 +148,8 @@ class DeleteClusterTests(base.FunctionalTestCase):
             self.assertEqual(uri, endpoint.uri, "invalid endpoint uri")
             self.assertEqual('AMQP', endpoint.type, "invalid endpoint type")
 
+        flow_delete = delete_cluster(str(new_cluster.id), node_ids,
+                                     cluster_after.group_id)
         result = engines.run(flow_delete, store=flow_store_delete)
 
         nodes_after = objects.Node.get_nodes_by_cluster_id(self.context,
@@ -166,6 +168,67 @@ class DeleteClusterTests(base.FunctionalTestCase):
                                                                   node.id)
             self.assertEqual(0, len(endpoints), "endpoints were not deleted")
 
+    def test_delete_cluster_anti_affinity(self):
+        self.flags(cluster_node_anti_affinity=True, group="taskflow")
+
+        flow_store_create = {
+            "image": self.valid_image.id,
+            "flavor": self.valid_flavor.id,
+            "port": self.port,
+            "context": self.context.to_dict(),
+            "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
+        }
+        flow_store_delete = {
+            "context": self.context.to_dict(),
+        }
+
+        cluster_values = {
+            "project_id": self.context.tenant_id,
+            "name": "RabbitCluster",
+            "network_id": str(uuid.uuid4()),
+            "flavor": "1",
+            "size": 3,
+        }
+
+        new_cluster = objects.Cluster(**cluster_values)
+        new_cluster.create(self.context)
+
+        nodes = objects.Node.get_nodes_by_cluster_id(self.context,
+                                                     new_cluster.id)
+
+        node_ids = []
+        for node in nodes:
+            node_ids.append(str(node.id))
+
+        flow_create = create_cluster(new_cluster.id,
+                                     node_ids,
+                                     self.valid_network['id'],
+                                     self.management_network['id'])
+
+        engines.run(flow_create, store=flow_store_create)
+
+        cluster_after = objects.Cluster.get_cluster_by_id(self.context,
+                                                          new_cluster.id)
+
+        self.assertEqual(models.Status.ACTIVE, cluster_after.status,
+                         "Invalid status for cluster")
+
+        flow_delete = delete_cluster(str(new_cluster.id), node_ids,
+                                     cluster_after.group_id)
+        engines.run(flow_delete, store=flow_store_delete)
+
+        self.assertRaises(exception.NotFound,
+                          objects.Cluster.get_cluster_by_id,
+                          self.context,
+                          new_cluster.id)
+
+        # verify server group is not found
+        self.assertRaises(nova_exc.NotFound,
+                          self.nova_client.server_groups.get,
+                          cluster_after.group_id)
+
     def test_delete_invalid_cluster(self):
         vm_list = self.nova_client.servers.list()
         port_list = self.neutron_client.list_ports()
@@ -176,11 +239,12 @@ class DeleteClusterTests(base.FunctionalTestCase):
 
         cluster_size = 3
         cluster_id = str(uuid.uuid4())
+        server_group_id = str(uuid.uuid4())
         node_ids = []
         for i in range(0, cluster_size):
             node_ids.append(str(uuid.uuid4()))
 
-        flow_delete = delete_cluster(cluster_id, node_ids)
+        flow_delete = delete_cluster(cluster_id, node_ids, server_group_id)
 
         self.assertRaises(taskflow_exc.WrappedFailure, engines.run,
                           flow_delete, store=flow_store_delete)

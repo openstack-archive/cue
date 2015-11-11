@@ -39,6 +39,7 @@ class Cluster(base.CueObject):
         'updated_at': obj_utils.datetime_or_str_or_none,
         'deleted_at': obj_utils.datetime_or_str_or_none,
         'error_detail': obj_utils.str_or_none,
+        'group_id': obj_utils.str_or_none,
     }
 
     @staticmethod
