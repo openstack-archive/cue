@@ -76,6 +76,7 @@ jobboard_name                  'cue'                                 Board name
 engine_type                    'serial'                              Engine type
 cluster_node_check_timeout     10                                    Number of seconds between node status checks
 cluster_node_check_max_count   30                                    Number of times to check a node for status
+cluster_node_anti_affinity     False                                 Anti-affinity policy for cue cluster nodes
 =============================  ====================================  ==============================================================
 
 [openstack]

@@ -37,7 +37,6 @@ CONF.register_opts(FLOW_OPTS, group='flow_options')
 
 def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
                         generate_userdata, start_task, post_task,
-                        node_check_timeout, node_check_max_count,
                         user_network_id, management_network_id):
     """Create Cluster Node factory function
 
@@ -57,10 +56,6 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     :type post_task: taskflow task or flow
     :param generate_userdata: generate user data task
     :type generate_userdata: cue.taskflow.task.ClusterNodeUserData
-    :param node_check_timeout: seconds wait between node status checks
-    :type node_check_timeout: int
-    :param node_check_max_count: times to check for updated node status
-    :type node_check_max_count: int
     :param user_network_id: The user's network id
     :type user_network_id: string
     :param management_network_id: The management network id
@@ -141,7 +136,6 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     graph_flow.link(create_vm, get_vm_id)
 
     retry_count = CONF.flow_options.create_cluster_node_vm_active_retry_count
-    #todo(dagnello): make retry times configurable
     check_vm_active = linear_flow.Flow(
         name="wait for VM active state %s" % node_name,
         retry=retry.Times(retry_count, revert_all=True))

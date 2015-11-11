@@ -39,6 +39,7 @@ class UpdateCluster(task.Task):
         :type cluster_status: string
         """
         request_context = context_module.RequestContext.from_dict(context)
+
         cluster = objects.Cluster(**cluster_values)
         cluster.update(request_context, cluster_id,
                        project_only=project_only, **kwargs)
