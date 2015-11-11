@@ -38,7 +38,8 @@ CONF.register_opts(FLOW_OPTS, group='flow_options')
 def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
                         generate_userdata, start_task, post_task,
                         node_check_timeout, node_check_max_count,
-                        user_network_id, management_network_id):
+                        user_network_id, management_network_id,
+                        get_vm_group_id):
     """Create Cluster Node factory function
 
     This factory function creates a flow for creating a node of a cluster.
@@ -130,6 +131,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
         rebind={'nics': "port_ids_%d" % node_number},
         provides="vm_info_%d" % node_number)
     graph_flow.add(create_vm)
+    graph_flow.link(get_vm_group_id, create_vm)
     graph_flow.link(create_management_port, create_vm)
     graph_flow.link(generate_userdata, create_vm)
 
