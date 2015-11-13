@@ -45,7 +45,7 @@ def make_class_properties(cls):
         for name, field in supercls.fields.items():
             if name not in cls.fields:
                 cls.fields[name] = field
-    for name, typefn in cls.fields.iteritems():
+    for name, typefn in cls.fields.items():
 
         def getter(self, name=name):
             attrname = get_attrname(name)
