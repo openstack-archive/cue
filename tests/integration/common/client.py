@@ -99,6 +99,17 @@ class ServerClient(rest_client.RestClient):
 
         return rest_client.ResponseBodyData(resp, body)
 
+    def stop_server(self, server_id):
+        """Stops the specified server
+
+        :param server_id: The UUID for the server.
+        """
+        post_body = json.dumps({"os-stop": None})
+        resp, body = self.post('servers/%s/action' % str(server_id),
+                               post_body)
+
+        return rest_client.ResponseBodyData(resp, body)
+
 
 def _get_keystone_auth_provider(username=None, password=None,
                                 project_name=None, user_domain_name=None,
