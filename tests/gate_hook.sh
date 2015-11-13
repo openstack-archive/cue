@@ -5,7 +5,7 @@ set -ex
 pushd $BASE/new/devstack
 
 export KEEP_LOCALRC=1
-export ENABLED_SERVICES="cue,cue-api,cue-worker,zookeeper,dib,$ENABLED_SERVICES"
+export ENABLED_SERVICES="cue,cue-api,cue-worker,cue-monitor,zookeeper,dib,$ENABLED_SERVICES"
 export PROJECTS="openstack/diskimage-builder openstack/cue-dashboard $PROJECTS"
 export DEVSTACK_GATE_NEUTRON=1
 

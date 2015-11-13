@@ -60,7 +60,19 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
                                           username=username, password=password)
 
     def test_create_cluster(self):
-        """Test create cluster and verifies cluster goes to ACTIVE state."""
+        """Test create cluster.
+
+        This test will:
+        1. Issue create cluster request
+        2. Wait until cluster goes into 'ACTIVE' state
+        3. Runs test script in one of three nodes with invalid credentials
+        4. Runs test script in one of three nodes with valid credentials
+        5. Performs cluster list
+        6. Stop first two nodes in cluster (wait until stopped)
+        7. Verify Cluster goes to 'DOWN' state
+        6. Issues delete cluster request on cluster created on step 1
+        7. Waits for cluster to be deleted
+        """
         cluster_resp = {'status': 'BUILDING'}
         username = 'rabbitmq'
         password = 'rabbit'
@@ -133,9 +145,45 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
         self.assertIn('id', clusters.data, 'List cluster failed')
         self.assertIn('status', clusters.data, 'List cluster failed')
 
+        # Stop the first two servers (cluster nodes)
+        for server_index in range(0, 2):
+            # Stop server
+            admin_client.stop_server(
+                cluster_nodes['servers'][server_index]['id'])
+            start_time = time.time()
+            while True:
+                # Wait until server goes to 'SHUTOFF' state
+                cluster_nodes = admin_client.get_cluster_nodes(cluster['id'])
+                if (cluster_nodes['servers'][server_index]['status'] ==
+                        'SHUTOFF'):
+                    break
+                time.sleep(1)
+                if time.time() - start_time > 60:
+                    self.fail("Waited 1 minutes for server %s to be stopped"
+                              % cluster_nodes['servers'][server_index]['id'])
+
+        # Verify Cluster status goes to DOWN
+        start_time = time.time()
+        while True:
+            # Wait until cluster status goes to DOWN
+            try:
+                cluster_resp = self.client.get_cluster(cluster['id'])
+            except Exception as e:
+                self.assertEqual('Object not found', e.message,
+                                 'Cluster not found')
+                break
+            if cluster_resp['status'] == 'DOWN':
+                break
+            time.sleep(5)
+            if time.time() - start_time > 305:
+                self.fail('Waited 5 minutes for cluster state to change to: '
+                          'DOWN')
+
         # Delete cluster
+        start_time = time.time()
         self.client.delete_cluster(cluster['id'])
         while True:
+            # Wait until Cluster is deleted
             try:
                 cluster_resp = self.client.get_cluster(cluster['id'])
             except Exception as e:
@@ -145,8 +193,8 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             self.assertEqual(cluster_resp['status'], 'DELETING',
                              'Delete cluster failed')
             time.sleep(1)
-            if time.time() - start_time > 900:
-                self.fail('Waited 15 minutes for cluster to be deleted')
+            if time.time() - start_time > 305:
+                self.fail('Waited 5 minutes for cluster to be deleted')
 
     @staticmethod
     def get_logs(cluster_id=None):
