@@ -48,13 +48,13 @@ def create_cluster(cluster_id, node_ids, user_network_id,
     end_flow_status = {'cluster_id': cluster_id,
                        'cluster_values': {'status': models.Status.ACTIVE}}
 
-    start_task = cue_tasks.UpdateClusterStatus(
+    start_task = cue_tasks.UpdateCluster(
         name="update cluster status start "
              "%s" % cluster_id,
         inject=start_flow_status)
     flow.add(start_task)
 
-    end_task = cue_tasks.UpdateClusterStatus(
+    end_task = cue_tasks.UpdateCluster(
         name="update cluster status end "
              "%s" % cluster_id,
         inject=end_flow_status)

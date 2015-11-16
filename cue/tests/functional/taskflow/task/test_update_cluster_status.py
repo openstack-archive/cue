@@ -28,7 +28,7 @@ from taskflow import engines
 from taskflow.patterns import linear_flow
 
 
-class UpdateClusterStatusTest(base.FunctionalTestCase):
+class UpdateClusterTest(base.FunctionalTestCase):
 
     additional_fixtures = [
         neutron.NeutronClient
@@ -42,10 +42,10 @@ class UpdateClusterStatusTest(base.FunctionalTestCase):
     }
 
     def setUp(self):
-        super(UpdateClusterStatusTest, self).setUp()
+        super(UpdateClusterTest, self).setUp()
 
     def test_update_cluster_status(self):
-        """Verifies UpdateClusterStatus task directly."""
+        """Verifies UpdateCluster task directly."""
 
         # setup a test cluster in DB for this test
         cluster_values = {
@@ -63,18 +63,18 @@ class UpdateClusterStatusTest(base.FunctionalTestCase):
         self.assertEqual(models.Status.BUILDING, new_cluster.status,
                          "Invalid status")
 
-        # setup require task input variables for "UpdateClusterStatus" task
-        UpdateClusterStatusTest.task_store['context'] = self.context.to_dict()
-        UpdateClusterStatusTest.task_store['cluster_id'] = new_cluster.id
+        # setup require task input variables for "UpdateCluster" task
+        UpdateClusterTest.task_store['context'] = self.context.to_dict()
+        UpdateClusterTest.task_store['cluster_id'] = new_cluster.id
 
-        # create flow with "UpdateClusterStatus" task
+        # create flow with "UpdateCluster" task
         self.flow = linear_flow.Flow(name="update cluster status").add(
-            update_cluster_status.UpdateClusterStatus(
+            update_cluster_status.UpdateCluster(
                 name="get RabbitMQ status",
                 inject={'cluster_values': {'status': models.Status.ACTIVE}}))
 
         # start engine to run task
-        engines.run(self.flow, store=UpdateClusterStatusTest.task_store)
+        engines.run(self.flow, store=UpdateClusterTest.task_store)
 
         # verify cluster status is now in ACTIVE state
         cluster_after = objects.Cluster.get_cluster_by_id(self.context,
@@ -83,12 +83,12 @@ class UpdateClusterStatusTest(base.FunctionalTestCase):
                          "Invalid status")
 
     def test_update_cluster_status_fail(self):
-        """Verifies UpdateClusterStatus task failed flow scenario.
+        """Verifies UpdateCluster task failed flow scenario.
 
-        This test simulates a failed flow with UpdateClusterStatus task
+        This test simulates a failed flow with UpdateCluster task
         followed by CreatePort task.  The CreateFlow task will be configured to
         fail which will in-turn fail the overall flow.  The failed flow will
-        trigger UpdateClusterStatus task's revert method which will set Cluster
+        trigger UpdateCluster task's revert method which will set Cluster
         status to ERROR state.
         """
 
@@ -111,13 +111,13 @@ class UpdateClusterStatusTest(base.FunctionalTestCase):
         self.assertEqual(models.Status.BUILDING, new_cluster.status,
                          "Invalid status")
 
-        # setup require task input variables for "UpdateClusterStatus" task
-        UpdateClusterStatusTest.task_store['context'] = self.context.to_dict()
-        UpdateClusterStatusTest.task_store['cluster_id'] = new_cluster.id
+        # setup require task input variables for "UpdateCluster" task
+        UpdateClusterTest.task_store['context'] = self.context.to_dict()
+        UpdateClusterTest.task_store['cluster_id'] = new_cluster.id
 
-        # create flow with "UpdateClusterStatus" task
+        # create flow with "UpdateCluster" task
         self.flow = linear_flow.Flow(name="update cluster status").add(
-            update_cluster_status.UpdateClusterStatus(
+            update_cluster_status.UpdateCluster(
                 name="get RabbitMQ status",
                 inject={'cluster_values': {'status': models.Status.BUILDING}}),
             neutron_task.CreatePort(os_client=neutron_client,
@@ -125,7 +125,7 @@ class UpdateClusterStatusTest(base.FunctionalTestCase):
 
         # start engine to run task
         self.assertRaises(exceptions.NetworkNotFoundClient, engines.run,
-                          self.flow, store=UpdateClusterStatusTest.task_store)
+                          self.flow, store=UpdateClusterTest.task_store)
 
         # verify cluster status is now in ERROR state
         cluster_after = objects.Cluster.get_cluster_by_id(self.context,

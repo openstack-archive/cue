@@ -52,7 +52,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     :param graph_flow: TaskFlow graph flow which contains create cluster flow
     :type graph_flow: taskflow.patterns.graph_flow
     :param start_task: Update cluster status start task
-    :type start_task: cue.taskflow.task.UpdateClusterStatus
+    :type start_task: cue.taskflow.task.UpdateCluster
     :param post_task: Task/Subflow to run after the flow created here
     :type post_task: taskflow task or flow
     :param generate_userdata: generate user data task

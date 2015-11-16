@@ -20,7 +20,7 @@ from cue.db.sqlalchemy import models
 from cue import objects
 
 
-class UpdateClusterStatus(task.Task):
+class UpdateCluster(task.Task):
 
     """this dictionary keeps mapping between valid pass/fail cluster status."""
     status_revert_pairs = {
@@ -44,9 +44,9 @@ class UpdateClusterStatus(task.Task):
                        project_only=project_only, **kwargs)
 
     def revert(self, context, cluster_id, cluster_values, **kwargs):
-        """Revert UpdateClusterStatus
+        """Revert UpdateCluster
 
-        This method is executed upon failure of the UpdateClusterStatus or the
+        This method is executed upon failure of the UpdateCluster or the
         Flow that the Task is part of.  This method will set the cluster status
         to the matching failure status identified by the status_revert_pairs
         mapping.  If a mapping does not exist, the cluster status will be set
@@ -62,7 +62,7 @@ class UpdateClusterStatus(task.Task):
         request_context = context_module.RequestContext.from_dict(context)
 
         if ('status' in cluster_values) and (cluster_values['status']) in (
-                UpdateClusterStatus.status_revert_pairs):
+                UpdateCluster.status_revert_pairs):
             cluster_values['status'] = self.status_revert_pairs[
                 cluster_values['status']]
         else:
