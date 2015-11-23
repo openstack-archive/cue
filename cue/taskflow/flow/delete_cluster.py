@@ -47,11 +47,11 @@ def delete_cluster(cluster_id, node_ids):
         sub_flow.add(delete_cluster_node.delete_cluster_node(cluster_id, i,
                                                              node_id))
 
-    flow.add(cue_tasks.UpdateClusterStatus(name="update cluster status start "
+    flow.add(cue_tasks.UpdateClusterRecord(name="update cluster status start "
                                                 "%s" % cluster_id,
                                            inject=start_flow_status))
     flow.add(sub_flow)
-    flow.add(cue_tasks.UpdateClusterStatus(name="update cluster status end "
+    flow.add(cue_tasks.UpdateClusterRecord(name="update cluster status end "
                                                 "%s" % cluster_id,
                                            inject=end_flow_status))
 

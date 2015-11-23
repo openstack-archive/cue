@@ -17,6 +17,6 @@ from cue.taskflow.task.cluster_node_userdata import ClusterNodeUserData         
 from cue.taskflow.task.create_endpoint_task import CreateEndpoint                 # noqa
 from cue.taskflow.task.get_node import GetNode                                    # noqa
 from cue.taskflow.task.get_rabbit_cluster_status import GetRabbitClusterStatus    # noqa
-from cue.taskflow.task.update_cluster_task import UpdateClusterStatus             # noqa
+from cue.taskflow.task.update_cluster_record_task import UpdateClusterRecord      # noqa
 from cue.taskflow.task.update_endpoints_task import UpdateEndpoints               # noqa
 from cue.taskflow.task.update_node_task import UpdateNode                         # noqa
