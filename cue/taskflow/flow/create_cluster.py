@@ -74,6 +74,7 @@ def create_cluster(cluster_id, node_ids, user_network_id,
             inject={'proto': 'http'}),
         os_common.CheckFor(
             name="check cluster status",
+            details="waiting for RabbitMQ clustered status",
             rebind={'check_var': "clustering_status"},
             check_value='OK',
             retry_delay_seconds=10),
