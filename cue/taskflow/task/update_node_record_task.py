@@ -19,9 +19,8 @@ from cue import objects
 import taskflow.task
 
 
-class UpdateEndpoints(taskflow.task.Task):
-
-    def execute(self, context, endpoints_values, node_id, **kwargs):
+class UpdateNodeRecord(taskflow.task.Task):
+    def execute(self, context, node_id, node_values, **kwargs):
         """Main execute method to verify RabbitMQ service in VM
 
         Once RabbitMQ is verified to be successful, the node's status is
@@ -31,11 +30,9 @@ class UpdateEndpoints(taskflow.task.Task):
         :type context: oslo_context.RequestContext
         :param node_id: Unique ID for the node.
         :type node_id: string
-        :param vm_ip: VM ip address where rabbitMQ is running
-        :type vm_ip: string
-        :param port: host listening port
-        :type port: int
+        :param node_values: New node values for updating record
+        :type node_values: dict
         """
         request_context = context_module.RequestContext.from_dict(context)
-        objects.Endpoint.update_by_node_id(request_context, node_id,
-                                           endpoints_values)
+        node = objects.Node(**node_values)
+        node.update(request_context, node_id)

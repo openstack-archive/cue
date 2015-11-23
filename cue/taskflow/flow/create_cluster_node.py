@@ -171,7 +171,7 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
     graph_flow.add(build_node_info)
     graph_flow.link(get_vm_id, build_node_info)
 
-    update_node = cue_tasks.UpdateNode(
+    update_node = cue_tasks.UpdateNodeRecord(
         name="update node %s" % node_name,
         rebind={'node_values': "node_values_%d" % node_number},
         inject={'node_id': node_id})

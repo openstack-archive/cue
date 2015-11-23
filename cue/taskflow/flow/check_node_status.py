@@ -68,7 +68,7 @@ def check_node_status(cluster_id, node_number, node_id):
             name="build node values %s" % node_name,
             rebind={'node_status': "node_status_%d" % node_number},
             provides="node_values_%d" % node_number),
-        cue_tasks.UpdateNode(
+        cue_tasks.UpdateNodeRecord(
             name="update node status %s" % node_name,
             rebind={'node_values': "node_values_%d" % node_number},
             inject={'node_id': node_id})
