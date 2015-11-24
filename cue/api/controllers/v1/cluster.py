@@ -178,14 +178,18 @@ class ClusterController(rest.RestController):
         # create list with node id's for create cluster flow
         node_ids = [node.id for node in nodes]
 
+        # retrieve cluster record
+        cluster = objects.Cluster.get_cluster_by_id(context, cluster_id)
+
         # prepare and post cluster delete job to backend
         flow_kwargs = {
             'cluster_id': cluster_id,
             'node_ids': node_ids,
+            'group_id': cluster.group_id,
         }
 
         job_args = {
-            "context": context.to_dict(),
+            'context': context.to_dict(),
         }
 
         job_client = task_flow_client.get_client_instance()
