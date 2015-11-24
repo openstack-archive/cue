@@ -78,11 +78,11 @@ def delete_cluster_node(cluster_id, node_number, node_id):
             os_client=client.neutron_client(),
             name="delete vm %s ports" % node_name,
             rebind={'port_ids': "vm_port_list_%d" % node_number}),
-        cue_tasks.UpdateNode(
+        cue_tasks.UpdateNodeRecord(
             name="update node %s" % node_name,
             inject={'node_id': node_id,
                     'node_values': deleted_node_values}),
-        cue_tasks.UpdateEndpoints(
+        cue_tasks.UpdateEndpointsRecord(
             name="update endpoint for node %s" % node_name,
             inject={'node_id': node_id,
                     'endpoints_values': deleted_endpoints_values}
