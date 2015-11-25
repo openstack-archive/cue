@@ -15,6 +15,7 @@
 
 import cue_utils
 from oslo_log import log as logging
+from rally.common import log as rally_logging
 from rally.common import sshutils
 from rally.common import utils as common_utils
 from rally.plugins.openstack import scenario
@@ -81,6 +82,9 @@ class CueClusters(cue_utils.CueScenario):
 
     @types.set(image=types.ImageResourceType,
                flavor=types.FlavorResourceType)
+    @rally_logging.log_deprecated_args(
+        "server_name will always be randomly generated", "0.1.3",
+        ["server_name"])
     @scenario.configure()
     def create_verify_and_delete_cluster(self, image, flavor, network_id=None,
                                          server_name="rally_vm",
@@ -105,7 +109,7 @@ class CueClusters(cue_utils.CueScenario):
         :param cluster_check_interval: int, check interval seconds
         :param kwargs: other optional parameters to initialize the server
         """
-        server_name = common_utils.generate_random_name(server_name + '_')
+        server_name = self.generate_random_name()
         nova_server_boot_timeout = 60 * 5
         network_name = "rally_network"
         sec_group_name = "rally_sec_group"
