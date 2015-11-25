@@ -22,7 +22,6 @@ from keystoneclient.auth.identity import v3 as ks_v3
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
 from keystoneclient import session as ks_session
 from rally.common import log as logging
-from rally.common import utils as common_utils
 from rally.plugins.openstack import scenario
 from rally.task import atomic
 from rally.task import utils as task_utils
@@ -57,8 +56,7 @@ class CueScenario(scenario.OpenStackScenario):
         :param volume_size: int, volume size for VM instance(s)
         :returns: new cue cluster details
         """
-        cluster_name = name or common_utils.generate_random_name(
-            'rally_cue_cluster_')
+        cluster_name = name or self.generate_random_name()
         cue_client = cueclient or self._get_cue_client()
         return cue_client.clusters.create(name=cluster_name, nic=network_id,
                                           flavor=flavor, size=size,
@@ -255,8 +253,7 @@ class CueScenario(scenario.OpenStackScenario):
         :param cluster_check_interval: int, interval to check status change
         :return: new cue cluster
         """
-        cluster_name = cluster_name or common_utils.generate_random_name(
-            'rally_cue_cluster_')
+        cluster_name = cluster_name or self.generate_random_name()
         cluster_dict = {'name': cluster_name,
                         'flavor': cluster_flavor,
                         'size': size,
