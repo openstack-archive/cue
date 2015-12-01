@@ -16,6 +16,7 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_middleware import cors as cors_middleware
 import pecan
 
 from cue.api import acl
@@ -75,7 +76,16 @@ def setup_app(pecan_config=None, extra_hooks=None):
     )
 
     if pecan_config.app.enable_acl:
-        return acl.install(app, cfg.CONF, pecan_config.app.acl_public_routes)
+        app = acl.install(app, CONF, pecan_config.app.acl_public_routes)
+
+    # Create a CORS wrapper, and attach ironic-specific defaults that must be
+    # included in all CORS responses.
+    app = cors_middleware.CORS(app, CONF)
+    app.set_latent(
+        allow_headers=['X-Auth-Token', 'X-Server-Management-Url'],
+        allow_methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
+        expose_headers=['X-Auth-Token', 'X-Server-Management-Url']
+    )
 
     return app
 
