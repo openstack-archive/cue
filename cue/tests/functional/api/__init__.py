@@ -41,6 +41,8 @@ class APITest(base.FunctionalTestCase):
         super(APITest, self).setUp()
         self.CONF.config(auth_version="v3",
                          group=OPT_GROUP_NAME)
+        self.CONF.load_raw_values(allowed_origin='http://cors.example.com',
+                                  group='cors')
         self.app = self._make_app()
         self.auth_headers = {'X-User-Id': str(self.context.user_id),
                              'X-Project-Id': str(self.context.project_id)}
