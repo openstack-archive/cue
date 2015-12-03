@@ -40,7 +40,7 @@ def reset():
 
 def init(default_rule=None):
     oslo_policy.opts.set_defaults(cfg.CONF)
-    if "config_dir" in cfg.CONF:
+    if "config_dir" in cfg.CONF and cfg.CONF.config_dir:
         policy_file = cfg.CONF.find_file(cfg.CONF.oslo_policy.policy_file)
     else:
         policy_file = cfg.CONF.pybasedir + '/etc/cue/'
