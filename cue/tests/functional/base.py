@@ -33,7 +33,6 @@ from cue.db.sqlalchemy import api as db_api
 from cue.manage import database
 from cue import objects
 from cue.tests.functional.fixtures import database as database_fixture
-from cue.tests.functional.fixtures import policy
 
 
 test_opts = [
@@ -65,8 +64,7 @@ class FunctionalTestCase(base.BaseTestCase):
         self.flags(state_path='/tmp')
         self.flags(connection="sqlite://", group="database")
 
-        self.CONF = config_fixture.Config()
-        self.useFixture(self.CONF)
+        self.CONF = self.useFixture(config_fixture.Config(cfg.CONF))
 
         self._include_default_fixtures()
 
@@ -128,7 +126,7 @@ class FunctionalTestCase(base.BaseTestCase):
                 sqlite_clean_db=CONF.sqlite_clean_db,
             )
         self.useFixture(DB_CACHE)
-        self.useFixture(policy.PolicyFixture())
+        # self.useFixture(policy.PolicyFixture())
 
     def flags(self, group=None, **kw):
         """Override flag variables for a test."""
