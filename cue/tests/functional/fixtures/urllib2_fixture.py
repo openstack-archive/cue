@@ -13,11 +13,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import urllib2
-
 import six
 
 import cue.tests.functional.fixtures.base as base
+
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 
 
 class Urllib2ResultDetails(object):
