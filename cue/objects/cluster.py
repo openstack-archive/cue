@@ -73,14 +73,14 @@ class Cluster(base.CueObject):
                                   cluster_id, *args, **kwargs)
 
     @classmethod
-    def get_clusters(cls, context):
+    def get_clusters(cls, context, *args, **kwargs):
         """Returns a list of Cluster objects for project_id.
 
         :param context: The request context.
         :returns: a list of :class:'Cluster' object.
 
         """
-        db_clusters = cls.dbapi.get_clusters(context)
+        db_clusters = cls.dbapi.get_clusters(context, *args, **kwargs)
         return [Cluster._from_db_object(Cluster(), obj) for obj in db_clusters]
 
     @classmethod

@@ -18,7 +18,8 @@ from oslo_service import loopingcall
 from oslo_service import service
 from tooz import coordination
 
-from cue.db import api as db_api
+#from cue.db import api as db_api
+from cue import objects
 import cue.taskflow.client as taskflow_client
 from cue.taskflow.flow import check_cluster_status
 
@@ -103,15 +104,16 @@ class MonitorService(service.Service):
 # and [1] is a list of that clusters node ids
 def get_cluster_id_node_ids():
 
-    dbapi = db_api.get_instance()
-    clusters = dbapi.get_clusters(None, project_only=False)
+    #dbapi = db_api.get_instance()
+    #clusters = dbapi.get_clusters(None, project_only=False)
+    clusters = objects.Cluster.get_clusters(None, project_only=False)
 
     cluster_ids = []
     for cluster in clusters:
         if cluster.status not in ['ACTIVE', 'DOWN']:
             continue
         node_ids = []
-        for node in dbapi.get_nodes_in_cluster(None, cluster.id):
+        for node in objects.Node.get_nodes_by_cluster_id(None, cluster.id):
             node_ids.append(node.id)
         cluster_ids.append((cluster.id, node_ids))
 
