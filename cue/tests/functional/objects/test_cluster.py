@@ -216,7 +216,7 @@ class ClusterObjectsTests(base.FunctionalTestCase):
             objects.Cluster.dbapi, 'get_cluster_by_id',
                 return_value=api_cluster):
             with testtools.ExpectedException(exception.NotAuthorized):
-                objects.Cluster.get_cluster_by_id(tenant_b, api_cluster.id)
+                cluster.get_complete_cluster(tenant_b, api_cluster.id)
 
     def test_update_cluster_deleting_forbidden(self):
         """Tests delete from Cluster objects API with invalid tenant."""
@@ -227,5 +227,5 @@ class ClusterObjectsTests(base.FunctionalTestCase):
             objects.Cluster.dbapi, 'get_cluster_by_id',
                 return_value=api_cluster):
             with testtools.ExpectedException(exception.NotAuthorized):
-                objects.Cluster.update_cluster_deleting(
+                cluster.delete_complete_cluster(
                     tenant_b, api_cluster.id)
