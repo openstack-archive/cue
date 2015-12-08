@@ -19,12 +19,12 @@ import urllib
 
 from tempest_lib.common import rest_client
 
-from tests.integration.common.client import BaseMessageQueueClient
+from tests.integration.common import client
 
 LOG = logging.getLogger(__name__)
 
 
-class MessageQueueClustersClient(BaseMessageQueueClient):
+class MessageQueueClustersClient(client.BaseMessageQueueClient):
     """This class is used for creating a Cue Cluster client.
 
     It contains all the CRUD requests for Cue Clusters.
