@@ -34,6 +34,7 @@ from cue.api.controllers import base
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
+from cue.common import policy
 from cue.common import validate_auth_token as auth_validate
 from cue import objects
 from cue.taskflow import client as task_flow_client
@@ -127,6 +128,9 @@ def get_complete_cluster(context, cluster_id):
 
     cluster_obj = objects.Cluster.get_cluster_by_id(context, cluster_id)
 
+    target = {'tenant_id': cluster_obj.project_id}
+    policy.check("cluster:get", context, target)
+
     cluster_as_dict = cluster_obj.as_dict()
 
     # convert 'network_id' to list for ClusterDetails compatibility
@@ -152,37 +156,10 @@ def get_complete_cluster(context, cluster_id):
     return cluster
 
 
-class ClusterController(rest.RestController):
-    """Manages operations on specific Cluster of nodes."""
-
-    @wsme_pecan.wsexpose(Cluster, wtypes.text, status_code=200)
-    def get_one(self, cluster_id):
-        """Return this cluster."""
-
-        # validate cluster_id is of type Uuid
-        try:
-            wtypes.UuidType().validate(cluster_id)
-        except ValueError:
-            raise exception.Invalid(_("Invalid cluster ID format provided"))
-
-        context = pecan.request.context
-
-        cluster = get_complete_cluster(context, cluster_id)
-
-        cluster.unset_empty_fields()
-        return cluster
-
-    @wsme_pecan.wsexpose(None, wtypes.text, status_code=202)
-    def delete(self, cluster_id):
-        """Delete this Cluster."""
-
-        # validate cluster_id is of type Uuid
-        try:
-            wtypes.UuidType().validate(cluster_id)
-        except ValueError:
-            raise exception.Invalid(_("Invalid cluster ID format provided"))
-
-        context = pecan.request.context
+def delete_complete_cluster(context, cluster_id):
+        cluster_obj = objects.Cluster.get_cluster_by_id(context, cluster_id)
+        target = {'tenant_id': cluster_obj.project_id}
+        policy.check("cluster:delete", context, target)
 
         # update cluster to deleting
         objects.Cluster.update_cluster_deleting(context, cluster_id)
@@ -216,6 +193,39 @@ class ClusterController(rest.RestController):
         LOG.info(_LI('Delete Cluster Request Cluster ID %(cluster_id)s Job ID '
                      '%(job_id)s') % ({"cluster_id": cluster_id,
                                        "job_id": job_uuid}))
+
+
+class ClusterController(rest.RestController):
+    """Manages operations on specific Cluster of nodes."""
+
+    @wsme_pecan.wsexpose(Cluster, wtypes.text, status_code=200)
+    def get_one(self, cluster_id):
+        """Return this cluster."""
+
+        # validate cluster_id is of type Uuid
+        try:
+            wtypes.UuidType().validate(cluster_id)
+        except ValueError:
+            raise exception.Invalid(_("Invalid cluster ID format provided"))
+
+        context = pecan.request.context
+        cluster = get_complete_cluster(context, cluster_id)
+
+        cluster.unset_empty_fields()
+        return cluster
+
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=202)
+    def delete(self, cluster_id):
+        """Delete this Cluster."""
+
+        # validate cluster_id is of type Uuid
+        try:
+            wtypes.UuidType().validate(cluster_id)
+        except ValueError:
+            raise exception.Invalid(_("Invalid cluster ID format provided"))
+
+        context = pecan.request.context
+        delete_complete_cluster(context, cluster_id)
 
     @wsme_pecan.wsexpose([Cluster], status_code=200)
     def get_all(self):
