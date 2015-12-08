@@ -75,7 +75,7 @@ class ParsableErrorMiddleware(object):
                     # simple check xml is valid
                     body = [et.ElementTree.tostring(
                             et.ElementTree.fromstring('<error_message>'
-                                                      + '\n'.join(app_iter)
+                                                      + b'\n'.join(app_iter)
                                                       + '</error_message>'))]
                 except et.ElementTree.ParseError as err:
                     LOG.error(_LE('Error parsing HTTP response: %s'), err)
@@ -83,7 +83,7 @@ class ParsableErrorMiddleware(object):
                             + '</error_message>']
                 state['headers'].append(('Content-Type', 'application/xml'))
             else:
-                body = [json.dumps({'error_message': '\n'.join(app_iter)})]
+                body = [json.dumps({'error_message': b'\n'.join(app_iter)})]
                 state['headers'].append(('Content-Type', 'application/json'))
             state['headers'].append(('Content-Length', str(len(body[0]))))
         else:
