@@ -20,7 +20,10 @@ from cue.tests.functional.fixtures import urllib2_fixture as urllib2_fixture
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
-import urllib2
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 
 
 class GetRabbitClusterStatusTest(base.FunctionalTestCase):
