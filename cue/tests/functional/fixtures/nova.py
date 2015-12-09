@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
 import uuid
 
 import novaclient.exceptions as nova_exc
@@ -87,8 +88,7 @@ class VmStatusDetails(object):
 
         :param statuses: list of statuses
         """
-        for status in statuses:
-            VmStatusDetails.vm_status_list.append(status)
+        VmStatusDetails.vm_status_list = copy.deepcopy(statuses)
 
     @staticmethod
     def get_status():
