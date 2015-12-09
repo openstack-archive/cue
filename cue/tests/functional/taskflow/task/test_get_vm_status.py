@@ -84,9 +84,9 @@ class GetVmStatusTests(base.FunctionalTestCase):
         """
         # configure custom vm_status list
         nova.VmStatusDetails.set_vm_status(['ACTIVE',
-                                            'BUILDING',
-                                            'BUILDING',
-                                            'BUILDING'])
+                                            'BUILD',
+                                            'BUILD',
+                                            'BUILD'])
 
         # create flow with "GetVmStatus" task
         self.flow = linear_flow.Flow('wait for vm to become active',
@@ -125,11 +125,11 @@ class GetVmStatusTests(base.FunctionalTestCase):
         failure.
         """
         # configure custom vm_status list
-        nova.VmStatusDetails.set_vm_status(['BUILDING',
-                                            'BUILDING',
-                                            'BUILDING',
-                                            'BUILDING',
-                                            'BUILDING',
+        nova.VmStatusDetails.set_vm_status(['BUILD',
+                                            'BUILD',
+                                            'BUILD',
+                                            'BUILD',
+                                            'BUILD',
                                             'ERROR',
                                             'ERROR'])
 

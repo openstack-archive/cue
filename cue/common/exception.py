@@ -141,3 +141,11 @@ class NodeAlreadyExists(Conflict):
 
 class ConfigurationError(CueException):
     message = _("Configuration Error")
+
+
+class VmBuildingException(CueException):
+    message = _("VM is in building state")
+
+
+class VmErrorException(CueException):
+    message = _("VM is not in a building state")
