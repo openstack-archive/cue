@@ -15,11 +15,11 @@
 
 from oslo_config import cfg
 import taskflow.patterns.linear_flow as linear_flow
-import taskflow.retry as retry
 
 import cue.client as client
 from cue.db.sqlalchemy import models
 import cue.taskflow.task as cue_tasks
+import cue.taskflow.retry.errored_times as retry
 import os_tasklib.common as os_common
 import os_tasklib.neutron as neutron
 import os_tasklib.nova as nova
@@ -132,13 +132,29 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
         name="extract vm id %s" % node_name,
         rebind={'vm_info': "vm_info_%d" % node_number},
         provides="vm_id_%d" % node_number)
+
     graph_flow.add(get_vm_id)
     graph_flow.link(create_vm, get_vm_id)
+
+    get_vm_status = nova.GetVmStatus(
+        os_client=client.nova_client(),
+        name="get temp vm %s" % node_name,
+        rebind={'nova_vm_id': "vm_id_%d" % node_number},
+        provides="vm_status_%d" % node_number)
+
+    graph_flow.add(get_vm_status)
+    graph_flow.link(get_vm_id, get_vm_status)
 
     retry_count = CONF.flow_options.create_cluster_node_vm_active_retry_count
     check_vm_active = linear_flow.Flow(
         name="wait for VM active state %s" % node_name,
-        retry=retry.Times(retry_count, revert_all=True))
+        retry=retry.ErroredTimes(retry_count,
+                                 revert_all=True,
+                                 check_value='ERROR',
+                                 rebind={'check_var': "vm_status_%d"
+                                                      % node_number})
+    )
+
     check_vm_active.add(
         nova.GetVmStatus(
             os_client=client.nova_client(),
@@ -152,8 +168,9 @@ def create_cluster_node(cluster_id, node_number, node_id, graph_flow,
             check_value='ACTIVE',
             retry_delay_seconds=10),
         )
+
     graph_flow.add(check_vm_active)
-    graph_flow.link(get_vm_id, check_vm_active)
+    graph_flow.link(get_vm_status, check_vm_active)
 
     build_node_info = os_common.Lambda(
         new_node_values,
