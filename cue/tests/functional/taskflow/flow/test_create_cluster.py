@@ -15,7 +15,12 @@
 
 import uuid
 
+from oslo_config import cfg
+from taskflow import engines
+import taskflow.exceptions as taskflow_exc
+
 from cue import client
+from cue.common import exception as cue_exceptions
 from cue.db.sqlalchemy import models
 from cue import objects
 from cue.taskflow.flow import create_cluster
@@ -24,8 +29,8 @@ from cue.tests.functional.fixtures import neutron
 from cue.tests.functional.fixtures import nova
 from cue.tests.functional.fixtures import urllib2_fixture
 
-from taskflow import engines
-import taskflow.exceptions as taskflow_exc
+
+CONF = cfg.CONF
 
 
 class CreateClusterTests(base.FunctionalTestCase):
@@ -147,6 +152,96 @@ class CreateClusterTests(base.FunctionalTestCase):
             actual_management_ip = result['vm_management_ip_' + str(i)]
             self.assertEqual(expected_management_ip, actual_management_ip,
                              "invalid management ip")
+
+    def test_create_cluster_nova_error(self):
+        flow_store = {
+            "image": self.valid_image.id,
+            "flavor": self.valid_flavor.id,
+            "port": self.port,
+            "context": self.context.to_dict(),
+            "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
+        }
+
+        cluster_values = {
+            "project_id": self.context.tenant_id,
+            "name": "RabbitCluster",
+            "network_id": self.valid_network['id'],
+            "flavor": "1",
+            "size": 3,
+        }
+
+        new_cluster = objects.Cluster(**cluster_values)
+        new_cluster.create(self.context)
+
+        nodes = objects.Node.get_nodes_by_cluster_id(self.context,
+                                                     new_cluster.id)
+
+        nova.VmStatusDetails.vm_status_list.append("ERROR")
+        nova.VmStatusDetails.vm_status_list.append("BUILDING")
+
+        node_ids = []
+        for node in nodes:
+            node_ids.append(node.id)
+
+        flow = create_cluster(new_cluster.id,
+                              node_ids,
+                              self.valid_network['id'],
+                              self.management_network['id'])
+
+        try:
+            engines.run(flow, store=flow_store)
+        except taskflow_exc.WrappedFailure as err:
+            self.assertEqual(type(err._causes.pop().exception),
+                             cue_exceptions.VmBuildingException)
+            self.assertEqual(type(err._causes.pop().exception),
+                             cue_exceptions.VmErrorException)
+
+    def test_create_cluster_max_retries(self):
+        flow_store = {
+            "image": self.valid_image.id,
+            "flavor": self.valid_flavor.id,
+            "port": self.port,
+            "context": self.context.to_dict(),
+            "erlang_cookie": str(uuid.uuid4()),
+            "default_rabbit_user": 'rabbit',
+            "default_rabbit_pass": str(uuid.uuid4()),
+        }
+
+        cluster_values = {
+            "project_id": self.context.tenant_id,
+            "name": "RabbitCluster",
+            "network_id": self.valid_network['id'],
+            "flavor": "1",
+            "size": 3,
+        }
+
+        new_cluster = objects.Cluster(**cluster_values)
+        new_cluster.create(self.context)
+
+        nodes = objects.Node.get_nodes_by_cluster_id(self.context,
+                                                     new_cluster.id)
+
+        CONF.flow_options.create_cluster_node_vm_active_retry_count = 1
+        nova.VmStatusDetails.vm_status_list.append("BUILDING")
+        nova.VmStatusDetails.vm_status_list.append("BUILDING")
+
+        node_ids = []
+        for node in nodes:
+            node_ids.append(node.id)
+
+        flow = create_cluster(new_cluster.id,
+                              node_ids,
+                              self.valid_network['id'],
+                              self.management_network['id'])
+
+        try:
+            engines.run(flow, store=flow_store)
+        except taskflow_exc.WrappedFailure as err:
+            while err._causes:
+                self.assertEqual(type(err._causes.pop().exception),
+                                 cue_exceptions.VmBuildingException)
 
     def test_create_cluster_overlimit(self):
         vm_list = self.nova_client.servers.list()
