@@ -13,9 +13,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from os_tasklib.common.assert_task import Assert                    # noqa
-from os_tasklib.common.check_for import CheckFor                    # noqa
-from os_tasklib.common.check_for_vm_status import CheckForVmStatus  # noqa
-from os_tasklib.common.lambda_task import Lambda                    # noqa
-from os_tasklib.common.map_task import Map                          # noqa
-from os_tasklib.common.reduce_task import Reduce                    # noqa
+import taskflow.retry as tf_retry
+
+import cue.taskflow.retry.errored_times as retry
+from cue.tests.unit import base
+
+
+class TaskflowErroredTimesTest(base.UnitTestCase):
+    def setUp(self):
+        super(TaskflowErroredTimesTest, self).setUp()
+
+    def tearDown(self):
+        super(TaskflowErroredTimesTest, self).tearDown()
+
+    def test_revert_action(self):
+
+        retry_errored_times = retry.ErroredTimes(10, revert_all=False)
+        self.assertEqual(tf_retry.REVERT, retry_errored_times._revert_action)
