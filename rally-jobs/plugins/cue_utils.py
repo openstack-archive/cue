@@ -16,11 +16,7 @@
 import exceptions
 import time
 
-from cueclient.v1 import client
-from keystoneclient.auth.identity import v2 as ks_v2
-from keystoneclient.auth.identity import v3 as ks_v3
 import keystoneclient.openstack.common.apiclient.exceptions as ks_exceptions
-from keystoneclient import session as ks_session
 from rally.common import log as logging
 from rally.common import utils as common_utils
 from rally.plugins.openstack import scenario
@@ -38,7 +34,7 @@ class CueScenario(scenario.OpenStackScenario):
     @atomic.action_timer("cue.clusters.list")
     def _list_clusters(self, cueclient=None):
         """Returns user clusters list."""
-        cue_client = cueclient or self._get_cue_client()
+        cue_client = cueclient or self.clients("cue")
         return cue_client.clusters.list()
 
     @atomic.action_timer("cue.clusters.create")
@@ -59,7 +55,7 @@ class CueScenario(scenario.OpenStackScenario):
         """
         cluster_name = name or common_utils.generate_random_name(
             'rally_cue_cluster_')
-        cue_client = cueclient or self._get_cue_client()
+        cue_client = cueclient or self.clients("cue")
         return cue_client.clusters.create(name=cluster_name, nic=network_id,
                                           flavor=flavor, size=size,
                                           volume_size=volume_size,
@@ -73,7 +69,7 @@ class CueScenario(scenario.OpenStackScenario):
         :param id: int, cluster id
         :return: cluster details
         """
-        cue_client = cueclient or self._get_cue_client()
+        cue_client = cueclient or self.clients("cue")
         return cue_client.clusters.get(cluster_id=id)
 
     @atomic.action_timer("cue.clusters.delete")
@@ -83,36 +79,8 @@ class CueScenario(scenario.OpenStackScenario):
         :param id: int, cluster id
         :return: response code
         """
-        cue_client = cueclient or self._get_cue_client()
+        cue_client = cueclient or self.clients("cue")
         return cue_client.clusters.delete(cluster_id=id)
-
-    def _get_cue_client(self):
-        """Retrieve an instance of Cue Client.
-
-        :return: cue client
-        """
-        keystone_client = self.clients("keystone")
-
-        if keystone_client.auth_ref.version == 'v2.0':
-            auth = ks_v2.Token(
-                keystone_client.auth_url,
-                keystone_client.auth_token,
-                tenant_id=keystone_client.tenant_id,
-                tenant_name=keystone_client.tenant_name,
-                trust_id=keystone_client.trust_id
-            )
-        else:
-            auth = ks_v3.Password(
-                auth_url=keystone_client.auth_url,
-                username=keystone_client.username,
-                password=keystone_client.password,
-                project_name=keystone_client.project_name,
-                project_domain_name=keystone_client.project_domain_name,
-                user_domain_name=keystone_client.user_domain_name
-            )
-        session = ks_session.Session(auth=auth)
-        cue_client = client.Client(session=session)
-        return cue_client
 
     def _verify_cluster(self, ref_cluster, cmp_cluster):
         """Verifies basic values between two cluster dictionaries
