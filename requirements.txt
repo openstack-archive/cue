@@ -27,7 +27,7 @@ paramiko>=1.13.0
 posix-ipc
 Jinja2>=2.8 # BSD License (3 clause)
 
-taskflow>=1.16.0
+taskflow>=1.25.0
 kazoo>=2.2
 tooz>=1.28.0 # Apache-2.0
 #PyMySQL
