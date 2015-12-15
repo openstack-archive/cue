@@ -19,6 +19,7 @@ import time
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from taskflow.conductors.backends import impl_executor
 from taskflow.conductors import single_threaded
 
 import cue.taskflow.client as tf_client
@@ -29,7 +30,10 @@ LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
+enable_cleanup = cfg.CONF.taskflow.cleanup_job_details
+
 SUPPORTED_ENGINE_TYPES = ['serial', 'parallel']
+events_emitted = impl_executor.ExecutorConductor.EVENTS_EMITTED
 
 
 class ConductorService(object):
@@ -156,6 +160,11 @@ class ConductorService(object):
                 wait_timeout=self._wait_timeout)
 
             time.sleep(0.5)
+            if enable_cleanup:
+                conductor_notifier = self._conductor.notifier
+                conductor_notifier.register('job_consumed', self.cleanup_job)
+                conductor_notifier.register('job_abandoned', self.cleanup_job)
+
             if threading.current_thread().name == 'MainThread':
                 t = threading.Thread(target=self._conductor.run)
                 t.start()
@@ -211,3 +220,11 @@ class ConductorService(object):
     def sighandler(self, signum, frame):
         self.handle_signals(signals=self._signal_list, handler=signal.SIG_DFL)
         self.stop()
+
+    def cleanup_job(self, state, details):
+        """Cleanup taskflow job details."""
+
+        job = details.get('job')
+        persistence = details.get('persistence')
+        if state in events_emitted:
+            persistence.get_connection().destroy_logbook(job.book.uuid)
