@@ -17,6 +17,7 @@ import threading
 import time
 
 from oslo_utils import uuidutils
+import taskflow.exceptions as exception
 import taskflow.patterns.linear_flow as linear_flow
 import taskflow.task
 import zake.fake_client as zake_client
@@ -108,6 +109,34 @@ class TaskflowServiceTest(base.FunctionalTestCase):
         self.assertEqual(expected, post_count,
                          "expected %d jobs in the jobboard after a claim, "
                          "got %d" % (expected, post_count))
+
+        self.tf_service.stop()
+        self.tf_service.wait()
+
+    def test_cleanup_job_details(self):
+        job_args = {
+            'test_arg': 5
+        }
+        tx_uuid = uuidutils.generate_uuid()
+
+        job = self.tf_client.post(create_flow, job_args, tx_uuid=tx_uuid)
+        persistence_connection = self.tf_client.persistence.get_connection()
+        expected_logbook_uuid = job.book.uuid
+
+        log_book = persistence_connection.get_logbook(job.book.uuid)
+        actual_logbook_uuid = log_book._uuid
+
+        self.assertEqual(expected_logbook_uuid, actual_logbook_uuid,
+                         "expected %s logbook uuid got %s" %
+                         (expected_logbook_uuid, actual_logbook_uuid))
+
+        t = threading.Thread(target=self.tf_service.start)
+        t.start()
+        time.sleep(2)
+
+        self.assertRaises(exception.NotFound,
+                          persistence_connection.get_logbook,
+                          job.book.uuid)
 
         self.tf_service.stop()
         self.tf_service.wait()
