@@ -63,6 +63,10 @@ TF_OPTS = [
     cfg.BoolOpt('cluster_node_anti_affinity',
                  help="Anti-affinity policy for cue cluster nodes",
                  default=False),
+
+    cfg.BoolOpt('cleanup_job_details',
+                 help="Cleanup taskflow job details",
+                 default=True),
 ]
 
 opt_group = cfg.OptGroup(
