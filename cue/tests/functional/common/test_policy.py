@@ -13,9 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
-from oslo_config import cfg
-
 from cue.common import exception
 from cue.common import policy
 from cue.tests.functional import base
@@ -67,16 +64,14 @@ class TestPolicy(base.FunctionalTestCase):
         policy.init()
         self.assertIsNotNone(policy._ENFORCER)
 
-    @mock.patch('oslo_config.cfg.CONF.find_file')
-    def test_init_policy_from_bogus_path(self, mock_find_file):
+    def test_init_policy_from_bogus_path(self):
         #setup bogus path
         self.assertIsNone(policy._ENFORCER)
-        policy_default_rule_opt = cfg.StrOpt('config_dir',
-                                             default='/some_bogus_path')
-        self.CONF.register_opt(policy_default_rule_opt)
+
+        self.CONF.set_default('policy_file', '/some_bogus_path',
+                              group='oslo_policy')
 
         self.assertRaises(exception.ConfigurationError, policy.init)
-        self.assertTrue(mock_find_file.called)
 
     def test_reset_existing_policy(self):
         policy.init()
