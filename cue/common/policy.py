@@ -17,16 +17,21 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
-import oslo_policy.opts
+from oslo_policy import opts
 from oslo_policy import policy
 
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
+from cue.common import utils
 
 
 LOG = logging.getLogger(__name__)
 
+CONF = cfg.CONF
+
+# Add the default policy opts
+opts.set_defaults(CONF)
 
 _ENFORCER = None
 
@@ -39,20 +44,15 @@ def reset():
 
 
 def init(default_rule=None):
-    oslo_policy.opts.set_defaults(cfg.CONF)
-    if "config_dir" in cfg.CONF:
-        policy_file = cfg.CONF.find_file(cfg.CONF.oslo_policy.policy_file)
-    else:
-        policy_file = cfg.CONF.pybasedir + '/etc/cue/'
-        policy_file += cfg.CONF.oslo_policy.policy_file
+    policy_files = utils.find_config(CONF['oslo_policy'].policy_file)
 
-    if len(policy_file) == 0:
+    if len(policy_files) == 0:
         msg = 'Unable to determine appropriate policy json file'
         raise exception.ConfigurationError(msg)
 
-    LOG.info(_LI('Using policy_file found at: %s') % policy_file)
+    LOG.info(_LI('Using policy_file found at: %s') % policy_files[0])
 
-    with open(policy_file) as fh:
+    with open(policy_files[0]) as fh:
         policy_string = fh.read()
     rules = policy.Rules.load_json(policy_string, default_rule=default_rule)
 
