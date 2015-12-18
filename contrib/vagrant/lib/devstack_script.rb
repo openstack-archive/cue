@@ -30,21 +30,22 @@ fi
 
 # Install Vagrant local.conf sample
 if [ ! -f "/home/vagrant/devstack/local.conf" ]; then
-    cp /opt/stack/cue/contrib/devstack/local.conf /home/vagrant/devstack/local.conf
+    cp /opt/stack/cue/devstack/local.conf /home/vagrant/devstack/local.conf
 fi
 
 # Install Vagrant local.sh sample
 if [ ! -f "/home/vagrant/devstack/local.sh" ]; then
-    cp /opt/stack/cue/contrib/devstack/local.sh /home/vagrant/devstack/local.sh
+    cp /opt/stack/cue/devstack/local.sh /home/vagrant/devstack/local.sh
 fi
 
-pushd /home/vagrant/cue/contrib/devstack
-for f in extras.d/* lib/*; do
+pushd /home/vagrant/cue/devstack
+for f in lib/*; do
     if [ ! -f "/home/vagrant/devstack/\\$f" ]; then
-        ln -fs /opt/stack/cue/contrib/devstack/\\$f -t /home/vagrant/devstack/\\$(dirname \\$f)
+        ln -fs /opt/stack/cue/devstack/\\$f -t /home/vagrant/devstack/\\$(dirname \\$f)
     fi
 done
 popd
+
 EOF
 
 chmod +x /home/vagrant/bin/refresh_devstack.sh
