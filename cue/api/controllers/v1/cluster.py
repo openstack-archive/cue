@@ -31,6 +31,7 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from cue.api.controllers import base
+import cue.client as client
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
@@ -304,45 +305,61 @@ class ClusterController(rest.RestController):
         image_id = objects.BrokerMetadata.get_image_id_by_broker_name(
             context, broker_name)
 
-        job_args = {
-            'tenant_id': new_cluster.project_id,
-            'flavor': cluster.flavor,
-            'image': image_id,
-            'volume_size': cluster.volume_size,
-            'port': '5672',
-            'context': context.to_dict(),
-            # TODO(sputnik13: this needs to come from the create request and
-            # default to a configuration value rather than always using config
-            # value
-            'security_groups': [CONF.os_security_group],
-            'port': CONF.rabbit_port,
-            'key_name': CONF.openstack.os_key_name,
-            'erlang_cookie': erlang_cookie,
-            'default_rabbit_user': default_rabbit_user,
-            'default_rabbit_pass': default_rabbit_pass,
-        }
-        job_client = task_flow_client.get_client_instance()
-        #TODO(dagnello): might be better to use request_id for job_uuid
-        job_uuid = uuidutils.generate_uuid()
-        job_client.post(create_cluster, job_args,
-                        flow_kwargs=flow_kwargs,
-                        tx_uuid=job_uuid)
+        # image metadata
+        os_client = client.nova_client()
+        image_metadata = os_client.images.get(image_id)
+        image_minRam = image_metadata.minRam
+        image_minDisk = image_metadata.minDisk
 
-        LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s Cluster'
-                     ' size %(size)s network ID %(network_id)s Job ID '
-                     '%(job_id)s Broker name %(broker_name)s') % (
-                                      {"cluster_id": cluster.id,
-                                       "size": cluster.size,
-                                       "network_id":
-                                           cluster.network_id,
-                                       "job_id": job_uuid,
-                                       "broker_name": broker_name}))
+        # flavor metadata
+        flavor_metadata = os_client.flavors.get(cluster.flavor)
+        flavor_ram = flavor_metadata.ram
+        flavor_disk = flavor_metadata.disk
 
-        cluster.additional_information = []
-        cluster.additional_information.append(
-            dict(def_rabbit_user=default_rabbit_user))
-        cluster.additional_information.append(
-            dict(def_rabbit_pass=default_rabbit_pass))
+        if not (flavor_ram >= image_minRam) and (flavor_disk >= image_minDisk):
+            job_args = {
+                'tenant_id': new_cluster.project_id,
+                'flavor': cluster.flavor,
+                'image': image_id,
+                'volume_size': cluster.volume_size,
+                'network_id': cluster.network_id,
+                'port': '5672',
+                'context': context.to_dict(),
+                # TODO(sputnik13: this needs to come from the create request
+                # and default to a configuration value rather than always using
+                # config value
+                'security_groups': [CONF.os_security_group],
+                'port': CONF.rabbit_port,
+                'key_name': CONF.openstack.os_key_name,
+                'erlang_cookie': erlang_cookie,
+                'default_rabbit_user': default_rabbit_user,
+                'default_rabbit_pass': default_rabbit_pass,
+            }
+            job_client = task_flow_client.get_client_instance()
+            #TODO(dagnello): might be better to use request_id for job_uuid
+            job_uuid = uuidutils.generate_uuid()
+            job_client.post(create_cluster, job_args,
+                            flow_kwargs=flow_kwargs,
+                            tx_uuid=job_uuid)
 
-        cluster.unset_empty_fields()
-        return cluster
+            LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s '
+                         'Cluster size %(size)s network ID %(network_id)s '
+                         'Job ID %(job_id)s Broker name %(broker_name)s') % (
+                                          {"cluster_id": cluster.id,
+                                           "size": cluster.size,
+                                           "network_id":
+                                               cluster.network_id,
+                                           "job_id": job_uuid,
+                                           "broker_name": broker_name}))
+
+            cluster.additional_information = []
+            cluster.additional_information.append(
+                dict(def_rabbit_user=default_rabbit_user))
+            cluster.additional_information.append(
+                dict(def_rabbit_pass=default_rabbit_pass))
+
+            cluster.unset_empty_fields()
+            return cluster
+        else:
+            raise exception.Invalid(_("Flavor disk/ram is smaller than the "
+                                      "minimum specified in image metadata"))
