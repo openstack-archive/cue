@@ -23,6 +23,7 @@ import pecan.testing
 
 from cue.api import hooks
 from cue.tests.functional import base
+from cue.tests.functional.fixtures import nova
 
 OPT_GROUP_NAME = 'keystone_authtoken'
 cfg.CONF.import_group(OPT_GROUP_NAME, "keystonemiddleware.auth_token")
@@ -36,6 +37,9 @@ class APITest(base.FunctionalTestCase):
     """
 
     PATH_PREFIX = ''
+    additional_fixtures = [
+        nova.NovaClient
+    ]
 
     def setUp(self):
         super(APITest, self).setUp()
