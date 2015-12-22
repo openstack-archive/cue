@@ -110,7 +110,7 @@ function disk_image_create_upload {
 
     glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT \
         image-create --name $image_name --visibility public \
-        --container-format=bare --disk-format qcow2 \
+        --min-disk 2 --container-format=bare --disk-format qcow2 \
         < $image_path
 }
 

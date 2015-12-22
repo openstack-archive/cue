@@ -503,6 +503,21 @@ class TestCreateCluster(api.APITest,
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
 
+    def test_create_flavor_too_small(self):
+        """test create a cluster with flavor too small for the image."""
+        api_cluster = test_utils.create_api_test_cluster(flavor='x-tiny')
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+        self.assertEqual('400 Bad Request', data.status,
+                         'Invalid status value received.')
+        self.assertIn('Flavor disk/ram is smaller than the '
+                      'minimum specified in image metadata',
+                      data.namespace["faultstring"],
+                      'Invalid faultstring received.')
+
     def test_create_invalid_volume_size(self):
         """test with invalid volume_size parameter."""
 
