@@ -50,7 +50,7 @@ class ImageDetails(object):
                  updated=None):
         self.created = created
         self.human_id = human_id
-        self.id = id
+        self.id = id or str(uuid.uuid4())
         self.minDisk = minDisk
         self.minRam = minRam
         self.name = name
@@ -140,7 +140,7 @@ class NovaClient(base.BaseFixture):
             image_list = ['cirros-0.3.2-x86_64-uec-kernel']
 
         if not flavor_list:
-            flavor_list = ['m1.tiny']
+            flavor_list = ['m1.tiny', 'x-tiny-disk', 'x-tiny-ram']
 
         if not security_group_list:
             security_group_list = []
@@ -148,13 +148,20 @@ class NovaClient(base.BaseFixture):
         self._vm_limit = vm_limit if vm_limit else 3
 
         for image in image_list:
-            image_detail = ImageDetails(name=image)
+            image_detail = ImageDetails(name=image,
+                                    id='f7e8c49b-7d1e-472f-a78b-7c46a39c85be',
+                                    minDisk=4, minRam=512)
             self._image_list.update({
                 image_detail.id: image_detail
             })
 
         for flavor in flavor_list:
-            flavor_detail = FlavorDetails(name=flavor)
+            if flavor is 'x-tiny-disk':
+                flavor_detail = FlavorDetails(name=flavor, disk=1)
+            elif flavor is 'x-tiny-ram':
+                flavor_detail = FlavorDetails(name=flavor, ram=256)
+            else:
+                flavor_detail = FlavorDetails(name=flavor)
             self._flavor_list.update({
                 flavor_detail.id: flavor_detail
             })
@@ -173,7 +180,9 @@ class NovaClient(base.BaseFixture):
         v2_client.servers.interface_list = self.list_interfaces
         v2_client.images.find = self.find_images
         v2_client.images.list = self.list_images
+        v2_client.images.get = self.get_image
         v2_client.flavors.find = self.find_flavors
+        v2_client.flavors.get = self.get_flavor
         v2_client.server_groups.create = self.create_vm_group
         v2_client.server_groups.delete = self.delete_vm_group
         v2_client.server_groups.get = self.get_vm_group
@@ -318,6 +327,18 @@ class NovaClient(base.BaseFixture):
             if image_detail.name == name:
                 return image_detail
 
+    def get_image(self, id, **kwargs):
+        """Mock'd version of novaclient...image_get().
+
+        Gets an image detail based on provided image id
+
+        :param id: Image name.
+        :return: Image detail matching provided image id.
+        """
+        for image_detail in self._image_list.values():
+            if image_detail.id == id:
+                return image_detail
+
     def list_images(self, retrieve_all=True, **kwargs):
         """Mock'd version of novaclient...list_images().
 
@@ -339,6 +360,20 @@ class NovaClient(base.BaseFixture):
         for flavor_detail in self._flavor_list.values():
             if flavor_detail.name == name:
                 return flavor_detail
+
+    def get_flavor(self, name, **kwargs):
+        """Mock'd version of novaclient...flavors_get().
+
+        Finds a flavor detail based on provided name.
+
+        :param name: Flavor name.
+        :return: Flavor detail matching provided flavor name.
+        """
+        for flavor_detail in self._flavor_list.values():
+            if flavor_detail.name == name:
+                return flavor_detail
+
+        raise nova_exc.NotFound(404)
 
     def list_interfaces(self, server, **kwargs):
         """Mock'd version of novaclient...interface_list().
