@@ -81,6 +81,7 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
 
     def test_check_cluster_status_active(self):
         flow_store_create = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "port": self.port,
@@ -147,6 +148,7 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
 
     def test_check_cluster_status_down(self):
         flow_store_create = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "port": self.port,
@@ -215,6 +217,7 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
 
     def test_check_cluster_status_size_one(self):
         flow_store_create = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "port": self.port,

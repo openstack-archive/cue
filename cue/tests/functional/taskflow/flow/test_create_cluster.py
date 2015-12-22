@@ -15,6 +15,8 @@
 
 import uuid
 
+from neutronclient.common import exceptions as neutron_exceptions
+
 from cue import client
 from cue.db.sqlalchemy import models
 from cue import objects
@@ -81,6 +83,7 @@ class CreateClusterTests(base.FunctionalTestCase):
 
     def test_create_cluster(self):
         flow_store = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             "image": self.valid_image.id,
             "flavor": self.valid_flavor.id,
             "port": self.port,
@@ -153,6 +156,7 @@ class CreateClusterTests(base.FunctionalTestCase):
         port_list = self.neutron_client.list_ports()
 
         flow_store = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             'image': self.valid_image.id,
             'flavor': self.valid_flavor.id,
             "port": self.port,
@@ -196,6 +200,7 @@ class CreateClusterTests(base.FunctionalTestCase):
         cluster_size = 3
 
         flow_store = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             'image': self.valid_image.id,
             'flavor': self.valid_flavor.id,
             "port": self.port,
@@ -230,13 +235,12 @@ class CreateClusterTests(base.FunctionalTestCase):
 
         try:
             engines.run(flow, store=flow_store)
-        except taskflow_exc.WrappedFailure as err:
-            cluster_ref = objects.Cluster.get_cluster_by_id(self.context,
-                                                            new_cluster.id)
-            self.assertEqual(cluster_size, len(err._causes))
-            for failure in err._causes:
-                self.assertEqual(cluster_ref.error_detail,
-                                 failure.__str__())
+        except neutron_exceptions.NeutronClientException as err:
+            # When an incorrect user network ID is given, the neutron client
+            # returns a NeutronClientException.
+            self.assertEqual(err.message,
+                             "Network " + str(invalid_network_id) +
+                             " could not be found.")
         else:
             self.fail("Expected taskflow_exc.WrappedFailure exception.")
 
@@ -244,6 +248,7 @@ class CreateClusterTests(base.FunctionalTestCase):
         self.flags(cluster_node_anti_affinity=True, group="taskflow")
 
         flow_store = {
+            "tenant_id": str(self.valid_network['tenant_id']),
             'image': self.valid_image.id,
             'flavor': self.valid_flavor.id,
             "port": self.port,
