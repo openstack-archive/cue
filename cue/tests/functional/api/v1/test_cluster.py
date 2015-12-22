@@ -278,7 +278,6 @@ class TestCreateCluster(api.APITest,
         api_cluster = test_utils.create_api_test_cluster(size=1)
         data = self.post_json('/clusters', params=api_cluster,
                               headers=self.auth_headers, status=202)
-
         cluster = objects.Cluster.get_cluster_by_id(self.context,
                                                     data.json["id"]).as_dict()
         self.validate_cluster_values(cluster, data.json)
@@ -499,6 +498,38 @@ class TestCreateCluster(api.APITest,
 
         data = self.post_json('/clusters', headers=self.auth_headers,
                               params=api_cluster, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_flavor_too_small_disk(self):
+        """test create a cluster with flavor having too small disk for
+
+        image.
+        """
+        api_cluster = test_utils.create_api_test_cluster(flavor='x-tiny-disk')
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_flavor_too_small_ram(self):
+        """test create a cluster with flavor having too small ram for image."""
+        api_cluster = test_utils.create_api_test_cluster(flavor='x-tiny-ram')
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_flavor_invalid(self):
+        """test create a cluster with invalid flavor."""
+        api_cluster = test_utils.create_api_test_cluster(
+                                                flavor='invalid_flavor')
+
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
 
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
