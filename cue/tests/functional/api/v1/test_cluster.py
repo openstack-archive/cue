@@ -503,6 +503,64 @@ class TestCreateCluster(api.APITest,
         self.assertEqual(400, data.status_code,
                          'Invalid status code value received.')
 
+    def test_create_flavor_too_small_disk(self):
+        """test create a cluster with flavor having too small disk for
+
+        image.
+        """
+        api_cluster = test_utils.create_api_test_cluster(flavor='x-tiny-disk')
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_flavor_too_small_ram(self):
+        """test create a cluster with flavor having too small ram for image."""
+        api_cluster = test_utils.create_api_test_cluster(flavor='x-tiny-ram')
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_flavor_invalid(self):
+        """test create a cluster with invalid flavor."""
+        api_cluster = test_utils.create_api_test_cluster(
+                                                flavor='invalid_flavor')
+
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
+
+        self.assertEqual(400, data.status_code,
+                         'Invalid status code value received.')
+
+    def test_create_invalid_image(self):
+        """test create a cluster with invalid image configured."""
+        # add a new broker image that is not in nova image-list
+        self.CONF.config(default_broker_name='rabbitmq1')
+        broker_values = {
+            'name': 'rabbitmq1',
+            'active': '1',
+        }
+        broker = objects.Broker(**broker_values)
+        broker.create_broker(None)
+        broker_list = broker.get_brokers(None)
+        metadata_value = {
+            'key': 'IMAGE',
+            'value': 'ea329926-b8bf-11e5-9912-ba0be0483c18',
+            'broker_id': broker_list[1]['id']
+        }
+        metadata = objects.BrokerMetadata(**metadata_value)
+        metadata.create_broker_metadata(None)
+
+        api_cluster = test_utils.create_api_test_cluster()
+        data = self.post_json('/clusters', params=api_cluster,
+                              headers=self.auth_headers, expect_errors=True)
+
+        self.assertEqual(500, data.status_code,
+                         'Invalid status code value received.')
+
     def test_create_invalid_volume_size(self):
         """test with invalid volume_size parameter."""
 

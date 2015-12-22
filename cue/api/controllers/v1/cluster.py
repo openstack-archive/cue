@@ -20,6 +20,7 @@
 """
 import sys
 
+from novaclient import exceptions as nova_exc
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import uuidutils
@@ -31,6 +32,7 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from cue.api.controllers import base
+import cue.client as client
 from cue.common import exception
 from cue.common.i18n import _  # noqa
 from cue.common.i18n import _LI  # noqa
@@ -198,6 +200,49 @@ def delete_complete_cluster(context, cluster_id):
 class ClusterController(rest.RestController):
     """Manages operations on specific Cluster of nodes."""
 
+    def _validate_flavor(self, image_id, cluster_flavor):
+        """Checks if flavor satisfies minimum requirement of image metadata.
+
+        :param image_id: image id of the broker.
+        :param cluster_flavor: flavor id of the cluster.
+        :raises: exception.ConfigurationError
+        :raises: exception.InternalServerError
+        :raises: exception.Invalid
+        """
+        nova_client = client.nova_client()
+
+        # get image metadata
+        try:
+            image_metadata = nova_client.images.get(image_id)
+            image_minRam = image_metadata.minRam
+            image_minDisk = image_metadata.minDisk
+        except nova_exc.ClientException as ex:
+            if ex.http_status == 404:
+                raise exception.ConfigurationError(_('Invalid image %s '
+                                                     'configured') % image_id)
+            else:
+                raise exception.InternalServerError
+
+        # get flavor metadata
+        try:
+            flavor_metadata = nova_client.flavors.get(cluster_flavor)
+            flavor_ram = flavor_metadata.ram
+            flavor_disk = flavor_metadata.disk
+        except nova_exc.ClientException as ex:
+            if ex.http_status == 404:
+                raise exception.Invalid(_('Invalid flavor %s provided') %
+                                          cluster_flavor)
+            else:
+                raise exception.InternalServerError
+
+        # validate flavor with broker image metadata
+        if (flavor_disk < image_minDisk):
+            raise exception.Invalid(_("Flavor disk is smaller than the "
+                    "minimum %s required for broker") % image_minDisk)
+        elif (flavor_ram < image_minRam):
+            raise exception.Invalid(_("Flavor ram is smaller than the "
+                    "minimum %s required for broker") % image_minRam)
+
     @wsme_pecan.wsexpose(Cluster, wtypes.text, status_code=200)
     def get_one(self, cluster_id):
         """Return this cluster."""
@@ -248,6 +293,8 @@ class ClusterController(rest.RestController):
         :param data: cluster parameters within the request body.
         """
         context = pecan.request.context
+        request_data = data.as_dict()
+        cluster_flavor = request_data['flavor']
 
         if data.size <= 0:
             raise exception.Invalid(_("Invalid cluster size provided"))
@@ -275,7 +322,14 @@ class ClusterController(rest.RestController):
         default_rabbit_user = data.authentication.token['username']
         default_rabbit_pass = data.authentication.token['password']
 
-        request_data = data.as_dict()
+        broker_name = CONF.default_broker_name
+
+        # get the image id of default broker
+        image_id = objects.BrokerMetadata.get_image_id_by_broker_name(
+            context, broker_name)
+
+        # validate cluster flavor
+        self._validate_flavor(image_id, cluster_flavor)
 
         # convert 'network_id' from list to string type for objects/cluster
         # compatibility
@@ -307,11 +361,6 @@ class ClusterController(rest.RestController):
         # generate unique erlang cookie to be used by all nodes in the new
         # cluster, erlang cookies are strings of up to 255 characters
         erlang_cookie = uuidutils.generate_uuid()
-        broker_name = CONF.default_broker_name
-
-        # get the image id of default broker
-        image_id = objects.BrokerMetadata.get_image_id_by_broker_name(
-            context, broker_name)
 
         job_args = {
             'tenant_id': new_cluster.project_id,
@@ -320,9 +369,9 @@ class ClusterController(rest.RestController):
             'volume_size': cluster.volume_size,
             'port': '5672',
             'context': context.to_dict(),
-            # TODO(sputnik13: this needs to come from the create request and
-            # default to a configuration value rather than always using config
-            # value
+            # TODO(sputnik13: this needs to come from the create request
+            # and default to a configuration value rather than always using
+            # config value
             'security_groups': [CONF.os_security_group],
             'port': CONF.rabbit_port,
             'key_name': CONF.openstack.os_key_name,
@@ -337,9 +386,9 @@ class ClusterController(rest.RestController):
                         flow_kwargs=flow_kwargs,
                         tx_uuid=job_uuid)
 
-        LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s Cluster'
-                     ' size %(size)s network ID %(network_id)s Job ID '
-                     '%(job_id)s Broker name %(broker_name)s') % (
+        LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s '
+                     'Cluster size %(size)s network ID %(network_id)s '
+                     'Job ID %(job_id)s Broker name %(broker_name)s') % (
                                       {"cluster_id": cluster.id,
                                        "size": cluster.size,
                                        "network_id":

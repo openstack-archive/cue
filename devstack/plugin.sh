@@ -114,7 +114,7 @@ function disk_image_create_upload {
 
     openstack --os-token $token --os-url $GLANCE_SERVICE_PROTOCOL://$GLANCE_HOSTPORT \
         image create --container-format bare --disk-format qcow2 --public \
-        --file $image_path $image_name
+        --min-disk 2 --file $image_path $image_name
 }
 
 # Restore xtrace
