@@ -13,10 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_log import log as logging
 import taskflow.retry as retry
-
-LOG = logging.getLogger(__name__)
 
 
 class ExceptionTimes(retry.Times):

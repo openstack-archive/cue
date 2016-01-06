@@ -19,10 +19,8 @@ from keystoneclient import session as keystone_session
 import neutronclient.neutron.client as NeutronClient
 import novaclient.client as NovaClient
 from oslo_config import cfg
-from oslo_log import log as logging
 
 
-LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 

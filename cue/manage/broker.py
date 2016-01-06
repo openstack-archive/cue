@@ -14,7 +14,6 @@
 
 
 from oslo_config import cfg
-from oslo_log import log as logging
 from oslo_utils import strutils
 import prettytable
 
@@ -24,8 +23,6 @@ from cue.common.i18n import _  # noqa
 from cue.db.sqlalchemy import models
 from cue.manage import base
 from cue import objects
-
-LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 
