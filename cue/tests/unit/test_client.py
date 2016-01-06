@@ -35,7 +35,7 @@ class TestClient(base.UnitTestCase):
         super(TestClient, self).tearDown()
         self.CONF.reset()
 
-    @mock.patch('keystoneclient.auth.identity.v2.Password')
+    @mock.patch('keystoneauth1.identity.v2.Password')
     def test_get_auth_v2(self, mock_auth_v2):
         """Test cue.client get_auth_v2.
 
@@ -57,7 +57,7 @@ class TestClient(base.UnitTestCase):
                                              tenant_name=os_project_name,
                                              username=os_username)
 
-    @mock.patch('keystoneclient.auth.identity.v3.Password')
+    @mock.patch('keystoneauth1.identity.v3.Password')
     def test_get_auth_v3(self, mock_auth_v3):
         """Test cue.client get_auth_v3.
 
@@ -86,7 +86,7 @@ class TestClient(base.UnitTestCase):
             user_domain_name=os_user_domain_name,
             username=os_username)
 
-    @mock.patch('keystoneclient.session.Session')
+    @mock.patch('keystoneauth1.session.Session')
     @mock.patch('cue.client.get_auth_v2')
     def test_get_keystone_session_v2(self, mock_auth_v2, mock_ks_session):
         """Test cue.client get_keystone_session.
@@ -104,7 +104,7 @@ class TestClient(base.UnitTestCase):
         mock_ks_session.assert_called_once_with(auth=mock_auth_v2(),
                                                 verify=False)
 
-    @mock.patch('keystoneclient.session.Session')
+    @mock.patch('keystoneauth1.session.Session')
     @mock.patch('cue.client.get_auth_v3')
     def test_get_keystone_session_v3(self, mock_auth_v3, mock_ks_session):
         """Test cue.client get_keystone_session.
