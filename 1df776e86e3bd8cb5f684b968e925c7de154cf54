@@ -1,0 +1,9 @@
+Code-Review+2: Min Pae <min.pae@hp.com>
+Workflow+1: Min Pae <min.pae@hp.com>
+Code-Review+1: Victor Howard <victor.r.howard@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 06 Jan 2016 19:28:26 +0000
+Reviewed-on: https://review.openstack.org/258648
+Project: openstack/cue
+Branch: refs/heads/master
