@@ -69,7 +69,8 @@ class TestPolicy(base.FunctionalTestCase):
         self.assertIsNone(policy._ENFORCER)
 
         self.CONF.set_default('policy_file', '/some_bogus_path',
-                              group='oslo_policy')
+                              group='oslo_policy',
+                              enforce_type=True)
 
         self.assertRaises(exception.ConfigurationError, policy.init)
 
