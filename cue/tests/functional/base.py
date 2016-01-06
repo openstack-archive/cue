@@ -131,7 +131,7 @@ class FunctionalTestCase(base.BaseTestCase):
     def flags(self, group=None, **kw):
         """Override flag variables for a test."""
         for k, v in six.iteritems(kw):
-            CONF.set_override(k, v, group)
+            CONF.set_override(k, v, group, enforce_type=True)
 
     def path_get(self, project_file=None):
         """Get the absolute path to a file. Used for testing the API.
