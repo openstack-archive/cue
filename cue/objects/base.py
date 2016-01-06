@@ -78,7 +78,6 @@ class CueObjectMetaclass(type):
             # This means this is a base class using the metaclass. I.e.,
             # the 'CueObject' class.
             cls._obj_classes = collections.defaultdict(list)
-            return
 
         def _vers_tuple(obj):
             return tuple([int(x) for x in obj.VERSION.split(".")])
