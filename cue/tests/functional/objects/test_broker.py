@@ -119,7 +119,7 @@ class BrokerObjectsTests(base.FunctionalTestCase):
         updated_broker = broker_query.one()
 
         self.assertEqual('rabbit1.0', updated_broker.name)
-        self.assertEqual(False, updated_broker.active)
+        self.assertFalse(updated_broker.active)
 
     def test_get_brokers(self):
         """Tests getting all brokers from Broker objects API."""

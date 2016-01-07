@@ -67,17 +67,17 @@ class MonitorFunctionalTests(base.FunctionalTestCase):
 
     def test_check_lock(self):
         # Lock should not be acquired yet
-        self.assertEqual(False, self.cue_monitor_service.lock.acquired)
+        self.assertFalse(self.cue_monitor_service.lock.acquired)
 
         self.cue_monitor_service.check()
         # Lock should have been reacquired
-        self.assertEqual(True, self.cue_monitor_service.lock.acquired)
+        self.assertTrue(self.cue_monitor_service.lock.acquired)
 
     @mock.patch('tooz.drivers.zookeeper.ZooKeeperLock.acquire')
     def test_lock_unacquirable(self, mock_acquire_lock):
         self.cue_monitor_service.check()
         # Lock should not have been acquired
-        self.assertEqual(False, self.cue_monitor_service.lock.acquired)
+        self.assertFalse(self.cue_monitor_service.lock.acquired)
 
     def test_check(self):
         tf_instance = tf_client.get_client_instance()

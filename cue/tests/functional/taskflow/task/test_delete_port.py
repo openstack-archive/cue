@@ -76,7 +76,7 @@ class DeletePortTests(base.FunctionalTestCase):
         pre_port_list = self.neutron_client.list_ports()
 
         # search for created port in port list
-        self.assertEqual(True, _find_port(port_id, pre_port_list),
+        self.assertTrue(_find_port(port_id, pre_port_list),
                          "port-id %s not found in neutron port list" % port_id)
 
         engines.run(self.flow, store=task_store)
@@ -85,7 +85,7 @@ class DeletePortTests(base.FunctionalTestCase):
         post_port_list = self.neutron_client.list_ports()
 
         # search for deleted port in port list
-        self.assertEqual(False, _find_port(port_id, post_port_list),
+        self.assertFalse(_find_port(port_id, post_port_list),
                          "port-id %s found in neutron port after "
                          "delete" % port_id)
 
@@ -114,7 +114,7 @@ class DeletePortTests(base.FunctionalTestCase):
 
         # search for created port in port list
         for port_id in port_id_list:
-            self.assertEqual(True, _find_port(port_id, pre_port_list),
+            self.assertTrue(_find_port(port_id, pre_port_list),
                              "port-id %s not found" % port_id)
 
         engines.run(self.flow, store=task_store)
@@ -123,7 +123,7 @@ class DeletePortTests(base.FunctionalTestCase):
         post_port_list = self.neutron_client.list_ports()
 
         # search for deleted port in port list
-        self.assertEqual(False, _find_port(port_id, post_port_list),
+        self.assertFalse(_find_port(port_id, post_port_list),
                          "port-id %s found in neutron port after "
                          "delete" % port_id)
 
@@ -137,7 +137,7 @@ class DeletePortTests(base.FunctionalTestCase):
 
         # retrieve current port list
         pre_port_list = self.neutron_client.list_ports()
-        self.assertEqual(False, _find_port(port_id, pre_port_list),
+        self.assertFalse(_find_port(port_id, pre_port_list),
                          "port-id %s found in neutron port list" % port_id)
 
         # execute flow with parameters required for "CreatePort" task

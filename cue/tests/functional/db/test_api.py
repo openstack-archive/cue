@@ -89,7 +89,7 @@ class ApiTests(base.FunctionalTestCase):
                          "invalid size value")
         self.assertEqual(cluster_values["volume_size"], db_cluster.volume_size,
                          "invalid volume_size value")
-        self.assertEqual(False, db_cluster.deleted, "invalid deleted value")
+        self.assertFalse(db_cluster.deleted, "invalid deleted value")
 
     def test_get_cluster_by_id(self):
         """Verifies create cluster DB API."""
@@ -113,7 +113,7 @@ class ApiTests(base.FunctionalTestCase):
                              "invalid flavor value")
             self.assertEqual(cluster_values["flavor"], node.flavor,
                              "invalid flavor value")
-            self.assertEqual(False, node.deleted,
+            self.assertFalse(node.deleted,
                              "invalid deleted value")
 
     def test_get_endpoints_in_node(self):
@@ -199,7 +199,7 @@ class ApiTests(base.FunctionalTestCase):
 
         self.assertEqual(broker_id, broker.id,
                          "Query should have returned the same broker.")
-        self.assertEqual(True, broker.deleted,
+        self.assertTrue(broker.deleted,
                          "Broker deleted flag should be true.")
 
     def test_update_broker(self):
@@ -347,7 +347,7 @@ class ApiTests(base.FunctionalTestCase):
         self.assertEqual(broker_metadata_id, broker_metadata.id,
                          "Query should have returned the same broker " +
                          "metadata.")
-        self.assertEqual(True, broker_metadata.deleted,
+        self.assertTrue(broker_metadata.deleted,
                          "Broker metadata deleted flag should be true.")
 
     def test_get_image_id_by_broker_name(self):
