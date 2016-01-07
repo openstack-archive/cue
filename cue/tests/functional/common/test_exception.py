@@ -32,5 +32,5 @@ class TestCommonException(base.FunctionalTestCase):
                                        mock_log_exception):
         self.CONF.config(fatal_exception_format_errors=True)
         self.assertRaises(TypeError, MissingKwargException)
-        self.assertEqual(True, mock_log_error.called)
-        self.assertEqual(True, mock_log_exception.called)
+        self.assertTrue(mock_log_error.called)
+        self.assertTrue(mock_log_exception.called)
