@@ -32,6 +32,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.graphviz',
               'sphinxcontrib.httpdomain',
+              'oslosphinx'
              ]
 
 todo_include_todos = True
