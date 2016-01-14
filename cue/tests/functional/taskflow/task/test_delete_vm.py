@@ -114,4 +114,4 @@ class DeleteVmTests(base.FunctionalTestCase):
         for vm in new_instances:
             self.nova_client.servers.delete(vm)
 
-        self.assertEqual(False, vm_found, "VM was not deleted successfully")
+        self.assertFalse(vm_found, "VM was not deleted successfully")

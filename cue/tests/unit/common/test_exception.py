@@ -42,8 +42,8 @@ class TestCommonException(base.UnitTestCase):
     @mock.patch('logging.LoggerAdapter.error')
     def test_missing_kwarg_exception(self, mock_log_error, mock_log_exception):
         MissingKwargException()
-        self.assertEqual(True, mock_log_error.called)
-        self.assertEqual(True, mock_log_exception.called)
+        self.assertTrue(mock_log_error.called)
+        self.assertTrue(mock_log_exception.called)
 
     @mock.patch('logging.LoggerAdapter.exception')
     @mock.patch('logging.LoggerAdapter.error')
@@ -51,8 +51,8 @@ class TestCommonException(base.UnitTestCase):
                                        mock_log_error,
                                        mock_log_exception):
         MissingKwargException()
-        self.assertEqual(True, mock_log_error.called)
-        self.assertEqual(True, mock_log_exception.called)
+        self.assertTrue(mock_log_error.called)
+        self.assertTrue(mock_log_exception.called)
 
     def test_cleanse_dict(self):
         d = {

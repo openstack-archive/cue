@@ -83,4 +83,4 @@ class CreatePortTests(base.FunctionalTestCase):
                     found = True
                     break
 
-        self.assertEqual(True, found, "New port was not found")
+        self.assertTrue(found, "New port was not found")

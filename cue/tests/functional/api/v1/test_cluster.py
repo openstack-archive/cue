@@ -354,7 +354,7 @@ class TestCreateCluster(api.APITest,
                                                       data_2.json["id"])
 
         # verify second cluster was created after first by created_at time
-        self.assertEqual(True, cluster_2.created_at > cluster_1.created_at,
+        self.assertTrue(cluster_2.created_at > cluster_1.created_at,
                          "Second cluster was not created after first")
 
         cluster_1_created_at = cluster_1.created_at
@@ -368,7 +368,7 @@ class TestCreateCluster(api.APITest,
                                                       data_1.json["id"])
 
         # verify updated_at time is after created_at
-        self.assertEqual(True, cluster_1.updated_at > cluster_1.created_at,
+        self.assertTrue(cluster_1.updated_at > cluster_1.created_at,
                          "Cluster updated at time is invalid")
         # verify created_at time did not change
         self.assertEqual(cluster_1_created_at, cluster_1.created_at,
@@ -385,10 +385,10 @@ class TestCreateCluster(api.APITest,
         cluster_1 = cluster_query.one()
 
         # verify deleted_at time is after created_at
-        self.assertEqual(True, cluster_1.deleted_at > cluster_1.created_at,
+        self.assertTrue(cluster_1.deleted_at > cluster_1.created_at,
                          "Cluster deleted_at time is invalid")
         # verify updated_at time is after deleted_at
-        self.assertEqual(True, cluster_1.updated_at > cluster_1.deleted_at,
+        self.assertTrue(cluster_1.updated_at > cluster_1.deleted_at,
                          "Cluster deleted_at time is invalid")
 
     def test_create_rabbit_authentication_missing(self):
