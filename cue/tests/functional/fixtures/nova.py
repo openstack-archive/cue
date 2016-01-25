@@ -432,3 +432,9 @@ class NovaClient(base.BaseFixture):
             del (self._vm_group_list[str(id)])
         except KeyError:
             raise nova_exc.NotFound(404)
+
+    # Utility functions
+    def add_flavor(self, new_flavor):
+        self._flavor_list.update({
+            new_flavor.id: new_flavor
+        })
