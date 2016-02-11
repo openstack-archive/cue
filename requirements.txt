@@ -24,7 +24,6 @@ six>=1.9.0 # MIT
 WSME>=0.8 # MIT
 keystonemiddleware!=4.1.0,>=4.0.0 # Apache-2.0
 paramiko>=1.16.0 # LGPL
-posix-ipc # BSD
 Jinja2>=2.8 # BSD License (3 clause)
 
 taskflow>=1.26.0 # Apache-2.0
