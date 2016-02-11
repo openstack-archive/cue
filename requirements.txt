@@ -24,7 +24,6 @@ six>=1.9.0
 WSME>=0.8
 keystonemiddleware>=4.0.0
 paramiko>=1.13.0
-posix-ipc
 Jinja2>=2.8 # BSD License (3 clause)
 
 taskflow>=1.25.0
