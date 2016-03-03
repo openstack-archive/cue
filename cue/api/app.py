@@ -80,11 +80,6 @@ def setup_app(pecan_config=None, extra_hooks=None):
     # Create a CORS wrapper, and attach ironic-specific defaults that must be
     # included in all CORS responses.
     app = cors_middleware.CORS(app, cfg.CONF)
-    app.set_latent(
-        allow_headers=['X-Auth-Token', 'X-Server-Management-Url'],
-        allow_methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
-        expose_headers=['X-Auth-Token', 'X-Server-Management-Url']
-    )
 
     return app
 
