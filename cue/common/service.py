@@ -23,6 +23,8 @@ import sys
 from oslo_config import cfg
 from oslo_log import log
 
+from cue.common import config
+
 
 service_opts = [
     cfg.IntOpt('periodic_interval',
@@ -55,6 +57,7 @@ def prepare_service(argv=None):
         argv = sys.argv
     CONF(argv[1:], project='cue')
     log.setup(CONF, 'cue')
+    config.set_defaults()
 
 
 def list_opts():
