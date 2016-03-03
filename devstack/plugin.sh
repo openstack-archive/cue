@@ -397,6 +397,7 @@ function install_cuedashboard {
 
     if is_service_enabled horizon; then
         git_clone $CUEDASHBOARD_REPO $CUEDASHBOARD_DIR $CUEDASHBOARD_BRANCH
+        mv $CUEDASHBOARD_DIR/test-requirements.txt $CUEDASHBOARD_DIR/_test-requirements.txt
         setup_develop $CUEDASHBOARD_DIR
 
         if ! [ -h $DEST/horizon/openstack_dashboard/local/enabled/_70_cue_panel_group.py ]; then
@@ -405,6 +406,7 @@ function install_cuedashboard {
         if ! [ -h  $DEST/horizon/openstack_dashboard/local/enabled/_71_cue_panel.py ]; then
             ln -s $DEST/cue-dashboard/_71_cue_panel.py $DEST/horizon/openstack_dashboard/local/enabled/_71_cue_panel.py
         fi
+        mv $CUEDASHBOARD_DIR/_test-requirements.txt $CUEDASHBOARD_DIR/test-requirements.txt
     fi
 }
 
