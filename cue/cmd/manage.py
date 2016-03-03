@@ -21,6 +21,7 @@ from oslo_config import cfg
 from oslo_log import log
 from stevedore import extension
 
+from cue.common import config
 from cue import version
 
 
@@ -111,6 +112,7 @@ def main(argv=None, conf_fixture=None):
         conf_fixture.register_cli_opt(category_opt)
 
     log.register_options(CONF)
+    config.set_defaults()
 
     CONF(argv[1:], project='cue',
          version=version.version_info.version_string())
