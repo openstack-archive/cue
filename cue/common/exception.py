@@ -149,3 +149,8 @@ class VmBuildingException(CueException):
 
 class VmErrorException(CueException):
     message = _("VM is not in a building state")
+
+
+class InternalServerError(CueException):
+    message = _("Internal Server Error")
+    code = 500
