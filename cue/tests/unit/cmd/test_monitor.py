@@ -34,7 +34,7 @@ class TestMonitor(base.UnitTestCase):
         monitor.main()
 
         mock_tooz_get_coordinator.assert_called_once_with(
-            'zookeeper://localhost:2181', 'cue-monitor')
+            'zookeeper://localhost:2181', b'cue-monitor')
         mock_oslo_service_wait.assert_called_once_with()
         self.assertEqual(mock_conf.call_count, 1)
         self.assertEqual(mock_prepare.call_count, 1)

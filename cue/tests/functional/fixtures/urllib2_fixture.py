@@ -59,11 +59,16 @@ class Urllib2Fixture(base.BaseFixture):
         """Set up test fixture and apply all method overrides."""
         super(Urllib2Fixture, self).setUp()
 
-        urllib2_client = self.mock('urllib2.OpenerDirector')
+        if six.PY3:
+            modname = 'urllib.request'
+        else:
+            modname = 'urllib2'
+#        modname = 'six.moves.urllib.request'
+        urllib2_client = self.mock('%s.OpenerDirector' % modname)
         urllib2_client.open = self.open
 
     def open(self, url):
         result = Urllib2ResultDetails.get_urllib2_result()
-        if result.getvalue() is 'URLError':
+        if result.getvalue() == 'URLError':
             raise urllib.error.URLError('urlerror')
         return result

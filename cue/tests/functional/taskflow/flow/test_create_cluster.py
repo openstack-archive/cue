@@ -203,10 +203,10 @@ class CreateClusterTests(base.FunctionalTestCase):
         except taskflow_exc.WrappedFailure as err:
             self.assertEqual(3, len(err._causes))
             exc_list = [type(c.exception) for c in err._causes]
-            self.assertEqual(sorted([cue_exceptions.VmErrorException,
-                                    cue_exceptions.VmBuildingException,
-                                    cue_exceptions.VmBuildingException]),
-                             sorted(exc_list))
+            self.assertEqual({cue_exceptions.VmErrorException,
+                              cue_exceptions.VmBuildingException,
+                              cue_exceptions.VmBuildingException},
+                             set(exc_list))
         except Exception as e:
             self.assertEqual(taskflow_exc.WrappedFailure, type(e))
         else:
@@ -261,10 +261,10 @@ class CreateClusterTests(base.FunctionalTestCase):
             engines.run(flow, store=flow_store)
         except taskflow_exc.WrappedFailure as err:
             self.assertEqual(3, len(err._causes))
-            exc_list = [type(c.exception) for c in err._causes]
-            self.assertEqual([cue_exceptions.VmBuildingException,
+            exc_list = set(type(c.exception) for c in err._causes)
+            self.assertEqual({cue_exceptions.VmBuildingException,
                               cue_exceptions.VmBuildingException,
-                              cue_exceptions.VmBuildingException],
+                              cue_exceptions.VmBuildingException},
                              exc_list)
         except Exception as e:
             self.assertEqual(taskflow_exc.WrappedFailure, type(e))

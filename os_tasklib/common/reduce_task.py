@@ -14,6 +14,7 @@
 # under the License.
 
 import oslo_utils.reflection as reflection
+from six import moves
 import taskflow.task as task
 
 
@@ -55,4 +56,4 @@ class Reduce(task.Task):
 
     def execute(self, *args, **kwargs):
         l = [kwargs[r] for r in self.requires]
-        return reduce(self.functor, l)
+        return moves.reduce(self.functor, l)

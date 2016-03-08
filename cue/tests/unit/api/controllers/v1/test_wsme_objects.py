@@ -51,8 +51,8 @@ class TestClusterObject(base.UnitTestCase):
             "name": "test_cluster",
             "size": "3",
         }
-        self.assertRaises(wsme_exception.InvalidInput, api_cluster.Cluster,
-                          **cluster_value)
+        self.assertRaises((wsme_exception.InvalidInput, TypeError),
+                          api_cluster.Cluster, **cluster_value)
 
     def test_api_cluster_invalid_type_size(self):
         """test cluster object with invalid type 'size'."""
@@ -62,8 +62,8 @@ class TestClusterObject(base.UnitTestCase):
             "name": "test_cluster",
             "size": "three",
         }
-        self.assertRaises(wsme_exception.InvalidInput, api_cluster.Cluster,
-                          **cluster_value)
+        self.assertRaises((wsme_exception.InvalidInput, TypeError),
+                          api_cluster.Cluster, **cluster_value)
 
     def test_api_cluster_invalid_type_volume_size(self):
         """test cluster object with invalid type 'volume_size'."""
@@ -74,8 +74,8 @@ class TestClusterObject(base.UnitTestCase):
             "size": 3,
             "volume_size": "zero"
         }
-        self.assertRaises(wsme_exception.InvalidInput, api_cluster.Cluster,
-                          **cluster_value)
+        self.assertRaises((wsme_exception.InvalidInput, TypeError),
+                          api_cluster.Cluster, **cluster_value)
 
     def test_api_cluster_missing_size(self):
         """test cluster object with missing mandatory field 'size'."""

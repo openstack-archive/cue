@@ -309,7 +309,7 @@ class NovaClient(base.BaseFixture):
         :param retrieve_all: Set to true to retrieve all available vms
         """
         if retrieve_all:
-            return self._vm_list.values()
+            return list(self._vm_list.values())
 
     def find_images(self, name, **kwargs):
         """Mock'd version of novaclient...image_find().
