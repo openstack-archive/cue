@@ -36,10 +36,10 @@ class MonitorService(service.Service):
                      ))
 
         self.coordinator = coordination.get_coordinator(
-            coord_url, 'cue-monitor')
+            coord_url, b'cue-monitor')
         self.coordinator.start()
         # Create a lock
-        self.lock = self.coordinator.get_lock("status_check")
+        self.lock = self.coordinator.get_lock(b"status_check")
 
     def start(self):
         loop_interval_seconds = int(cfg.CONF.cue_monitor.loop_interval_seconds)

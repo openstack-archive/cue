@@ -22,10 +22,11 @@ response with one formatted so the client can parse it.
 Based on pecan.middleware.errordocument
 """
 
-import json
 from xml import etree as et
 
 from oslo_log import log
+from oslo_serialization import jsonutils
+import six
 import webob
 
 from cue.common.i18n import _  # noqa
@@ -83,7 +84,11 @@ class ParsableErrorMiddleware(object):
                             + '</error_message>']
                 state['headers'].append(('Content-Type', 'application/xml'))
             else:
-                body = [json.dumps({'error_message': '\n'.join(app_iter)})]
+                err_msg = b'\n'.join(app_iter)
+                if six.PY3:   # pragma: no cover
+                    err_msg = err_msg.decode('utf-8')
+                body = jsonutils.dump_as_bytes({'error_message': err_msg})
+                body = [body]
                 state['headers'].append(('Content-Type', 'application/json'))
             state['headers'].append(('Content-Length', str(len(body[0]))))
         else:

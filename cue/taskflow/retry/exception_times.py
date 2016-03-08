@@ -40,7 +40,7 @@ class ExceptionTimes(retry.Times):
 
     def on_failure(self, history, *args, **kwargs):
 
-        (owner, outcome) = history.outcomes_iter(len(history) - 1).next()
+        (owner, outcome) = next(history.outcomes_iter(len(history) - 1))
 
         if type(outcome.exception) in self._revert_exception_list:
             return self._revert_action

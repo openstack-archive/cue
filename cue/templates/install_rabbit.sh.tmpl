@@ -1,7 +1,7 @@
 #!/bin/bash
 cat > /etc/hosts << EOF
 127.0.0.1 localhost
-{%- for node_name, node_ip in rabbit_nodes.iteritems() %}
+{%- for node_name, node_ip in rabbit_nodes.items() %}
 {{node_ip}} {{node_name}}
 {%- endfor %}
 EOF

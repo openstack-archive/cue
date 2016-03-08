@@ -134,7 +134,7 @@ class NeutronClient(base.BaseFixture):
         :param retrieve_all: Set to true to retrieve all available ports
         """
         if retrieve_all:
-            return {'ports': self._port_list.values()}
+            return {'ports': list(self._port_list.values())}
 
     def list_networks(self, name=None, id=None):
         if name is not None:
