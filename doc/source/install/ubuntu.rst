@@ -121,7 +121,7 @@ Add Cue Service Endpoint to Keystone
 1. Add cue service to keystone
 ::
 
-    keystone service-create --type message_broker --name cue --description "Message Broker provisioning service"
+    keystone service-create --type message-broker --name cue --description "Message Broker provisioning service"
 
 2. Create a new endpoint for the cue service in keystone
 ::
