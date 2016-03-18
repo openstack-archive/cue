@@ -46,7 +46,7 @@ Create Cluster
         "network_id": [
             "ea540512-4d4a-4c46-9ebd-4fafe4a54a2d"
         ]
-        "auth_credential": {
+        "authentication": {
             "type": "PLAIN",
             "token": {
                 "username": "rabbit_user"
