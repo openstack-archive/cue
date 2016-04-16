@@ -3,13 +3,13 @@
 # process, which may cause wedges in the gate later.
 pbr>=1.6 # Apache-2.0
 SQLAlchemy<1.1.0,>=1.0.10 # MIT
-alembic>=0.8.0 # MIT
+alembic>=0.8.4 # MIT
 eventlet!=0.18.3,>=0.18.2 # MIT
 WebOb>=1.2.3 # MIT
 netaddr!=0.7.16,>=0.7.12 # BSD
 iso8601>=0.1.9 # MIT
 stevedore>=1.5.0 # Apache-2.0
-oslo.config>=3.7.0 # Apache-2.0
+oslo.config>=3.9.0 # Apache-2.0
 oslo.db>=4.1.0 # Apache-2.0
 oslo.log>=1.14.0 # Apache-2.0
 oslo.middleware>=3.0.0 # Apache-2.0
@@ -32,5 +32,5 @@ tooz>=1.28.0 # Apache-2.0
 #PyMySQL
 keystoneauth1>=2.1.0 # Apache-2.0
 python-novaclient!=2.33.0,>=2.29.0 # Apache-2.0
-python-cinderclient>=1.3.1 # Apache-2.0
-python-neutronclient!=4.1.0,>=2.6.0 # Apache-2.0
+python-cinderclient>=1.6.0 # Apache-2.0
+python-neutronclient>=4.2.0 # Apache-2.0
