@@ -46,7 +46,7 @@ Create Cluster
         "network_id": [
             "ea540512-4d4a-4c46-9ebd-4fafe4a54a2d"
         ]
-        "auth_credential": {
+        "authentication": {
             "type": "PLAIN",
             "token": {
                 "username": "rabbit_user"
@@ -87,7 +87,7 @@ Create Cluster
   :form flavor: node flavor
   :form id: the UUID of the cluster
   :form size: size of the cluster
-  :form auth_credential: Authentication credentials
+  :form authentication: Authentication credentials
 
   :statuscode 201: Created
   :statuscode 400: Bad Request
