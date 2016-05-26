@@ -85,8 +85,6 @@ class Cluster(base.APIBase):
     def __init__(self, **kwargs):
         self.fields = []
         cluster_object_fields = list(objects.Cluster.fields)
-        # Adding nodes since it is an api-only attribute.
-        self.fields.append('nodes')
         for k in cluster_object_fields:
             # only add fields we expose in the api
             if hasattr(self, k):
@@ -187,7 +185,7 @@ def delete_complete_cluster(context, cluster_id):
         }
 
         job_client = task_flow_client.get_client_instance()
-        #TODO(dagnello): might be better to use request_id for job_uuid
+        # TODO(dagnello): might be better to use request_id for job_uuid
         job_uuid = uuidutils.generate_uuid()
         job_client.post(delete_cluster, job_args, flow_kwargs=flow_kwargs,
                         tx_uuid=job_uuid)
@@ -231,17 +229,19 @@ class ClusterController(rest.RestController):
         except nova_exc.ClientException as ex:
             if ex.http_status == 404:
                 raise exception.Invalid(_('Invalid flavor %s provided') %
-                                          cluster_flavor)
+                                        cluster_flavor)
             else:
                 raise exception.InternalServerError
 
         # validate flavor with broker image metadata
         if (flavor_disk < image_minDisk):
             raise exception.Invalid(_("Flavor disk is smaller than the "
-                    "minimum %s required for broker") % image_minDisk)
+                                      "minimum %s required for broker") %
+                                    image_minDisk)
         elif (flavor_ram < image_minRam):
             raise exception.Invalid(_("Flavor ram is smaller than the "
-                    "minimum %s required for broker") % image_minRam)
+                                      "minimum %s required for broker") %
+                                    image_minRam)
 
     @wsme_pecan.wsexpose(Cluster, wtypes.text, status_code=200)
     def get_one(self, cluster_id):
@@ -380,7 +380,7 @@ class ClusterController(rest.RestController):
             'default_rabbit_pass': default_rabbit_pass,
         }
         job_client = task_flow_client.get_client_instance()
-        #TODO(dagnello): might be better to use request_id for job_uuid
+        # TODO(dagnello): might be better to use request_id for job_uuid
         job_uuid = uuidutils.generate_uuid()
         job_client.post(create_cluster, job_args,
                         flow_kwargs=flow_kwargs,
@@ -388,13 +388,12 @@ class ClusterController(rest.RestController):
 
         LOG.info(_LI('Create Cluster Request Cluster ID %(cluster_id)s '
                      'Cluster size %(size)s network ID %(network_id)s '
-                     'Job ID %(job_id)s Broker name %(broker_name)s') % (
-                                      {"cluster_id": cluster.id,
-                                       "size": cluster.size,
-                                       "network_id":
-                                           cluster.network_id,
-                                       "job_id": job_uuid,
-                                       "broker_name": broker_name}))
+                     'Job ID %(job_id)s Broker name %(broker_name)s') %
+                 ({"cluster_id": cluster.id,
+                   "size": cluster.size,
+                   "network_id": cluster.network_id,
+                   "job_id": job_uuid,
+                   "broker_name": broker_name}))
 
         cluster.additional_information = []
         cluster.additional_information.append(
