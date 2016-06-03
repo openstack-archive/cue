@@ -19,8 +19,8 @@ import time
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from taskflow.conductors import backends as conductors
 from taskflow.conductors.backends import impl_executor
-from taskflow.conductors import single_threaded
 
 import cue.taskflow.client as tf_client
 import cue.version as version
@@ -151,7 +151,8 @@ class ConductorService(object):
                     persistence=persistence,
                 )
 
-            self._conductor = single_threaded.SingleThreadedConductor(
+            self._conductor = conductors.fetch(
+                kind="blocking",
                 name=self._host,
                 jobboard=jobboard,
                 persistence=persistence,

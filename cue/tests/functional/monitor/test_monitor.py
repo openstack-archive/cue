@@ -30,9 +30,9 @@ CONF = cfg.CONF
 class MonitorFunctionalTests(base.FunctionalTestCase):
 
     cue_monitor_service = None
-    test_uuid_1 = None
-    test_uuid_2 = None
-    test_uuid_3 = None
+    active_cluster_id = None
+    error_cluster_id = None
+    down_cluster_id = None
 
     def setUp(self):
         super(MonitorFunctionalTests, self).setUp()
@@ -44,19 +44,19 @@ class MonitorFunctionalTests(base.FunctionalTestCase):
         CONF.set_override("zk_port", "", group="taskflow",
                           enforce_type=True)
 
-        self.test_uuid_1 = uuid.uuid4()
-        self.test_uuid_2 = uuid.uuid4()
-        self.test_uuid_3 = uuid.uuid4()
+        self.active_cluster_id = uuid.uuid4()
+        self.error_cluster_id = uuid.uuid4()
+        self.down_cluster_id = uuid.uuid4()
 
         # Add some test clusters
         set_up_test_clusters(
-            self.context, models.Status.ACTIVE, self.test_uuid_1, 3
+            self.context, models.Status.ACTIVE, self.active_cluster_id, 3
         )
         set_up_test_clusters(
-            self.context, models.Status.ERROR, self.test_uuid_2, 3
+            self.context, models.Status.ERROR, self.error_cluster_id, 3
         )
         set_up_test_clusters(
-            self.context, models.Status.DOWN, self.test_uuid_3, 1
+            self.context, models.Status.DOWN, self.down_cluster_id, 1
         )
 
         self.cue_monitor_service = cue_monitor_service.MonitorService()
@@ -81,12 +81,14 @@ class MonitorFunctionalTests(base.FunctionalTestCase):
 
     def test_check(self):
         tf_instance = tf_client.get_client_instance()
-        start_job_list_length = len(tf_instance.joblist())
+        start_job_list = tf_instance.joblist()
+        start_job_list_length = len(start_job_list)
 
         # Test while job board is empty
         self.cue_monitor_service.check()
 
-        end_job_list_length = len(tf_instance.joblist())
+        end_job_list = sorted(tf_instance.joblist())
+        end_job_list_length = len(end_job_list)
 
         self.assertEqual(2, end_job_list_length - start_job_list_length,
                          "Job list should only have two "
@@ -96,7 +98,10 @@ class MonitorFunctionalTests(base.FunctionalTestCase):
         self.cue_monitor_service.check()
 
         # No new jobs should have been added.
-        self.assertEqual(0, len(tf_instance.joblist()) - end_job_list_length)
+        new_end_job_list = sorted(tf_instance.joblist())
+
+        self.assertEqual(end_job_list, new_end_job_list,
+                         "Job list should not have changed")
 
     def test_get_cluster_id_node_ids(self):
         clusters = cue_monitor_service.get_cluster_id_node_ids()
@@ -106,11 +111,11 @@ class MonitorFunctionalTests(base.FunctionalTestCase):
                          " and DOWN clusters.  Found: " + str(len(clusters)))
 
         for cluster in clusters:
-            if cluster[0] == str(self.test_uuid_1):
+            if cluster[0] == str(self.active_cluster_id):
                 self.assertEqual(3, len(cluster[1]),
                                  "Expected to find three nodes in this "
                                  "cluster.  Found: " + str(cluster[1]))
-            elif cluster[0] == str(self.test_uuid_3):
+            elif cluster[0] == str(self.down_cluster_id):
                 self.assertEqual(1, len(cluster[1]),
                                  "Expected to find one node in this "
                                  "cluster.  Found: " + str(cluster[1]))
