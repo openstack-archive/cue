@@ -1,0 +1,8 @@
+ntp:
+    phase: install.d
+
+python-pip:
+    phase: install.d
+
+rabbitmq-server:
+    phase: install.d

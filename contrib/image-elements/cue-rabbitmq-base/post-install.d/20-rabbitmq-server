@@ -4,8 +4,6 @@ set -eux
 
 FILES="$(dirname $0)/../files"
 
-install-packages -u rabbitmq-server
-
 if [ "$DISTRO_NAME" = "ubuntu" ] || [ "$DISTRO_NAME" = "debian" ]; then
     # Prevent rabbitmq-server from starting automatically
     update-rc.d -f rabbitmq-server disable
@@ -19,12 +17,27 @@ if [ "$DIB_INIT_SYSTEM" = "systemd" ]; then
     sed -i 's/\[Service\]/\[Service\]\nRestart=on-failure/g' /lib/systemd/system/rabbitmq-server.service
 fi
 
-FILE=/etc/rabbitmq/rabbitmq-env.conf
-install -g root -o root -m 0755 "${FILES}${FILE}" "${FILE}"
-
 # Enable ulimits in pam if needed
 PAM_FILE=/etc/pam.d/su
 sed -i '/# session.*pam_limits\.so/s/# //' ${PAM_FILE}
 
 # Reserve the cluster port (61000) from the ephemeral port range.
-sysctl-append-value net.ipv4.ip_local_reserved_ports 61000
+EXISTING_RESERVED_PORTS=$(grep -r net.ipv4.ip_local_reserved_ports /etc/sysctl.conf /etc/sysctl.d 2> /dev/null | cut -d'=' -f2)
+RESERVED_PORTS=61000
+if ! [ -z $EXISTING_RESERVED_PORTS ]; then
+    # create one port reservation list
+    for port in $EXISTING_RESERVED_PORTS; do
+        RESERVED_PORTS=$RESERVED_PORTS,$port
+    done
+
+    # find files with port reservation settings
+    RESERVATION_FILE_LIST=$(grep -r net.ipv4.ip_local_reserved_ports /etc/sysctl.conf /etc/sysctl.d 2> /dev/null | cut -d':' -f1 | sort | uniq)
+
+    # comment out existing port reservation lines
+    for file in $RESERVATION_FILE_LIST; do
+        sed -i -e 's/\(^net.ipv4.ip_local_reserved_ports=.*\)/#\1/' $file
+    done
+
+    # add port reservation
+    echo "net.ipv4.ip_local_reserved_ports=${RESERVED_PORTS}"
+fi

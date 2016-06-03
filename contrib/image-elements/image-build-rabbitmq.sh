@@ -19,7 +19,7 @@ COMMON_ELEMENTS=${COMMON_ELEMENTS:-"vm ubuntu"}
 
 # Common Settings for all msgaas images builds
 SIZE="2"
-ELEMENTS="ntp hosts cue-rabbitmq-base ifmetric"
+ELEMENTS="cue-rabbitmq-base ifmetric"
 ELEMENTS_PATH="$CUE_HOME/contrib/image-elements"
 
 # QEMU Image options
@@ -28,22 +28,16 @@ QEMU_IMG_OPTIONS='compat=0.10'
 # Install some required apt packages if needed
 if ! [ -e /usr/sbin/debootstrap -a -e /usr/bin/qemu-img ]; then
   sudo apt-get update
-  sudo apt-get install --yes debootstrap qemu-utils
+  sudo apt-get install --yes debootstrap qemu-utils git python-virtualenv uuid-runtime curl wget parted kpartx
 fi
- 
 
 if [ ! -d $BUILD_DIR/diskimage-builder ]; then
   echo "---> Cloning diskimage-builder"
   git clone https://git.openstack.org/openstack/diskimage-builder $BUILD_DIR/diskimage-builder
 fi
 
-if [ ! -d $BUILD_DIR/tripleo-image-elements ]; then
-  echo "---> Cloning tripleo-image-elements"
-  git clone https://git.openstack.org/openstack/tripleo-image-elements $BUILD_DIR/tripleo-image-elements
-fi
-
 # Setup the elements path
-export ELEMENTS_PATH="$ELEMENTS_PATH:$BUILD_DIR/tripleo-image-elements/elements:$BUILD_DIR/diskimage-builder/elements"
+export ELEMENTS_PATH="$ELEMENTS_PATH:$BUILD_DIR/diskimage-builder/elements"
 
 # Prepare the build directory
 if [ ! -d $BUILD_DIR/dist ]; then

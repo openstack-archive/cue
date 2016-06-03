@@ -21,7 +21,7 @@ from six.moves import urllib_parse
 import taskflow.engines as engines
 import taskflow.jobs.backends as job_backends
 import taskflow.persistence.backends as persistence_backends
-import taskflow.persistence.logbook as logbook
+import taskflow.persistence.models as persistence_models
 
 
 def _make_conf(backend_uri):
@@ -237,10 +237,13 @@ class Client(object):
             tx_uuid = uuidutils.generate_uuid()
 
         job_name = "%s[%s]" % (flow_factory.__name__, tx_uuid)
-        book = logbook.LogBook(job_name, uuid=tx_uuid)
+        book = persistence_models.LogBook(job_name, uuid=tx_uuid)
 
         if flow_factory is not None:
-            flow_detail = logbook.FlowDetail(job_name, str(uuid.uuid4()))
+            flow_detail = persistence_models.FlowDetail(
+                              job_name,
+                              str(uuid.uuid4())
+                          )
             book.add(flow_detail)
 
         job_details = {'store': job_args or {}}
