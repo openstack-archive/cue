@@ -73,17 +73,27 @@ class MonitorService(service.Service):
             taskflow_client_instance = taskflow_client.get_client_instance()
             job_list = taskflow_client_instance.joblist()
 
-            job_list = filter(lambda job:
-                              'cluster_status_check' in job.details['store'],
-                              job_list)
-            job_list = map(lambda job:
-                           job.details['store']['cluster_id'],
-                           job_list)
-            clusters = filter(lambda cluster:
-                              cluster[0] not in job_list,
-                              clusters)
+            clusters_in_joblist = []
+            for job in job_list:
+                if 'cluster_status_check' in job.details['store']:
+                    clusters_in_joblist.append(job.details['store']['cluster_id'])
 
+            filtered_clusters = []
             for cluster in clusters:
+                if cluster[0] not in clusters_in_joblist:
+                    filtered_clusters.append(cluster)
+
+            #job_list = filter(lambda job:
+            #                  'cluster_status_check' in job.details['store'],
+            #                  job_list)
+            #job_list = map(lambda job:
+            #               job.details['store']['cluster_id'],
+            #               job_list)
+            #clusters = filter(lambda cluster:
+            #                  cluster[0] not in job_list,
+            #                  clusters)
+
+            for cluster in filtered_clusters:
                 job_args = {
                     'cluster_status_check': '',
                     'cluster_id': cluster[0],
