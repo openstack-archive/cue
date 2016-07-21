@@ -62,21 +62,11 @@ class ContextHook(hooks.PecanHook):
         super(ContextHook, self).__init__()
 
     def before(self, state):
-        user_id = state.request.headers.get('X-User-Id')
-        tenant_id = state.request.headers.get('X-Project-Id')
-        domain_id = state.request.headers.get('X-Domain-Id')
-        domain_name = state.request.headers.get('X-Domain-Name')
-        auth_token = state.request.headers.get('X-Auth-Token')
-
-        is_public_api = state.request.environ.get('is_public_api', False)
-
-        state.request.context = context.RequestContext(
-            auth_token=auth_token,
-            user=user_id,
-            tenant=tenant_id,
-            domain_id=domain_id,
-            domain_name=domain_name,
-            is_public_api=is_public_api)
+        state.request.context = context.RequestContext.from_environ(
+            state.request.environ,
+            domain_id=state.request.headers.get('X-Domain-Id'),
+            domain_name=state.request.headers.get('X-Domain-Name'),
+            is_public_api=state.request.environ.get('is_public_api', False))
 
 
 # class RPCHook(hooks.PecanHook):

@@ -16,6 +16,9 @@
 """
 Tests for API Hooks.
 """
+
+import pecan
+
 from cue.api import hooks
 from cue.tests.unit import base
 
@@ -23,13 +26,6 @@ from cue.tests.unit import base
 class State(object):
     def __init__(self, request):
         self.request = request
-
-
-class Request(object):
-    def __init__(self, headers):
-        self.headers = headers
-        self.environ = {}
-        self.context = None
 
 
 class TestApiHooks(base.UnitTestCase):
@@ -47,7 +43,7 @@ class TestApiHooks(base.UnitTestCase):
             'X-Auth-Token': 'test_request_auth_token',
         }
 
-        state = State(Request(headers=headers))
+        state = State(pecan.Request.blank('/', headers=headers))
         api_hook = hooks.ContextHook(public_api_routes=None)
         api_hook.before(state=state)
 
