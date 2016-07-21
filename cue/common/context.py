@@ -19,32 +19,18 @@ from oslo_context import context
 class RequestContext(context.RequestContext):
     """Extends security contexts from the OpenStack common library."""
 
-    def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
-                 user_domain=None, project_domain=None, is_admin=False,
-                 read_only=False, show_deleted=False, request_id=None,
-                 resource_uuid=None, overwrite=True, roles=None,
-                 is_public_api=False, domain_id=None, domain_name=None):
+    def __init__(self, is_public_api=False, domain_id=None, domain_name=None,
+                 **kwargs):
         """Stores several additional request parameters:
 
-        :param roles:
         :param domain_id: The ID of the domain.
         :param domain_name: The name of the domain.
         :param is_public_api: Specifies whether the request should be processed
                               without authentication.
 
         """
-        super(RequestContext, self).__init__(auth_token=auth_token, user=user,
-                                             tenant=tenant, domain=domain,
-                                             user_domain=user_domain,
-                                             project_domain=project_domain,
-                                             is_admin=is_admin,
-                                             read_only=read_only,
-                                             show_deleted=show_deleted,
-                                             request_id=request_id,
-                                             resource_uuid=resource_uuid,
-                                             overwrite=overwrite)
+        super(RequestContext, self).__init__(**kwargs)
 
-        self.roles = roles or []
         self.is_public_api = is_public_api
         self.domain_id = domain_id
         self.domain_name = domain_name
@@ -71,14 +57,27 @@ class RequestContext(context.RequestContext):
 
     @classmethod
     def from_dict(cls, values):
-        if 'user_identity' in values:
-            del values['user_identity']
-        return cls(**values)
+        return cls(
+            auth_token=values.get('auth_token'),
+            user=values.get('user'),
+            tenant=values.get('tenant'),
+            domain=values.get('domain'),
+            user_domain=values.get('user_domain'),
+            project_domain=values.get('project_domain'),
+            is_admin=values.get('is_admin'),
+            read_only=values.get('read_only', False),
+            show_deleted=values.get('show_deleted', False),
+            request_id=values.get('request_id'),
+            resource_uuid=values.get('request_uuid'),
+            roles=values.get('roles'),
+            is_public_api=values.get('is_public_api', False),
+            domain_id=values.get('domain_id'),
+            domain_name=values.get('domain_name'),
+        )
 
     def to_dict(self):
         values = super(RequestContext, self).to_dict()
         values.update({
-            "roles": self.roles,
             "is_public_api": self.is_public_api,
             "domain_id": self.domain_id,
             "domain_name": self.domain_name
