@@ -75,6 +75,14 @@ class RequestContext(context.RequestContext):
             domain_name=values.get('domain_name'),
         )
 
+    def to_policy_values(self):
+        values = super(RequestContext, self).to_policy_values()
+        values['tenant'] = self.project_id
+        values['tenant_id'] = self.project_id
+        values['user'] = self.user_id
+        values['is_admin'] = self.is_admin
+        return values
+
     def to_dict(self):
         values = super(RequestContext, self).to_dict()
         values.update({

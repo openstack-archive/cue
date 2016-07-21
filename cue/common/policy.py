@@ -65,7 +65,10 @@ def init(default_rule=None):
 
 
 def check(rule, ctxt, target=None, do_raise=True, exc=exception.NotAuthorized):
-    creds = ctxt.to_dict()
+    # creds = ctxt.to_dict()
+    creds = ctxt.to_policy_values()
+
+    # import ipdb; ipdb.set_trace()
     target = target or {}
 
     try:
