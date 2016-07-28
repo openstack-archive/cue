@@ -15,7 +15,6 @@
 
 import cue_utils
 from oslo_log import log as logging
-from rally.common import log as rally_logging
 from rally.common import sshutils
 from rally.plugins.openstack import scenario
 from rally.task import types as types
@@ -79,14 +78,10 @@ class CueClusters(cue_utils.CueScenario):
         self._delete_cluster(cluster['id'])
         self._wait_for_cluster_delete(cluster['id'], timeout, check_interval)
 
-    @types.set(image=types.ImageResourceType,
-               flavor=types.FlavorResourceType)
-    @rally_logging.log_deprecated_args(
-        "server_name will always be randomly generated", "0.1.3",
-        ["server_name"])
+    @types.convert(image={"type": "glance_image"},
+                   flavor={"type": "nova_flavor"})
     @scenario.configure()
     def create_verify_and_delete_cluster(self, image, flavor, network_id=None,
-                                         server_name="rally_vm",
                                          cluster_name=None,
                                          cluster_flavor="8795", size=1,
                                          cluster_volume_size=0,
