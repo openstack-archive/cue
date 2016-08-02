@@ -8,17 +8,17 @@ eventlet!=0.18.3,>=0.18.2 # MIT
 WebOb>=1.2.3 # MIT
 netaddr!=0.7.16,>=0.7.12 # BSD
 iso8601>=0.1.11 # MIT
-stevedore>=1.10.0 # Apache-2.0
-oslo.config>=3.10.0 # Apache-2.0
+stevedore>=1.16.0 # Apache-2.0
+oslo.config>=3.12.0 # Apache-2.0
 oslo.db>=4.1.0 # Apache-2.0
 oslo.log>=1.14.0 # Apache-2.0
 oslo.middleware>=3.0.0 # Apache-2.0
 oslo.policy>=1.9.0 # Apache-2.0
-oslo.rootwrap>=2.0.0 # Apache-2.0
+oslo.rootwrap>=5.0.0 # Apache-2.0
 oslo.i18n>=2.1.0 # Apache-2.0
 oslo.serialization>=1.10.0 # Apache-2.0
 oslo.service>=1.10.0 # Apache-2.0
-oslo.utils>=3.11.0 # Apache-2.0
+oslo.utils>=3.16.0 # Apache-2.0
 pecan>=1.0.0 # BSD
 six>=1.9.0 # MIT
 WSME>=0.8 # MIT
@@ -30,7 +30,7 @@ taskflow>=1.26.0 # Apache-2.0
 kazoo>=2.2 # Apache-2.0
 tooz>=1.28.0 # Apache-2.0
 #PyMySQL
-keystoneauth1>=2.7.0 # Apache-2.0
+keystoneauth1>=2.10.0 # Apache-2.0
 python-novaclient!=2.33.0,>=2.29.0 # Apache-2.0
 python-cinderclient!=1.7.0,!=1.7.1,>=1.6.0 # Apache-2.0
 python-neutronclient>=4.2.0 # Apache-2.0
