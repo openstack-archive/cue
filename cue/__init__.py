@@ -32,11 +32,9 @@ DEFAULT_OPTS = [
                help='The port to access RabbitMQ AMQP interface on a clustered'
                     'vm'),
     cfg.StrOpt('os_security_group',
-               default=None,
                help='The default Security Group to use for VMs created as '
                     'part of a cluster'),
     cfg.StrOpt('management_network_id',
-               default=None,
                help='The id representing the management network '),
     cfg.StrOpt('default_broker_name',
                default='rabbitmq',
