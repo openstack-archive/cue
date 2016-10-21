@@ -77,3 +77,4 @@ target/
 
 # pyenv
 .python-version
+releasenotes/build
