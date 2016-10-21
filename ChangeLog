@@ -1,0 +1,261 @@
+CHANGES
+=======
+
+* Update .coveragerc after the removal of openstack directory
+* Updated from global requirements
+* Node resources should not be exposed
+* Updated from global requirements
+* fix for taskflow, py34, and image-build
+* Finish the Python 3 port
+* Documentation fix: use "authentication" instead of "auth_credential"
+* documentation fix
+* adding a tox environment for docs
+* Removes unused posix_ipc requirement
+* Moved CORS middleware configuration into oslo-config-generator
+* Updated from global requirements
+* Validate cluster flavor with image metadata
+* Changing the documentation for Cue to the Openstack theme
+* Add debug testenv in tox
+* Fix imports on Python 3
+* fix for horizon/devstack issue
+* Use assertTrue/False instead of assertEqual(T/F)
+* Replace deprecated keystoneclient...exceptions
+* Remove openstack-common.conf
+* Replace deprecated library function os.popen() with subprocess
+* Adding support to cleanup taskflow job details
+* Add enforce_type=True in CONF.set_override
+* Trivial: Remove useless return from files in Cue
+* Remove unused logging import in Cue
+* Abort VM Status flow when VM(s) go to ERROR state
+* Use keystoneauth instead of keystoneclient
+* py3: Get urllib modules from six.moves
+* Adding RabbitMQ test configuration for Gate job
+* Added CORS support to Cue
+* Fix random name generation in Rally plugins
+* Fix error: Starting cue with empty config_dir causes runtime error
+* monitor now uses objects layer to access db records
+* policy checks are now being done in the api layer
+* validate network information during cluster create
+* Removing Cue client instantiation from Rally test
+* Put py34 first in the env order of tox
+* Updated from global requirements
+* Validate uuid parameters at api layer
+* Deprecated tox -downloadcache option removed
+* Remove anyjson useless requirement
+* Better loading of policy config files
+* Enabling devstack plugin for Cue
+* Fix import error in gate-cue-integration-dsvm-rabbitmq job
+* Remove jsonpatch useless requirement
+* Remove quotes from subshell call in bash script
+* Adding anti-affinity for broker cluster nodes
+* Extending cluster create tempest test
+* Renaming update_endpoints_task and update_node_task
+* Adding support for error details on cluster creation
+* Renaming cluster update task
+* Updated from global requirements
+* py3: Replace unicode with six.text_type
+* Making cue python3 compatible
+* removing zookeeper devstack lib
+* Open up Mitaka release
+
+1.0.0
+-----
+
+* Cue genconfig
+* Fix for taskflow reduce error when monitoring cluster of size one
+* Updating logging in tempest
+* Updating keystone auth for Rally tests
+* Allow endpoint_type to be configurable for Openstack services
+* fix for systemd based rabbitmq guest
+* cue-monitor service
+* Add cluster status check flow for cue-monitor
+* Add management_ip to node object
+* Code coverage fix and devstack fix
+* Updating Rally tests
+* py3: Get StringIO from the six module
+* Removing os-token from devstack/lib/cue script
+* Updating Rally tests
+* Adding authentication support to API
+* Updated from global requirements
+* Do not override ENABLED_SERVICES in gate_hook
+* Using identity_url in keystone middleware
+* Updating tempest tests and Vagrant environment build
+* Keystone v3 support
+* Updated from global requirements
+* Adding support for Keystone V3
+* Updated from global requirements
+* Updated from global requirements
+* Change sphinx theme to default
+* Modifying keystone middleware config
+* Check RabbitMQ cluster status via REST API during cluster create
+* Renaming cue-scenarios.yaml rally tasks file
+* Scenario test fix
+* adding diff_coverage to provide more detailed diff
+* Delete Cluster Bug
+* Matching cue dashboard symbolic names to their target names
+* Updating Rally tests
+* Remove openstack.common package
+* Adding field for auth_credentials to API doc
+* Rename end_points to endpoints in API
+* changing stackforge references to openstack
+* adding ssh auth forwarding to Vagrantfile
+* Fix broken tests
+* Update .gitreview file for project rename
+* Update renaming of the cue-dashboard panel registration files
+* update devstack plugin for keystone v3 and fix kazoo version
+* adding documentation section for recommended deploy
+* updating to latest rabbitmq version for image
+* Adding required directory for Rally Gate Jobs
+* fixing intermitten unittest failure
+* Adding ssl config to connect to Openstack HTTPS endpoint
+* Drop use of 'oslo' namespace package
+* Use fixture to register command line option
+* Fix revert on ERROR/Exception
+* Resolving oslo i18n dependency change
+* Setting the content-length header to string
+* Fixed getting started link
+* Fix to return broker values for 'broker add' command
+* Removing disk_free_limit from rabbitmq conf
+
+0.1.0a2
+-------
+
+* Add sphinxcontrib.httpdomain to test-requirements
+* modifying test_service to pass a config-file arg
+* Printing console and rabbitmq logs in the test
+
+0.1.0a1
+-------
+
+* Moving Node update earlier in cluster create flow
+* Updating Cue Documentation
+* Scenario test to create and delete cluster
+* Rename cue service_type to message-broker
+* Deleting VM ports on cluster delete flow
+* Unit tests for cmd/manage.py and cmd/worker.py
+* configure and start rabbitmq VMs from userdata
+* Fix failing unit test
+* Use correct password for running test
+* reducing log level on some libs
+* Fixing cue integration test gate
+* Removing the test_prepare_service_noargs call
+* Updating cue/cmd/manage.py get_arg_string() argument parser
+* Removing eventlet usage from cue/cmd/manage.py
+* Updating API Context hook header data extraction for context
+* Adding rabbitmq test script and pika lib to the rabbitmq image
+* Making gate hook scripts executable
+* Resolving Rally scenario tests directory name issue
+* Test clusters integration tests
+* Single VM Cue Install Scripts
+* qemu image compatibility fixes
+* fix rabbitmq userdata template to create metadata
+* Adding hooks for devstack vm gate testing
+* Unit/functional tests for cue.objects
+* Rally Test Framework Integration
+* Broker Unit and Functional tests
+* Adding base for integration tests
+* Adding helpful scripts in Vagrant VM
+* Adding Database Migration test class
+* Adding unit test for taskflow service
+* Adding database migration functional test
+* Imporve coverage job to make it voting
+* adding unit/functional tests for cue.common.policy
+* added a functional test to invoke cue.cmd.api
+* added unit tests for cue.common.context
+* adding unit tests for cue.common.service
+* add unit and functional tests for cue.common.exception
+* removing unused module cue.common.utils
+* Unit test wsme objects
+* cue-manage broker fix for devstack plugin
+* Change network_id argument to list type
+* Broker image selection
+* Resolving Removing Empty fields from API responses
+* Fix for API job post bug
+* Refactor tests
+* adding coverage tempfiles to gitignore
+* Updating database models to fix time stamp errors
+* Refactoring fixtures
+* fixing taskflow.flow tests
+* Adding .coveragerc to exclude tests and oslo modules
+* Removing Responce body wrapper from API
+* adding ifmetric that was accidentally left out
+* Initial port of RabbitMQ image elements
+* Removing unused code in API
+* Cue client and Cue dashboard install directories
+* Adding management network interface integration to Cue
+* fix for creating security groups in devstack
+* Cue dash board install error in devstack cript
+* Cap maximum number of nodes in a cluster
+* Cue Installation Script and instructions for single vm
+* changes to install cue-dashboard in devstack
+* Cue API list Clusters to include enpoints
+* Replacing RabbitMQ default user/password user
+* Jinga2 missing from requirements.txt
+* provisioning rabbitmq via userdata/cloud-init
+* added security group to create cluster call
+* adding ubuntu image and openstack credentials
+* Migrate Cue Policy to new Oslo_Policy Package
+* Consolidate Cluster and Clusters Controller
+* Refactor api
+* Resolving endpoints not all  now showing in cluster show
+* Run cue-api behind Apache2
+* Remove the 2.6 classifier
+* Implementing Dynamic Delete Flow
+* Tests Support for UUID strings
+* updating taskflow manage to use new client interface
+* Changes to get passed recent oslo changes
+* Implementation for cluster update
+* added delete neutron port task
+* cleaning up references to cue.openstack.common.log
+* Sync python-cueclient to vagrant home intead of /opt/stack
+* Add Devstack integration
+* added dynamic cluster create flow
+* Adding mandatory requirement to cluster size in API
+* adding nova.get_vm task
+* adding Map and Reduce task and simplifying Lambda
+* add create_vm task
+* removed destructor from cue.taskflow.client.Client
+* Post Jobs - Integrate API with Backend (TaskFlow)
+* Add lambda task and complete implementation of assert task
+* Added implementation for Delete Node Task
+* Move schema upgrade out to seperate command
+* Added install script for zookeeper
+* modified worker to exit gracefully
+* Add policy handling to all API calls
+* Wrapping Cluster and Clusters Resources in API responces
+* Adding Create Port Functionality for Cue Backend using TaskFlow
+* Implemented publisher API and multi-process worker
+* Integrate context into request
+* Add oslo.log dep
+* adding taskflow support with initial workflow
+* Patches to sphinx to properly generate API docs
+* Refactoring API - Cue Objects - DB modules
+* Sync requirements and fix oslo.log import
+* Fix wrong port for API and doc refs
+* API to DB Object Refactoring
+* Add 'status' field to Version so that API discovery works
+* Add base API Test
+* Extending delete_batch function and related test
+* Add Functional Tests
+* Workflow documentation is now in infra-manual
+* Connecting REST API to DB, part II
+* Connecting REST API to DB, part I
+* Adding support for REST Request body
+* Updated/added DB Models Unit Tests and Bug Fixes
+* Move TestBase to root of tests and reorganize repo
+* Initial documentation for getting started
+* Database CRUD
+* First submission for Cue Api Version 1
+* Initial DB base with migrations and command
+* Add vmware support and external configuration for Vagrantfile
+* Remove py26 from tox environments
+* Correct license header and add version.py
+* Adding Vagrantfile and update to tox.ini to fix tox env
+* Add gitreview file
+* Cleanup requires
+* Temporarily disabled admin policy for accessing the REST API
+* Update readme with development environmnent steps
+* Get basic API to start up
+* Base framework
+* Create README.md
+* Initial commit
