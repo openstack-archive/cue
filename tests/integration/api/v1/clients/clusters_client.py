@@ -17,7 +17,7 @@ import json
 import logging
 
 from six.moves import urllib
-from tempest_lib.common import rest_client
+from tempest.lib.common import rest_client
 
 from tests.integration.common import client
 

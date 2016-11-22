@@ -15,9 +15,9 @@
 
 import json
 
-from tempest_lib import auth
-from tempest_lib.common import rest_client
-from tempest_lib.services.compute import tenant_networks_client
+from tempest.lib import auth
+from tempest.lib.common import rest_client
+from tempest.lib.services.compute import tenant_networks_client
 
 from tests.integration.common import config
 

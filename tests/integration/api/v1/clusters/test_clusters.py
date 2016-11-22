@@ -24,9 +24,9 @@ import traceback
 import uuid
 
 import paramiko
-import tempest_lib.base
-from tempest_lib.common.utils import data_utils
-from tempest_lib import exceptions as tempest_exceptions
+import tempest.lib.base
+from tempest.lib.common.utils import data_utils
+from tempest.lib import exceptions as tempest_exceptions
 
 from tests.integration.api.v1.clients import clusters_client
 from tests.integration.common import client
@@ -37,7 +37,7 @@ CONF = config.get_config()
 LOG = logging.getLogger(__name__)
 
 
-class ClusterTest(tempest_lib.base.BaseTestCase):
+class ClusterTest(tempest.lib.base.BaseTestCase):
     """Cluster integration tests for Cue."""
 
     @classmethod
