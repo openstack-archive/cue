@@ -13,9 +13,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import cue_utils
-from oslo_log import log as logging
-from rally.common import log as rally_logging
+from . import cue_utils
+
+from rally.common import logging
 from rally.common import sshutils
 from rally.plugins.openstack import scenario
 from rally.task import types as types
@@ -30,7 +30,7 @@ class CueClusters(cue_utils.CueScenario):
     """Task Rally scenarios for Cue."""
     SUBNET_IP_VERSION = 4
 
-    @scenario.configure()
+    @scenario.configure(context={"admin_cleanup": ["neutron"]})
     def create_and_delete_cluster(self, name=None, flavor="8795",
                                   size=1, network_id=None, volume_size=0,
                                   timeout=300, check_interval=1, min_sleep=0,
@@ -79,14 +79,10 @@ class CueClusters(cue_utils.CueScenario):
         self._delete_cluster(cluster['id'])
         self._wait_for_cluster_delete(cluster['id'], timeout, check_interval)
 
-    @types.set(image=types.ImageResourceType,
-               flavor=types.FlavorResourceType)
-    @rally_logging.log_deprecated_args(
-        "server_name will always be randomly generated", "0.1.3",
-        ["server_name"])
-    @scenario.configure()
+    @types.convert(image={"type": "glance_image"},
+                   flavor={"type": "nova_flavor"})
+    @scenario.configure(context={"cleanup": ["nova", "neutron"]})
     def create_verify_and_delete_cluster(self, image, flavor, network_id=None,
-                                         server_name="rally_vm",
                                          cluster_name=None,
                                          cluster_flavor="8795", size=1,
                                          cluster_volume_size=0,
@@ -99,7 +95,6 @@ class CueClusters(cue_utils.CueScenario):
         :param image: str, image name for server creation
         :param flavor: str, flavor for server creation
         :param network_id: str, network id for server creation
-        :param server_name: str, server name
         :param cluster_name: str, cluster name
         :param cluster_flavor: str, cluster flavor
         :param size: int, cluster size
@@ -133,7 +128,7 @@ class CueClusters(cue_utils.CueScenario):
                 # create new network
                 test_network = self._create_network(neutron_client,
                                                     network_name)
-            network_id = test_network[1]["network"]["id"]
+                network_id = test_network[1]["network"]["id"]
             rabbitmq_username = "rabbitmq"
             rabbitmq_password = "passowrd"
 

@@ -17,7 +17,7 @@ import exceptions
 import time
 
 from keystoneclient import exceptions as ks_exceptions
-from rally.common import log as logging
+from rally.common import logging
 from rally.plugins.openstack import scenario
 from rally.task import atomic
 from rally.task import utils as task_utils
