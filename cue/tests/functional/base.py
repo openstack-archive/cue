@@ -26,7 +26,6 @@ import os
 from oslo_config import cfg
 from oslo_config import fixture as config_fixture
 from oslotest import base
-import six
 
 from cue.common import context as cue_context
 from cue.db.sqlalchemy import api as db_api
@@ -130,7 +129,7 @@ class FunctionalTestCase(base.BaseTestCase):
 
     def flags(self, group=None, **kw):
         """Override flag variables for a test."""
-        for k, v in six.iteritems(kw):
+        for k, v in kw.items():
             CONF.set_override(k, v, group, enforce_type=True)
 
     def path_get(self, project_file=None):
