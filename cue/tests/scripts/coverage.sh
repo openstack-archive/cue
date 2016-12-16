@@ -19,9 +19,9 @@ set -x
 
 COVERAGE_PERCENT_THRESHOLD=80
 
-# Stash uncommited changes, checkout master and save coverage report
-uncommited=$(git status --porcelain | grep -v "^??")
-[[ -n $uncommited ]] && git stash > /dev/null
+# Stash uncommitted changes, checkout master and save coverage report
+uncommitted=$(git status --porcelain | grep -v "^??")
+[[ -n $uncommitted ]] && git stash > /dev/null
 git checkout HEAD^
 
 baseline_report=$(mktemp -t rally_coverageXXXXXXX)
@@ -33,9 +33,9 @@ else
     baseline_missing=''
 fi
 
-# Checkout back and unstash uncommited changes (if any)
+# Checkout back and unstash uncommitted changes (if any)
 git checkout -
-[[ -n $uncommited ]] && git stash pop > /dev/null
+[[ -n $uncommitted ]] && git stash pop > /dev/null
 
 # Generate and save coverage report
 current_report=$(mktemp -t rally_coverageXXXXXXX)
