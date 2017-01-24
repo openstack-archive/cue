@@ -35,7 +35,7 @@ def get_attrname(name):
 def make_class_properties(cls):
     # NOTE(danms/comstud): Inherit fields from super classes.
     # mro() returns the current class first and returns 'object' last, so
-    # those can be skipped.  Also be careful to not overwrite any fields
+    # this can be skipped.  Also, be careful to not overwrite any fields
     # that already exist.  And make sure each cls has its own copy of
     # fields and that it is not sharing the dict with a super class.
     cls.fields = dict(cls.fields)
@@ -84,7 +84,7 @@ class CueObjectMetaclass(type):
 
         # Add the subclass to CueObject._obj_classes. If the
         # same version already exists, replace it. Otherwise,
-        # keep the list with newest version first.
+        # keep the list with the newest version first.
         make_class_properties(cls)
 
 
