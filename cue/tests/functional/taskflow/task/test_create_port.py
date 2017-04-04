@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.tests.functional import base
@@ -21,6 +20,7 @@ import cue.tests.functional.fixtures.neutron
 import os_tasklib.neutron as neutron_task
 
 from neutronclient.common import exceptions
+from oslo_utils import uuidutils
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -49,7 +49,7 @@ class CreatePortTests(base.FunctionalTestCase):
             os_client=neutron_client, provides='neutron_port_id'))
 
         # generate a new UUID for an 'invalid' network_id
-        CreatePortTests.task_store['network_id'] = str(uuid.uuid4())
+        CreatePortTests.task_store['network_id'] = uuidutils.generate_uuid()
 
         self.assertRaises(exceptions.NetworkNotFoundClient, engines.run, flow,
                           store=CreatePortTests.task_store)
@@ -63,7 +63,8 @@ class CreatePortTests(base.FunctionalTestCase):
         networks = neutron_client.list_networks(name=network_name)
         network = networks['networks'][0]
         CreatePortTests.task_store['network_id'] = network['id']
-        CreatePortTests.task_store['port_name'] = "port_" + str(uuid.uuid4())
+        CreatePortTests.task_store['port_name'] = "port_" + (
+        uuidutils.generate_uuid())
 
         # create flow with "CreatePort" task, given neutron client
         flow = linear_flow.Flow('create port').add(neutron_task.CreatePort(

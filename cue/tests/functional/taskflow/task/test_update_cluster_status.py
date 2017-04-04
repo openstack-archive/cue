@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.db.sqlalchemy import models
@@ -24,6 +23,7 @@ from cue.tests.functional.fixtures import neutron
 import os_tasklib.neutron as neutron_task
 
 from neutronclient.common import exceptions
+from oslo_utils import uuidutils
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -37,7 +37,7 @@ class UpdateClusterRecordTest(base.FunctionalTestCase):
     task_store = {
         "context": "context",
         "cluster_id": "id",
-        "network_id": str(uuid.uuid4()),
+        "network_id": uuidutils.generate_uuid(),
         "port_name": "port_0",
     }
 
@@ -51,7 +51,7 @@ class UpdateClusterRecordTest(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 3,
         }
@@ -99,7 +99,7 @@ class UpdateClusterRecordTest(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 3,
         }

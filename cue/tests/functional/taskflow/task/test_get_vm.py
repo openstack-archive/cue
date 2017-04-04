@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.tests.functional import base
@@ -21,6 +20,7 @@ from cue.tests.functional.fixtures import nova
 import os_tasklib.nova.get_vm as get_vm
 
 import novaclient.exceptions as nova_exc
+from oslo_utils import uuidutils
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -37,7 +37,7 @@ class GetVmTests(base.FunctionalTestCase):
 
         self.nova_client = client.nova_client()
 
-        self.valid_vm_name = str(uuid.uuid4())
+        self.valid_vm_name = uuidutils.generate_uuid()
 
         image_list = self.nova_client.images.list()
         for image in image_list:
@@ -72,7 +72,7 @@ class GetVmTests(base.FunctionalTestCase):
         self.assertEqual(self.valid_vm_name, new_vm['name'])
 
     def test_get_invalid_vm(self):
-        invalid_vm_id = str(uuid.uuid4())
+        invalid_vm_id = uuidutils.generate_uuid()
         flow_store = {
             'server': invalid_vm_id
         }

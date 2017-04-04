@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.common import exception
@@ -27,6 +26,7 @@ from cue.tests.functional.fixtures import nova
 from cue.tests.functional.fixtures import urllib2_fixture
 
 import novaclient.exceptions as nova_exc
+from oslo_utils import uuidutils
 from taskflow import engines
 import taskflow.exceptions as taskflow_exc
 
@@ -50,7 +50,7 @@ class DeleteClusterTests(base.FunctionalTestCase):
         self.neutron_client = client.neutron_client()
         self.port = '5672'
 
-        self.new_vm_name = str(uuid.uuid4())
+        self.new_vm_name = uuidutils.generate_uuid()
         self.new_vm_list = []
 
         image_list = self.nova_client.images.list()
@@ -89,9 +89,9 @@ class DeleteClusterTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid()
         }
         flow_store_delete = {
             "context": self.context.to_dict(),
@@ -100,7 +100,7 @@ class DeleteClusterTests(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 3,
         }
@@ -178,9 +178,9 @@ class DeleteClusterTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
         flow_store_delete = {
             "context": self.context.to_dict(),
@@ -189,7 +189,7 @@ class DeleteClusterTests(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 3,
         }
@@ -240,11 +240,11 @@ class DeleteClusterTests(base.FunctionalTestCase):
         }
 
         cluster_size = 3
-        cluster_id = str(uuid.uuid4())
-        server_group_id = str(uuid.uuid4())
+        cluster_id = uuidutils.generate_uuid()
+        server_group_id = uuidutils.generate_uuid()
         node_ids = []
         for i in range(0, cluster_size):
-            node_ids.append(str(uuid.uuid4()))
+            node_ids.append(uuidutils.generate_uuid())
 
         flow_delete = delete_cluster(cluster_id, node_ids, server_group_id)
 

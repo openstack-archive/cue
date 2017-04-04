@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.tests.functional import base
@@ -22,6 +21,7 @@ from cue.tests.functional.fixtures import nova
 import os_tasklib.nova.create_vm as create_vm
 
 import novaclient.exceptions as nova_exc
+from oslo_utils import uuidutils
 from taskflow import engines
 import taskflow.exceptions as taskflow_exc
 from taskflow.patterns import linear_flow
@@ -42,7 +42,7 @@ class CreateVmTests(base.FunctionalTestCase):
         self.nova_client = client.nova_client()
         self.neutron_client = client.neutron_client()
 
-        self.new_vm_name = str(uuid.uuid4())
+        self.new_vm_name = uuidutils.generate_uuid()
         self.new_vm_id = None
 
         image_list = self.nova_client.images.list()
@@ -83,7 +83,7 @@ class CreateVmTests(base.FunctionalTestCase):
         self.assertEqual(self.new_vm_name, new_vm.name)
 
     def test_create_vm_invalid_flavor(self):
-        invalid_flavor = str(uuid.uuid4())
+        invalid_flavor = uuidutils.generate_uuid()
         flow_store = {
             'vm_name': self.new_vm_name,
             'image': self.valid_image,
@@ -97,7 +97,7 @@ class CreateVmTests(base.FunctionalTestCase):
                           self.flow, store=flow_store)
 
     def test_create_vm_invalid_image(self):
-        invalid_image = str(uuid.uuid4())
+        invalid_image = uuidutils.generate_uuid()
         flow_store = {
             'vm_name': self.new_vm_name,
             'image': invalid_image,
@@ -111,7 +111,7 @@ class CreateVmTests(base.FunctionalTestCase):
                           self.flow, store=flow_store)
 
     def test_create_vm_invalid_nic(self):
-        invalid_nic = str(uuid.uuid4())
+        invalid_nic = uuidutils.generate_uuid()
         flow_store = {
             'vm_name': self.new_vm_name,
             'image': self.valid_image,
@@ -132,7 +132,7 @@ class CreateVmTests(base.FunctionalTestCase):
                           engines.run, self.flow, store=flow_store)
 
     def test_invalid_security_group(self):
-        invalid_security_group = str(uuid.uuid4())
+        invalid_security_group = uuidutils.generate_uuid()
         flow_store = {
             'vm_name': self.new_vm_name,
             'image': self.valid_image.id,

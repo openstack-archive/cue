@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import contextlib
-import uuid
 
 from oslo_config import cfg
 from oslo_utils import uuidutils
@@ -242,7 +241,7 @@ class Client(object):
         if flow_factory is not None:
             flow_detail = persistence_models.FlowDetail(
                               job_name,
-                              str(uuid.uuid4())
+                              uuidutils.generate_uuid()
                           )
             book.add(flow_detail)
 

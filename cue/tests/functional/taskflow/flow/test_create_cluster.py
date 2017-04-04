@@ -13,10 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from neutronclient.common import exceptions as neutron_exceptions
 from oslo_config import cfg
+from oslo_utils import uuidutils
 from taskflow import engines
 import taskflow.exceptions as taskflow_exc
 
@@ -53,7 +53,7 @@ class CreateClusterTests(base.FunctionalTestCase):
         self.neutron_client = client.neutron_client()
         self.port = u'5672'
 
-        self.new_vm_name = str(uuid.uuid4())
+        self.new_vm_name = uuidutils.generate_uuid()
         self.new_vm_list = []
 
         image_list = self.nova_client.images.list()
@@ -92,9 +92,9 @@ class CreateClusterTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
 
         cluster_values = {
@@ -162,9 +162,9 @@ class CreateClusterTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
 
         cluster_values = {
@@ -219,9 +219,9 @@ class CreateClusterTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
 
         cluster_values = {
@@ -278,9 +278,9 @@ class CreateClusterTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
 
         cluster_values = {
@@ -334,9 +334,9 @@ class CreateClusterTests(base.FunctionalTestCase):
             'flavor': self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
 
         cluster_values = {
@@ -369,7 +369,7 @@ class CreateClusterTests(base.FunctionalTestCase):
         self.assertEqual(port_list, self.neutron_client.list_ports())
 
     def test_create_cluster_invalid_user_network(self):
-        invalid_network_id = str(uuid.uuid4())
+        invalid_network_id = uuidutils.generate_uuid()
         cluster_size = 3
 
         flow_store = {
@@ -378,9 +378,9 @@ class CreateClusterTests(base.FunctionalTestCase):
             'flavor': self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
 
         cluster_values = {
@@ -426,15 +426,15 @@ class CreateClusterTests(base.FunctionalTestCase):
             'flavor': self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
 
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 3,
         }

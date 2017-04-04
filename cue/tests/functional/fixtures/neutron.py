@@ -13,10 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from neutronclient.common import exceptions
 import neutronclient.neutron.client
+from oslo_utils import uuidutils
 
 import cue.tests.functional.fixtures.base as base
 
@@ -31,9 +31,9 @@ def new_network_detail(admin_state_up=True,
                        subnets=None,
                        tenant_id=None):
     if id is None:
-        id = str(uuid.uuid4())
+        id = uuidutils.generate_uuid()
     if tenant_id is None:
-        tenant_id = str(uuid.uuid4())
+        tenant_id = uuidutils.generate_uuid()
     return {'admin_state_up': admin_state_up,
             'id': id,
             'name': name,
@@ -93,7 +93,7 @@ class NeutronClient(base.BaseFixture):
         else:
             body = {'port': {}}
 
-        port_id = str(uuid.uuid4())
+        port_id = uuidutils.generate_uuid()
         body['port']['id'] = port_id
         body['port']['fixed_ips'] = []
         body['port']['fixed_ips'].append({'ip_address': '0.0.0.0'})
@@ -114,7 +114,7 @@ class NeutronClient(base.BaseFixture):
         else:
             body = {'network': {}}
 
-        network_id = str(uuid.uuid4())
+        network_id = uuidutils.generate_uuid()
         body['network'].update({
             'id': network_id,
             'subnets': [],

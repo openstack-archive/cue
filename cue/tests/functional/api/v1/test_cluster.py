@@ -19,7 +19,6 @@
 Tests for the API /cluster/ controller methods.
 """
 
-import uuid
 
 from cue.common import validate_auth_token as auth_validate
 from cue.db.sqlalchemy import api as db_api
@@ -28,6 +27,8 @@ from cue import objects
 from cue.tests.functional import api
 from cue.tests.functional.api import api_utils
 from cue.tests.functional import utils as test_utils
+
+from oslo_utils import uuidutils
 
 
 class TestGetCluster(api.APITest,
@@ -38,7 +39,7 @@ class TestGetCluster(api.APITest,
 
     def test_get_cluster_not_found(self):
         """test get non-existing cluster."""
-        data = self.get_json('/clusters/' + str(uuid.uuid4()),
+        data = self.get_json('/clusters/' + uuidutils.generate_uuid(),
                              headers=self.auth_headers, expect_errors=True)
 
         self.assertEqual(404, data.status_code,
@@ -101,7 +102,7 @@ class TestDeleteCluster(api.APITest,
 
     def test_delete_cluster_not_found(self):
         """test delete non-existing cluster."""
-        data = self.delete('/clusters/' + str(uuid.uuid4()),
+        data = self.delete('/clusters/' + uuidutils.generate_uuid(),
                            headers=self.auth_headers, expect_errors=True)
 
         self.assertEqual(404, data.status_code,
@@ -326,7 +327,8 @@ class TestCreateCluster(api.APITest,
     def test_create_network_id_size_not_one(self):
         """test create a cluster with size of network_id more than one."""
         api_cluster = test_utils.create_api_test_cluster(network_id=(
-                        [str(uuid.uuid4()), str(uuid.uuid4())]))
+                        [uuidutils.generate_uuid(),
+                        uuidutils.generate_uuid()]))
 
         data = self.post_json('/clusters', headers=self.auth_headers,
                               params=api_cluster, expect_errors=True)

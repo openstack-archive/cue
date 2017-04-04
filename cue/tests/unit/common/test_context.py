@@ -13,31 +13,31 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import uuid
-
 from cue.common import context
 from cue.tests.unit import base
+
+from oslo_utils import uuidutils
 
 
 class TestContext(base.UnitTestCase):
 
     def test_context(self):
         original_context = {
-            'auth_token': str(uuid.uuid4()),
-            'user': str(uuid.uuid4()),
-            'tenant': str(uuid.uuid4()),
-            'domain': str(uuid.uuid4()),
-            'user_domain': str(uuid.uuid4()),
-            'project_domain': str(uuid.uuid4()),
+            'auth_token': uuidutils.generate_uuid(),
+            'user': uuidutils.generate_uuid(),
+            'tenant': uuidutils.generate_uuid(),
+            'domain': uuidutils.generate_uuid(),
+            'user_domain': uuidutils.generate_uuid(),
+            'project_domain': uuidutils.generate_uuid(),
             'is_admin': False,
             'read_only': False,
             'show_deleted': False,
-            'request_id': str(uuid.uuid4()),
-            'resource_uuid': str(uuid.uuid4()),
-            'roles': str(uuid.uuid4()),
+            'request_id': uuidutils.generate_uuid(),
+            'resource_uuid': uuidutils.generate_uuid(),
+            'roles': uuidutils.generate_uuid(),
             'is_public_api': False,
-            'domain_id': str(uuid.uuid4()),
-            'domain_name': str(uuid.uuid4())
+            'domain_id': uuidutils.generate_uuid(),
+            'domain_name': uuidutils.generate_uuid()
         }
 
         req_context = context.RequestContext(**original_context)
@@ -51,13 +51,13 @@ class TestContext(base.UnitTestCase):
         self.assertDictEqual(original_context, context_dict)
 
     def test_tenant_id(self):
-        tenant_id = str(uuid.uuid4())
+        tenant_id = uuidutils.generate_uuid()
         req_context = context.RequestContext()
         req_context.tenant_id = tenant_id
         self.assertEqual(tenant_id, req_context.tenant_id)
 
     def test_user_id(self):
-        user_id = str(uuid.uuid4())
+        user_id = uuidutils.generate_uuid()
         req_context = context.RequestContext()
         req_context.user_id = user_id
         self.assertEqual(user_id, req_context.user_id)

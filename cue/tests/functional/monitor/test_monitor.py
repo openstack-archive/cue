@@ -13,10 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 import mock
 from oslo_config import cfg
+from oslo_utils import uuidutils
 
 from cue.db.sqlalchemy import models
 from cue.monitor import monitor_service as cue_monitor_service
@@ -44,9 +44,9 @@ class MonitorFunctionalTests(base.FunctionalTestCase):
         CONF.set_override("zk_port", "", group="taskflow",
                           enforce_type=True)
 
-        self.active_cluster_id = uuid.uuid4()
-        self.error_cluster_id = uuid.uuid4()
-        self.down_cluster_id = uuid.uuid4()
+        self.active_cluster_id = uuidutils.generate_uuid()
+        self.error_cluster_id = uuidutils.generate_uuid()
+        self.down_cluster_id = uuidutils.generate_uuid()
 
         # Add some test clusters
         set_up_test_clusters(

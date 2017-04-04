@@ -13,7 +13,6 @@
 #    under the License.
 #
 # Copied from Octavia
-import uuid
 
 from cue.db import api as db_api
 from cue.db.sqlalchemy import api as sql_api
@@ -21,12 +20,12 @@ from cue.db.sqlalchemy import models
 from cue.tests.functional import base
 
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 
-
-UUID1 = str(uuid.uuid4())
-UUID2 = str(uuid.uuid4())
-UUID3 = str(uuid.uuid4())
-UUID4 = str(uuid.uuid4())
+UUID1 = uuidutils.generate_uuid()
+UUID2 = uuidutils.generate_uuid()
+UUID3 = uuidutils.generate_uuid()
+UUID4 = uuidutils.generate_uuid()
 
 
 class ModelsTests(base.FunctionalTestCase):

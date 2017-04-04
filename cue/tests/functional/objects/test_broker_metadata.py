@@ -16,7 +16,6 @@
 """
 Tests for cue broker_metadata object.
 """
-import uuid
 
 from cue.common import exception
 from cue.db import api as db_api
@@ -25,6 +24,8 @@ from cue import objects
 from cue.tests.functional import base
 from cue.tests.functional import utils as func_utils
 from cue.tests import utils as test_utils
+
+from oslo_utils import uuidutils
 
 
 class BrokerObjectsTests(base.FunctionalTestCase):
@@ -120,7 +121,7 @@ class BrokerObjectsTests(base.FunctionalTestCase):
         BrokerMetadata objects API.
         """
         test_metadata_dict = func_utils.get_test_broker_metadata_dict(
-            broker_id=str(uuid.uuid4()))
+            broker_id=uuidutils.generate_uuid())
         new_broker_metadata = objects.BrokerMetadata(**test_metadata_dict)
         self.validate_broker_metadata_values(new_broker_metadata,
                                              test_metadata_dict)

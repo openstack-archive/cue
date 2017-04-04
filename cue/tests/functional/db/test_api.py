@@ -16,10 +16,8 @@
 # Copyright [2014] Hewlett-Packard Development Company, L.P.
 # limitations under the License.
 
-
-import uuid
-
 from oslo_db import exception as oslo_exception
+from oslo_utils import uuidutils
 
 from cue.common import exception
 from cue.db import api as db_api
@@ -28,8 +26,8 @@ from cue.db.sqlalchemy import models
 from cue.tests.functional import base
 
 
-UUID1 = str(uuid.uuid4())
-UUID2 = str(uuid.uuid4())
+UUID1 = uuidutils.generate_uuid()
+UUID2 = uuidutils.generate_uuid()
 
 
 class ApiTests(base.FunctionalTestCase):

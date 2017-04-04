@@ -14,10 +14,10 @@
 # under the License.
 
 import copy
-import uuid
 
 import novaclient.exceptions as nova_exc
 import novaclient.v2.client as nova_client
+from oslo_utils import uuidutils
 
 import cue.client as client
 import cue.tests.functional.fixtures.base as base
@@ -50,7 +50,7 @@ class ImageDetails(object):
                  updated=None):
         self.created = created
         self.human_id = human_id
-        self.id = id or str(uuid.uuid4())
+        self.id = id or uuidutils.generate_uuid()
         self.minDisk = minDisk
         self.minRam = minRam
         self.name = name
@@ -64,7 +64,7 @@ class FlavorDetails(object):
                  name=None, ram=None, rxtx_factor=None, swap=None, vcpus=None):
         self.disk = disk or 10
         self.ephemeral = ephemeral or 10
-        self.id = id or str(uuid.uuid4())
+        self.id = id or uuidutils.generate_uuid()
         self.is_public = is_public or 'N/A'
         self.name = name
         self.ram = ram or 512
@@ -108,7 +108,7 @@ class VmStatusDetails(object):
 
 class VmGroupDetails(object):
     def __init__(self, vm_group_id, name, policies=None):
-        self.id = vm_group_id or str(uuid.uuid4())
+        self.id = vm_group_id or uuidutils.generate_uuid()
         self.name = name or 'cue_group'
         self.policies = policies or ['anti-affinity']
 
@@ -244,7 +244,7 @@ class NovaClient(base.BaseFixture):
             if missing:
                 raise nova_exc.BadRequest(400)
 
-        newVm = VmDetails(vm_id=uuid.uuid4(), name=name,
+        newVm = VmDetails(vm_id=uuidutils.generate_uuid(), name=name,
                           flavor=flavor, image=image,
                           port_list=port_list,
                           status='BUILDING')
@@ -258,7 +258,7 @@ class NovaClient(base.BaseFixture):
             if group_id not in self._vm_group_list:
                 raise nova_exc.BadRequest(400)
 
-            newVm.host_id = str(uuid.uuid4())
+            newVm.host_id = uuidutils.generate_uuid()
 
         self._vm_list[str(newVm.id)] = newVm
 
@@ -404,8 +404,8 @@ class NovaClient(base.BaseFixture):
         :return: An updated copy of the 'body' that was passed in, with other
                  information populated.
         """
-        newVmGroup = VmGroupDetails(vm_group_id=str(uuid.uuid4()), name=name,
-                                    policies=policies)
+        newVmGroup = VmGroupDetails(vm_group_id=uuidutils.generate_uuid(),
+                                    name=name, policies=policies)
 
         self._vm_group_list[newVmGroup.id] = newVmGroup
         return newVmGroup

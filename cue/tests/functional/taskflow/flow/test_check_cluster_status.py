@@ -13,9 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
-
-
 from cue import client
 from cue.db import api as db_api
 from cue.db.sqlalchemy import models
@@ -27,6 +24,7 @@ from cue.tests.functional.fixtures import neutron
 from cue.tests.functional.fixtures import nova
 from cue.tests.functional.fixtures import urllib2_fixture
 
+from oslo_utils import uuidutils
 from taskflow import engines
 
 
@@ -50,7 +48,7 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
         self.neutron_client = client.neutron_client()
         self.port = '5672'
 
-        self.new_vm_name = str(uuid.uuid4())
+        self.new_vm_name = uuidutils.generate_uuid()
         self.new_vm_list = []
 
         image_list = self.nova_client.images.list()
@@ -86,9 +84,9 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
         flow_store_check = {
             "context": self.context.to_dict(),
@@ -99,7 +97,7 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 2,
         }
@@ -153,9 +151,9 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
         flow_store_check = {
             "context": self.context.to_dict(),
@@ -166,7 +164,7 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 2,
         }
@@ -222,9 +220,9 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
             "flavor": self.valid_flavor.id,
             "port": self.port,
             "context": self.context.to_dict(),
-            "erlang_cookie": str(uuid.uuid4()),
+            "erlang_cookie": uuidutils.generate_uuid(),
             "default_rabbit_user": 'rabbit',
-            "default_rabbit_pass": str(uuid.uuid4()),
+            "default_rabbit_pass": uuidutils.generate_uuid(),
         }
         flow_store_check = {
             "context": self.context.to_dict(),
@@ -235,7 +233,7 @@ class CheckClusterStatusTests(base.FunctionalTestCase):
         cluster_values = {
             "project_id": self.context.tenant_id,
             "name": "RabbitCluster",
-            "network_id": str(uuid.uuid4()),
+            "network_id": uuidutils.generate_uuid(),
             "flavor": "1",
             "size": 1,
         }

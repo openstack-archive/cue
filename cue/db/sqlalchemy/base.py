@@ -15,9 +15,9 @@
 # Copied from Octavia
 from cue.db.sqlalchemy import types
 
-import uuid
 
 from oslo_db.sqlalchemy import models
+from oslo_utils import uuidutils
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
 
@@ -39,7 +39,7 @@ class LookupTableMixin(object):
 class IdMixin(object):
     """Id mixin, add to subclasses that have a tenant."""
     id = sa.Column(types.UUID(), nullable=False,
-                   default=lambda i: str(uuid.uuid4()),
+                   default=lambda i: uuidutils.generate_uuid(),
                    primary_key=True)
 
 

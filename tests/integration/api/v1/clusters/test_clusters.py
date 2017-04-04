@@ -21,8 +21,8 @@ import logging
 import sys
 import time
 import traceback
-import uuid
 
+from oslo_utils import uuidutils
 import paramiko
 import tempest_lib.base
 from tempest_lib.common.utils import data_utils
@@ -254,7 +254,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': 'rabbitmq',
                                          'password': 'rabbit'}}
@@ -270,7 +270,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': 'rabbitmq',
                                          'password': 'rabbit'}}
@@ -286,7 +286,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'name': 'fake name',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': 'rabbitmq',
                                          'password': 'rabbit'}}
@@ -342,7 +342,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 0,
             'flavor': '8795',
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': 'rabbitmq',
                                          'password': 'rabbit'}}
@@ -372,7 +372,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'size': 1,
             'flavor': 0,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': 'rabbitmq',
                                          'password': 'rabbit'}}
@@ -403,7 +403,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'flavor': '8795',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())]
+            'network_id': [uuidutils.generate_uuid()]
         }
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.create_cluster_from_body,
@@ -417,7 +417,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'flavor': '8795',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'token': {'username': 'rabbitmq',
                                          'password': 'rabbit'}}
         }
@@ -433,7 +433,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'flavor': '8795',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN'}
         }
         self.assertRaises(tempest_exceptions.BadRequest,
@@ -448,7 +448,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'flavor': '8795',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'password': 'rabbit'}}
         }
@@ -464,7 +464,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'flavor': '8795',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': 'rabbitmq'}}
         }
@@ -480,7 +480,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'flavor': '8795',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': '',
                                          'password': 'rabbit'}}
@@ -497,7 +497,7 @@ class ClusterTest(tempest_lib.base.BaseTestCase):
             'flavor': '8795',
             'size': 1,
             'volume_size': 100,
-            'network_id': [str(uuid.uuid4())],
+            'network_id': [uuidutils.generate_uuid()],
             'authentication': {'type': 'PLAIN',
                                'token': {'username': 'rabbitmq',
                                          'password': ''}}

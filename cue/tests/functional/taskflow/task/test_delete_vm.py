@@ -13,13 +13,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.tests.functional import base
 from cue.tests.functional.fixtures import nova
 import os_tasklib.nova.delete_vm as delete_vm
 
+from oslo_utils import uuidutils
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -64,7 +64,7 @@ class DeleteVmTests(base.FunctionalTestCase):
                                                     flavor=self.flavor)]
 
         # delete non-existing vm (invalid id)
-        DeleteVmTests.task_store['server'] = str(uuid.uuid4())
+        DeleteVmTests.task_store['server'] = uuidutils.generate_uuid()
 
         # start engine to run delete task
         engines.run(self.flow, store=DeleteVmTests.task_store)

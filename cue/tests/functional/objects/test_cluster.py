@@ -16,10 +16,10 @@
 """
 Tests for cue cluster object.
 """
-import uuid
 
 import mock
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 import testtools
 
 from cue.api.controllers.v1 import cluster
@@ -163,7 +163,7 @@ class ClusterObjectsTests(base.FunctionalTestCase):
         cluster_list = list()
         for list_size in range(3):
             new_cluster = func_utils.create_object_cluster(
-                self.context, id=str(uuid.uuid4()))
+                self.context, id=uuidutils.generate_uuid())
             cluster_list.append(new_cluster)
 
         returned_cluster_list = objects.Cluster.get_clusters(self.context)

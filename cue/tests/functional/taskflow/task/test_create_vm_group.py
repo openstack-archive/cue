@@ -13,13 +13,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.tests.functional import base
 from cue.tests.functional.fixtures import nova
 import os_tasklib.nova.create_vm_group as create_vm_group
 
+from oslo_utils import uuidutils
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -34,7 +34,7 @@ class CreateVmGroupTests(base.FunctionalTestCase):
 
         self.nova_client = client.nova_client()
 
-        self.new_vm_group_name = str(uuid.uuid4())
+        self.new_vm_group_name = uuidutils.generate_uuid()
         self.new_vm_group_id = None
 
         self.flow = linear_flow.Flow("create vm group flow")

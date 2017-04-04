@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.tests.functional import base
@@ -22,6 +21,7 @@ from cue.tests.functional.fixtures import nova
 import os_tasklib.nova.list_vm_interfaces as list_vm_interfaces
 
 import novaclient.exceptions as nova_exc
+from oslo_utils import uuidutils
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -40,7 +40,7 @@ class GetVmInterfacesTests(base.FunctionalTestCase):
         self.nova_client = client.nova_client()
         self.neutron_client = client.neutron_client()
 
-        self.valid_vm_name = str(uuid.uuid4())
+        self.valid_vm_name = uuidutils.generate_uuid()
 
         image_list = self.nova_client.images.list()
         for image in image_list:
@@ -83,7 +83,7 @@ class GetVmInterfacesTests(base.FunctionalTestCase):
 
     def test_get_vm_interfaces_invalid_vm(self):
         flow_store = {
-            'server': str(uuid.uuid4())
+            'server': uuidutils.generate_uuid()
         }
 
         self.assertRaises(nova_exc.NotFound, engines.run, self.flow,
@@ -91,7 +91,7 @@ class GetVmInterfacesTests(base.FunctionalTestCase):
 
     def test_get_vm_interfaces_invalid_vm_ignore_not_found_exception(self):
         flow_store = {
-            'server': str(uuid.uuid4()),
+            'server': uuidutils.generate_uuid(),
             'ignore_nova_not_found_exception': True
         }
 

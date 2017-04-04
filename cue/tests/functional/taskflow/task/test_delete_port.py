@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from cue import client
 from cue.tests.functional import base
@@ -21,6 +20,7 @@ import cue.tests.functional.fixtures.neutron
 import os_tasklib.neutron as neutron_task
 
 import neutronclient.common.exceptions as neutron_exc
+from oslo_utils import uuidutils
 from taskflow import engines
 from taskflow.patterns import linear_flow
 
@@ -129,7 +129,7 @@ class DeletePortTests(base.FunctionalTestCase):
 
     def test_delete_nonexistent_port(self):
         # generate random port_id
-        port_id = uuid.uuid4().hex
+        port_id = uuidutils.generate_uuid(dashed=False)
 
         task_store = {
             'port_ids': port_id

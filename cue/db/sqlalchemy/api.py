@@ -14,7 +14,6 @@
 #    under the License.
 #
 # Copied from Neutron
-import uuid
 
 from cue.common import exception
 from cue.common.i18n import _  # noqa
@@ -26,6 +25,7 @@ from oslo_db import exception as db_exception
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 from sqlalchemy.orm import exc as sql_exception
 
 CONF = cfg.CONF
@@ -105,7 +105,7 @@ class Connection(api.Connection):
 
     def create_cluster(self, context, cluster_values):
         if not cluster_values.get('id'):
-            cluster_values['id'] = str(uuid.uuid4())
+            cluster_values['id'] = uuidutils.generate_uuid()
 
         cluster_values['status'] = models.Status.BUILDING
         cluster = models.Cluster()
@@ -124,7 +124,7 @@ class Connection(api.Connection):
 
             for i in range(cluster_values['size']):
                 node = models.Node()
-                node_id = str(uuid.uuid4())
+                node_id = uuidutils.generate_uuid()
                 node_values['id'] = node_id
                 node.update(node_values)
                 node.save(db_session)
@@ -186,7 +186,7 @@ class Connection(api.Connection):
 
     def create_endpoint(self, context, endpoint_values):
         if not endpoint_values.get('id'):
-            endpoint_values['id'] = str(uuid.uuid4())
+            endpoint_values['id'] = uuidutils.generate_uuid()
 
         endpoint = models.Endpoint()
         endpoint.update(endpoint_values)
