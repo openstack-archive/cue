@@ -40,8 +40,7 @@ class MigrationFunctionalTests(base.BaseTestCase):
         self.config = self.config_fixture.config
         self.config_fixture.register_opt(cfg.StrOpt(
             'connection', default='sqlite://'))
-        conf.set_override('connection', 'sqlite://', 'database',
-                          enforce_type=True)
+        conf.set_override('connection', 'sqlite://', 'database')
 
         self.cmd = database.DatabaseCommands()
 

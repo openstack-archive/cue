@@ -37,12 +37,9 @@ class MonitorFunctionalTests(base.FunctionalTestCase):
     def setUp(self):
         super(MonitorFunctionalTests, self).setUp()
 
-        CONF.set_override("coord_url", "zake", group="taskflow",
-                          enforce_type=True)
-        CONF.set_override("zk_hosts", "", group="taskflow",
-                          enforce_type=True)
-        CONF.set_override("zk_port", "", group="taskflow",
-                          enforce_type=True)
+        CONF.set_override("coord_url", "zake", group="taskflow")
+        CONF.set_override("zk_hosts", "", group="taskflow")
+        CONF.set_override("zk_port", "", group="taskflow")
 
         self.active_cluster_id = uuid.uuid4()
         self.error_cluster_id = uuid.uuid4()

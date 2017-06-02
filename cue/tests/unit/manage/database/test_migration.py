@@ -33,8 +33,7 @@ class TestMigration(oslo_base.BaseTestCase):
     def setUp(self):
         super(TestMigration, self).setUp()
 
-        CONF.set_override("connection", "sqlite://", group="database",
-                          enforce_type=True)
+        CONF.set_override("connection", "sqlite://", group="database")
         self.cue_manage_database = cue_db.DatabaseCommands()
 
     @mock.patch('oslo_db.sqlalchemy.migration_cli.manager.'
