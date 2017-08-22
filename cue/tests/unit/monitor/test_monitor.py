@@ -33,12 +33,9 @@ class TestMonitorService(oslo_base.BaseTestCase):
     def setUp(self):
         super(TestMonitorService, self).setUp()
 
-        CONF.set_override("coord_url", "zake", group="taskflow",
-                          enforce_type=True)
-        CONF.set_override("zk_hosts", "", group="taskflow",
-                          enforce_type=True)
-        CONF.set_override("zk_port", "", group="taskflow",
-                          enforce_type=True)
+        CONF.set_override("coord_url", "zake", group="taskflow")
+        CONF.set_override("zk_hosts", "", group="taskflow")
+        CONF.set_override("zk_port", "", group="taskflow")
 
         self.cue_monitor_service = cue_monitor_service.MonitorService()
 
@@ -48,8 +45,7 @@ class TestMonitorService(oslo_base.BaseTestCase):
                    mock_fixed_interval_loop_call_start,
                    mock_loop_call_wait):
         CONF.set_override("loop_interval_seconds", "9001",
-                          group="cue_monitor",
-                          enforce_type=True)
+                          group="cue_monitor")
 
         self.cue_monitor_service.start()
 
