@@ -54,9 +54,9 @@ Instructions
 
 7. Load desired credentials into the shell::
 
-   $ source openrc admin admin # For the admin user, admin tenant
-   $ source openrc admin demo  # For the admin user, demo tenant
-   $ source openrc demo demo   # For the demo user, demo tenant
+   $ . openrc admin admin # For the admin user, admin tenant
+   $ . openrc admin demo  # For the admin user, demo tenant
+   $ . openrc demo demo   # For the demo user, demo tenant
 
 8. Try out the cue client::
 
