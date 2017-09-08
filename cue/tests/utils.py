@@ -23,9 +23,9 @@ import six
 def compare_dates(datetime1, datetime2):
     """Compare datetime objects."""
     if datetime1 is not None and datetime1.utcoffset() is None:
-        datetime1 = datetime1.replace(tzinfo=iso8601.iso8601.Utc())
+        datetime1 = datetime1.replace(tzinfo=iso8601.UTC)
     if datetime2 is not None and datetime2.utcoffset() is None:
-        datetime2 = datetime2.replace(tzinfo=iso8601.iso8601.Utc())
+        datetime2 = datetime2.replace(tzinfo=iso8601.UTC)
     return datetime1 == datetime2
 
 
