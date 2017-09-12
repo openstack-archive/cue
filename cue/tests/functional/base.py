@@ -52,8 +52,8 @@ class FunctionalTestCase(base.BaseTestCase):
     """Test case base class for all functional tests."""
 
     additional_fixtures = []
-    #todo(dagnello): add enable_fixures as a configurable parameters for
-    #running tests.
+    # todo(dagnello): add enable_fixures as a configurable parameters for
+    # running tests.
     enable_fixtures = True
 
     def setUp(self):
@@ -131,7 +131,7 @@ class FunctionalTestCase(base.BaseTestCase):
     def flags(self, group=None, **kw):
         """Override flag variables for a test."""
         for k, v in six.iteritems(kw):
-            CONF.set_override(k, v, group, enforce_type=True)
+            CONF.set_override(k, v, group)
 
     def path_get(self, project_file=None):
         """Get the absolute path to a file. Used for testing the API.
