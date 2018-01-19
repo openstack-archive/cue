@@ -1,4 +1,4 @@
-# Copyright 2014 Hewlett-Packard Development Company, L.P.
+# Copyright 2014 Hewlett-Packard Development Company, L.P. 
 #
 # Author: Endre Karlson <endre.karlson@hp.com>
 #
