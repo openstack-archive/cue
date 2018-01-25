@@ -135,7 +135,7 @@ class CueClusters(cue_utils.CueScenario):
                                                     network_name)
             network_id = test_network[1]["network"]["id"]
             rabbitmq_username = "rabbitmq"
-            rabbitmq_password = "passowrd"
+            rabbitmq_password = "password"
 
             # create cue_cluster
             cluster = self._create_cue_cluster(cluster_name, size, network_id,
