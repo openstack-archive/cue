@@ -1,1 +1,0 @@
-Install RabbitMQ VM as part of MSGaaS single-tenant cluster.
